@@ -1,17 +1,7 @@
 <!DOCTYPE html> 
 <html><head> 
 
-<%
-var pages = {
-  welcome:  {title:'Welcome'},
-  why:      {title:'Why'},
-  you:      {title:'You'},
-  settings: {title:'Settings'},
-  leaders:  {title:'Leaders'},
-  team:     {title:'Team'},
-  well:     {title:'Well'},
-}
-%>
+
 
 
 
@@ -29,20 +19,20 @@ var pages = {
 
 
 
-<% function page_header( name ) { var page = pages[name] %>
-<div data-role="header" data-id="header"  data-position="fixed">
-<h1><%=page.title%></h1>
-<a href="#page_<%=name%>" data-icon="check" class="ui-btn-right">Well!</a>
-</div>
-<% } %>
+
 
 
 <div id="page_welcome" data-add-back-btn="true" data-role="page" data-id="header1">
-<% page_header('welcome') %>
+
+<div data-role="header" data-id="header"  data-position="fixed">
+<h1>Welcome</h1>
+<a href="#page_welcome" data-icon="check" class="ui-btn-right">Well!</a>
+</div>
+
 
 <div data-role="content">
 
-<a href="/auth/twitter?prefix=main-<%=name%>" rel="external" data-role="button" data-icon="check" >Login with Twitter</a>
+<a href="/auth/twitter?prefix=main-android" rel="external" data-role="button" data-icon="check" >Login with Twitter</a>
 
 
 Login directly:
@@ -71,7 +61,12 @@ Password:
 
 
 <div id="page_why" data-add-back-btn="true" data-role="page" data-id="header1">
-<% page_header('why') %>
+
+<div data-role="header" data-id="header"  data-position="fixed">
+<h1>Why</h1>
+<a href="#page_why" data-icon="check" class="ui-btn-right">Well!</a>
+</div>
+
 
 <div data-role="content">
 <p>why</p>
@@ -82,7 +77,12 @@ Password:
 
 
 <div id="page_you" data-add-back-btn="true" data-role="page" data-id="header1">
-<% page_header('you') %>
+
+<div data-role="header" data-id="header"  data-position="fixed">
+<h1>You</h1>
+<a href="#page_you" data-icon="check" class="ui-btn-right">Well!</a>
+</div>
+
 
 <div data-role="content">
 <p>you</p>
@@ -93,7 +93,12 @@ Password:
 
 
 <div id="page_settings" data-add-back-btn="true" data-role="page" data-id="header1">
-<% page_header('settings') %>
+
+<div data-role="header" data-id="header"  data-position="fixed">
+<h1>Settings</h1>
+<a href="#page_settings" data-icon="check" class="ui-btn-right">Well!</a>
+</div>
+
 
 <div data-role="content">
 <p>settings</p>
@@ -104,7 +109,12 @@ Password:
 
 
 <div id="page_leaders" data-add-back-btn="true" data-role="page" data-id="header1">
-<% page_header('leaders') %>
+
+<div data-role="header" data-id="header"  data-position="fixed">
+<h1>Leaders</h1>
+<a href="#page_leaders" data-icon="check" class="ui-btn-right">Well!</a>
+</div>
+
 
 <div data-role="content">
 <p>leaders</p>
@@ -115,7 +125,12 @@ Password:
 
 
 <div id="page_team" data-add-back-btn="true" data-role="page" data-id="header1">
-<% page_header('team') %>
+
+<div data-role="header" data-id="header"  data-position="fixed">
+<h1>Team</h1>
+<a href="#page_team" data-icon="check" class="ui-btn-right">Well!</a>
+</div>
+
 
 <div data-role="content">
 <p>team</p>
@@ -126,7 +141,12 @@ Password:
 
 
 <div id="page_well" data-add-back-btn="true" data-role="page" data-id="header1">
-<% page_header('well') %>
+
+<div data-role="header" data-id="header"  data-position="fixed">
+<h1>Well</h1>
+<a href="#page_well" data-icon="check" class="ui-btn-right">Well!</a>
+</div>
+
 
 <div data-role="content">
 <p>well</p>
