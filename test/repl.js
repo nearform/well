@@ -1,3 +1,5 @@
+# 
+
 eyes = require('eyes')
 see = function(e,o){eyes.inspect(o)}
 
@@ -5,7 +7,7 @@ si = require('../lib/well-seneca')()
 si.inrepl()
 
 w = si.pin({role:'well',cmd:'*'})
-w.createevent({name:'foo'},function(e,o){e1=o})
+W.createevent({name:'foo'},function(e,o){e1=o})
 
 u = si.pin({role:'user',cmd:'*'})
 u.register({nick:'u1',password:'u1'},function(e,o){u1=o})
