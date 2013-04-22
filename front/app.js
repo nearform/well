@@ -33,7 +33,8 @@ Ext.application({
 
 
   controllers: [
-    'Main'
+    'Main',
+    'Connect',
   ],
 
     icon: {
