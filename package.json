@@ -1,6 +1,6 @@
 {
   "name": "well",
-  "version": "0.0.0",
+  "version": "0.1.1",
   "description": "well",
   "main": "lib/well.js",
   "scripts": {
@@ -19,12 +19,12 @@
     "game"
   ],
   "author": "Richard Rodger",
-  "license": "BSD",
+  "license": "MIT",
 
   "dependencies": {
-    "express":    "3.x",
+    "express":    "*",
     "underscore": "*",
-    "dispatch":   "0.2.x",
+    "dispatch":   "*",
     "ejs":        "*"
   },
 
