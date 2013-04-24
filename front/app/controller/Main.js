@@ -6,8 +6,15 @@ Ext.define('well.controller.Main', {
       team: 'wellteam'
     },
     control: {
+      'wellmain': {
+        activeitemchange:'onTabChange'
+      },
+      wellteam: {
+        activate:'onTeam'
+      },
       '#wellteamlist': {
-        select: 'showDetail'
+        select: 'showDetail',
+        show:'onShow'
       }
     }
   },
@@ -20,6 +27,17 @@ Ext.define('well.controller.Main', {
       title: data.name,
       data: data
     })
-  }
+  },
 
+  onShow: function(){
+    console.log('C Main onshow')
+  },
+
+  onTabChange: function(main,tab){
+    console.log('C Main tab '+tab.id)
+  },
+
+  onTeam: function(){
+    console.log('on Team')
+  }
 });

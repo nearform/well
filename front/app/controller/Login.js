@@ -21,7 +21,8 @@ Ext.define('well.controller.Login', {
   },
 
   showMain: function() {
-    console.log('showMain')
+    console.log('showMain route')
+    // test for well.user here?
     var main = this.getMain()
     Ext.Viewport.setActiveItem(main)
   }

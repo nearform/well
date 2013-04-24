@@ -38,6 +38,11 @@ Ext.application({
     'Login',
   ],
 
+
+  models: ['Member'],
+
+  stores: ['Team'],
+
   icon: {
     '57': 'resources/icons/Icon.png',
     '72': 'resources/icons/Icon~ipad.png',
@@ -64,23 +69,6 @@ Ext.application({
       { xtype: 'wellmain' }
     ])
 
-    Ext.Ajax.request({
-      url: '/auth/instance',
-      //method: 'get',
-      success: function (response) {
-        var instance = Ext.JSON.decode(response.responseText);
-        if( instance.user ) {
-          app.user = instance.user
-          app.login = instance.login
-
-          Ext.Viewport.setActiveItem( 'wellmain' )
-        }
-        Ext.fly('appLoadingIndicator').destroy();
-      },
-      failure: function (response) {
-        Ext.fly('appLoadingIndicator').destroy();
-      }
-    })
   },
 
   onUpdated: function() {
@@ -100,13 +88,13 @@ Ext.application({
 
 var app = {
   joinevent: function() {
-    if( app.event ) {
-      if( !app.user.events[app.event.id] ) {
+    //if( app.event ) {
+      //if( !app.user.events[app.event.id] ) {
         Ext.Ajax.request({
           url: '/well/joinevent',
           method: 'post',
           jsonData:{
-            event:app.event.id,
+            //event:app.event.id,
             user:app.user.id
           },
           success:function(response){
@@ -116,7 +104,7 @@ var app = {
             app.team  = result.team
           }
         })
-      }
-    }
+      //}
+    //}
   }
 }

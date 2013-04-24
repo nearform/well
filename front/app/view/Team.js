@@ -12,6 +12,9 @@ Ext.define('well.view.Team', {
         xtype:'list',
         id:'wellteamlist',
 
+        store:'Team',
+
+/*
         store: {
           fields: ['name'],
           data: [
@@ -21,9 +24,28 @@ Ext.define('well.view.Team', {
             {name: 'Forest'}
           ]
         },
+*/
 
-        itemTpl: '{name}'
+        itemTpl: '{name} {nick}'
       }
     ]
+  },
+
+/*
+  initialize: function() {
+    console.log('MC init')
+    var teamstore = Ext.getStore('Team')
+    if( app.event && app.team ) {
+      teamstore.getProxy().setUrl('/well/getteam?event='+app.event.id+'&team='+app.team.num)
+      teamstore.load(function(){
+        console.log('getteam')
+      })
+    }
   }
+*/
+
+  onShow: function() {
+    console.log('Team show')
+  }
+
 });

@@ -114,7 +114,7 @@ module.exports = function( options, register ){
           team.users[user.nick]={c:card}
           team.save$(function(err){
             var out = {user:user,team:team,event:event}
-            console.dir(out)
+            //console.dir(out)
             done(err,out)
           })
         })
