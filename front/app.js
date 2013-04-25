@@ -66,7 +66,7 @@ Ext.application({
 
     Ext.Viewport.add([
       { xtype: 'welllogin' },
-      { xtype: 'wellmain' }
+//      { xtype: 'wellmain' }
     ])
 
   },
@@ -87,4 +87,43 @@ Ext.application({
 
 
 var app = {
+  suitindex:{
+    spades:0,clubs:1,hearts:2,diams:3,
+    0:'spades',1:'clubs',2:'hearts',3:'diams'
+  },
+  numberindex:{
+    'num-A':0,
+    'num-2':1,
+    'num-3':2,
+    'num-4':3,
+    'num-5':4,
+    'num-6':5,
+    'num-7':6,
+    'num-8':7,
+    'num-9':8,
+    'num-10':9,
+    'num-J':10,
+    'num-Q':11,
+    'num-K':12,
+    0:'num-A',
+    1:'num-2',
+    2:'num-3',
+    3:'num-4',
+    4:'num-5',
+    5:'num-6',
+    6:'num-7',
+    7:'num-8',
+    8:'num-9',
+    9:'num-10',
+    10:'num-J',
+    11:'num-Q',
+    12:'num-K',
+  },
+  reversecard:function(card){
+    return {
+      suit:Math.floor(card/13),
+      number:card % 13
+    }
+  }
+
 }

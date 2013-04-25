@@ -18,6 +18,13 @@ Ext.define('well.view.Number', {
             ui: "normal",
             text: "A" 
           },
+        ]
+      },
+
+      { 
+        xtype: 'panel', 
+        layout: "hbox", 
+        items: [
           {
             id:'num-2',
             xtype: "button",
@@ -30,6 +37,12 @@ Ext.define('well.view.Number', {
             ui: "normal",
             text: "3" 
           },
+          {
+            id:'num-4',
+            xtype: "button",
+            ui: "normal",
+            text: "4" 
+          },
         ]
       },
 
@@ -37,12 +50,6 @@ Ext.define('well.view.Number', {
         xtype: 'panel', 
         layout: "hbox", 
         items: [
-          {
-            id:'num-4',
-            xtype: "button",
-            ui: "normal",
-            text: "4" 
-          },
           {
             id:'num-5',
             xtype: "button",
@@ -55,6 +62,12 @@ Ext.define('well.view.Number', {
             ui: "normal",
             text: "6" 
           },
+          {
+            id:'num-7',
+            xtype: "button",
+            ui: "normal",
+            text: "7" 
+          },
         ]
       },
 
@@ -62,12 +75,6 @@ Ext.define('well.view.Number', {
         xtype: 'panel', 
         layout: "hbox", 
         items: [
-          {
-            id:'num-7',
-            xtype: "button",
-            ui: "normal",
-            text: "7" 
-          },
           {
             id:'num-8',
             xtype: "button",
@@ -79,6 +86,12 @@ Ext.define('well.view.Number', {
             xtype: "button",
             ui: "normal",
             text: "9" 
+          },
+          {
+            id:'num-10',
+            xtype: "button",
+            ui: "normal",
+            text: "10" 
           },
         ]
       },

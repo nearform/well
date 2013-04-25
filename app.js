@@ -8,7 +8,7 @@ var seneca  = require('seneca')()
 
 seneca.use('user')
 seneca.use('auth',config.auth)
-seneca.use('./well')
+seneca.use('./well',{numteams:1})
 
 
 
@@ -22,6 +22,11 @@ var w = seneca.pin({role:'well',cmd:'*'})
 w.createevent({name:'NodeJSDublin-Apr-2013'},function(out,event){
 
   seneca.add({role:'well',cmd:'whoami'},function(args,done){
+    args.event = event
+    this.parent(args,done)
+  })
+
+  seneca.add({role:'well',cmd:'well'},function(args,done){
     args.event = event
     this.parent(args,done)
   })

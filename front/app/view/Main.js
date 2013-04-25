@@ -12,28 +12,41 @@ Ext.define('well.view.Main', {
         id:'wellmain-tab-home',
         title: 'Home',
         iconCls: 'home',
+        //xtype: 'wellhome',
 
-        styleHtmlContent: true,
-        scrollable: true,
-
-        items: {
-          docked: 'top',
-          xtype: 'titlebar',
-          title: 'Home'
-        },
-
-        html: 'home'
+        items:[
+          {
+            docked: 'top',
+            xtype: 'titlebar',
+            title: 'Home'
+          },
+          {
+            id:'wellhome-user',
+            xtype:'label',
+            tpl:'{name} {nick}'
+          },
+          {
+            id:'wellhome-team',
+            xtype:'label',
+            tpl:'{team}'
+          },
+          {
+            id:'wellhome-card',
+            xtype:'label',
+            tpl:'{card}'
+          }
+        ]
       },
       {
         id:'wellmain-tab-team',
         title: 'Your Team',
-        iconCls: 'action',
+        iconCls: 'list',
         xtype: 'wellteam',
       },
       {
         id:'wellmain-tab-leader',
         title: 'Leaderboard',
-        iconCls: 'home',
+        iconCls: 'favorites',
 
         styleHtmlContent: true,
         scrollable: true,

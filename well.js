@@ -28,13 +28,14 @@ module.exports = function( options, register ){
 
   seneca.add({role:name,cmd:'whoami'},   whoami)
   seneca.add({role:name,cmd:'members'},   members)
+  seneca.add({role:name,cmd:'well'},        well)
 
   seneca.add({role:name,cmd:'createevent'}, createevent)
   seneca.add({role:name,cmd:'joinevent'},   joinevent)
   seneca.add({role:name,cmd:'getevent'},    getevent)
   //seneca.add({role:name,cmd:'getteam'},     getteam)
   //seneca.add({role:name,cmd:'getuser'},     getuser)
-  seneca.add({role:name,cmd:'well'},        well)
+
 
   seneca.add({role:'user',cmd:'register'},      function register(args,done){
     this.parent(args,function(err,out){
@@ -116,7 +117,7 @@ module.exports = function( options, register ){
           
           team.users[user.nick]={card:card,name:user.name}
           team.save$(function(err){
-            var out = {user:user,team:team,event:event}
+            var out = {card:card,user:user,team:team,event:event}
             //console.dir(out)
             done(err,out)
           })
@@ -129,17 +130,18 @@ module.exports = function( options, register ){
 
 
   function members( args, done ){
-    var event = args.event
+    //var event = args.event
     var team  = args.team
-    //teament.load$({num:teamnum,event:event.id},function(err,team){
-    //if( err ) return done(err);
-    console.dir(team)
+    var user  = args.user
+
     var members = []
-    _.each(team.users,function(user,nick){
-      members.push( {nick:nick,name:user.name} )
+    _.each(team.users,function(teamuser,nick){
+      var connected = team.wells[nick] ? team.wells[nick][user.nick] ? true : false : false
+      console.log('connected:'+connected+' nick:'+nick+' user.nick:'+user.nick)
+
+      members.push( {nick:nick,name:teamuser.name,well:connected} )
     })
     done(null,{members:members})
-    //})
   }
 
 
@@ -200,7 +202,9 @@ module.exports = function( options, register ){
       }
       else {
         teament.load$({event:event.id,num:user.events[event.id].t},function(err,team){
-          finish(err,{user:user,team:team,event:event})
+          //console.dir(event)
+          var cardnumber = event.users[user.nick].c
+          finish(err,{card:cardnumber,user:user,team:team,event:event})
         })
       }
     }
@@ -208,6 +212,9 @@ module.exports = function( options, register ){
 
     function finish(err,out) {
       if(err) return done(err);
+
+      //console.dir(out)
+
       seneca.act('role:user, cmd:clean',{user:out.user},function(err,user){
         out.user = user
         done(null,out)
@@ -230,6 +237,8 @@ module.exports = function( options, register ){
       if( err ) return done(err);
 
       if( !team ) return seneca.fail('unkown team '+usermeta.t+' for user '+user.nick+' at event '+event.id,done)
+
+      console.dir(team)
       
       var otherusermeta = event.users[other]
       if( !otherusermeta ) return seneca.fail('unkown user '+other+' at event '+event.id,done)
@@ -246,7 +255,13 @@ module.exports = function( options, register ){
 
           team.numwells++
 
-          team.save$(done)
+          team.save$(function(err,team){
+            if( err ) return done(err);
+
+            console.dir(team)
+
+            done(null,{ok:true})
+          })
         }
         else return seneca.fail('Well from user '+user.nick+' to '+other+' fails as card does not match, event '+event.id,done)
       }
@@ -304,6 +319,12 @@ module.exports = function( options, register ){
 
 
 
+  function setuser(req,res,args,act,respond) {
+    args.user = req.seneca.user
+    act(args,respond)
+  }
+  
+
   register(null,{
     name:name,
     service:seneca.http({
@@ -311,13 +332,18 @@ module.exports = function( options, register ){
       pin:{role:name,cmd:'*'},
       map:{
 
-        whoami:{GET:function(req,res,args,act,respond) {
+        whoami:{GET:setuser},
+
+        members:{ alias:'player/members/:team', GET:function(req,res,args,act,respond) {
           args.user = req.seneca.user
           act(args,respond)
         }},
-
-        members:{ alias:'player/members/:team' },
         
+        well:{ alias:'player/well/:other/:card', POST:function(req,res,args,act,done) {
+          args.user = req.seneca.user
+          act(args,done)
+        }},
+
         getevent:{ suffix:'/:event' }, // GET without dispatch is default
 
         
@@ -330,10 +356,6 @@ module.exports = function( options, register ){
           })
         }},
         
-        well:{POST:function(req,res,args,act,done) {
-          args.user = req.seneca.user
-          act(args,done)
-        }}
       }
     })
   })
