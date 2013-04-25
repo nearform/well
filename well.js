@@ -123,7 +123,9 @@ module.exports = function( options, register ){
           if( err ) return done(err);
           if( !team ) return seneca.fail('unknown team: '+tnum+' event:'+event.id,done);
           
-          team.users[user.nick]={card:card,name:user.name}
+          var avatar = user.service ? user.service.twitter.userdata._json.profile_image_url : false 
+
+          team.users[user.nick]={card:card,name:user.name,avatar:avatar}
           team.save$(function(err){
             var out = {card:card,user:user,team:team,event:event}
             //console.dir(out)
@@ -174,6 +176,7 @@ module.exports = function( options, register ){
       done(null,{
         nick:user.nick,
         name:user.name,
+        avatar: user.service ? user.service.twitter.userdata._json.profile_image_url : false 
       })
     })
   }

@@ -5,6 +5,7 @@ Ext.define('well.view.Suit', {
 
   config: {
     title: 'Suit',
+    scrollable: true,
 
     layout: {
       type: 'vbox',

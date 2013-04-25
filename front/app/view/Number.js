@@ -4,6 +4,7 @@ Ext.define('well.view.Number', {
 
   config: {
     title: 'Number',
+    scrollable: true,
 
     layout: {
       type: 'vbox',

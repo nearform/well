@@ -14,7 +14,7 @@ Ext.define('well.view.Main', {
         id:'wellmain-tab-home',
         title: 'Home',
         iconCls: 'home',
-        //xtype: 'wellhome',
+        scrollable: true,
 
         items:[
           {

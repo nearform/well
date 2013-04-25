@@ -12,6 +12,7 @@ Ext.define('well.view.Leader', {
         title:'Leaderboard',
         xtype:'list',
         id:'wellleaderlist',
+        scrollable: true,
 
         store:'Leader',
         loadingText: null,
