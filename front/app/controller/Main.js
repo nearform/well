@@ -79,7 +79,7 @@ Ext.define('well.controller.Main', {
       team:app.team.name,
     })
 
-    var color = ('hearts'==card.suit || 'diams'==card.suit) ? 'red' : 'black'
+    var color = (2==card.suit || 3==card.suit) ? 'red' : 'black'
     home.down('#wellhome-card').setData({
       card:'<font color="'+color+'">&'+app.suitindex[card.suit]+';'+app.numberindex[card.number].substring(4)+'</font>'
     })
