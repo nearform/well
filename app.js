@@ -21,7 +21,7 @@ u.register({nick:'u4',name:'nu4',password:'u4',active:false})
 var w = seneca.pin({role:'well',cmd:'*'})
 w.createevent({name:'NodeJSDublin-Apr-2013'},function(out,event){
 
-  seneca.add({role:'well',cmd:'joinevent'},function(args,done){
+  seneca.add({role:'well',cmd:'whoami'},function(args,done){
     args.event = event
     this.parent(args,done)
   })

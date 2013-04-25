@@ -68,29 +68,6 @@ Ext.define('well.view.Main', {
 
   initialize: function() {
     console.log('MVI')
-
-    Ext.Ajax.request({
-      url: '/auth/instance',
-      //method: 'get',
-      success: function (response) {
-        var instance = Ext.JSON.decode(response.responseText);
-        if( instance.user ) {
-          app.user = instance.user
-          app.login = instance.login
-
-          Ext.Viewport.setActiveItem( 'wellmain' )
-          //this.setActiveItem( 'wellmain' )
-        }
-        else {
-          Ext.Viewport.setActiveItem( 'welllogin' )
-        }
-        //Ext.fly('appLoadingIndicator').destroy();
-      },
-      failure: function (response) {
-        //Ext.fly('appLoadingIndicator').destroy();
-      }
-    })
-
     this.callParent(arguments);
   }
 

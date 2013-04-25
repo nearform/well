@@ -87,24 +87,4 @@ Ext.application({
 
 
 var app = {
-  joinevent: function() {
-    //if( app.event ) {
-      //if( !app.user.events[app.event.id] ) {
-        Ext.Ajax.request({
-          url: '/well/joinevent',
-          method: 'post',
-          jsonData:{
-            //event:app.event.id,
-            user:app.user.id
-          },
-          success:function(response){
-            var result = Ext.JSON.decode(response.responseText);
-            app.event = result.event
-            app.user  = result.user
-            app.team  = result.team
-          }
-        })
-      //}
-    //}
-  }
 }

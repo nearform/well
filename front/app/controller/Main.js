@@ -39,5 +39,25 @@ Ext.define('well.controller.Main', {
 
   onTeam: function(){
     console.log('on Team')
+/*
+    Ext.Ajax.request({
+      url: '/well/player/members/'+app.team.id,
+      method: 'get',
+      jsonData:{
+        //event:app.event.id,
+        user:app.user.id
+      },
+      success:function(response){
+        var result = Ext.JSON.decode(response.responseText);
+        console.log(result)
+      }
+    })
+ */
+    var teamstore = Ext.getStore('Team')
+    teamstore.getProxy().setUrl('/well/player/members/'+app.team.id)
+    teamstore.load(function(){
+      console.log('getteam')
+    })
+
   }
 });

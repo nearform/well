@@ -26,10 +26,13 @@ module.exports = function( options, register ){
   var eventent = seneca.make('event')
 
 
+  seneca.add({role:name,cmd:'whoami'},   whoami)
+  seneca.add({role:name,cmd:'members'},   members)
+
   seneca.add({role:name,cmd:'createevent'}, createevent)
   seneca.add({role:name,cmd:'joinevent'},   joinevent)
   seneca.add({role:name,cmd:'getevent'},    getevent)
-  seneca.add({role:name,cmd:'getteam'},     getteam)
+  //seneca.add({role:name,cmd:'getteam'},     getteam)
   //seneca.add({role:name,cmd:'getuser'},     getuser)
   seneca.add({role:name,cmd:'well'},        well)
 
@@ -111,7 +114,7 @@ module.exports = function( options, register ){
           if( err ) return done(err);
           if( !team ) return seneca.fail('unknown team: '+tnum+' event:'+event.id,done);
           
-          team.users[user.nick]={c:card}
+          team.users[user.nick]={card:card,name:user.name}
           team.save$(function(err){
             var out = {user:user,team:team,event:event}
             //console.dir(out)
@@ -125,10 +128,18 @@ module.exports = function( options, register ){
 
 
 
-  function getteam( args, done ){
-    var event   = args.event
-    var teamnum = args.team
-    teament.list$({num:teamnum,event:event.id},done)
+  function members( args, done ){
+    var event = args.event
+    var team  = args.team
+    //teament.load$({num:teamnum,event:event.id},function(err,team){
+    //if( err ) return done(err);
+    console.dir(team)
+    var members = []
+    _.each(team.users,function(user,nick){
+      members.push( {nick:nick,name:user.name} )
+    })
+    done(null,{members:members})
+    //})
   }
 
 
@@ -175,6 +186,35 @@ module.exports = function( options, register ){
     else seneca.fail("no suitable search term for user",done)
   }
 */
+
+
+
+  function whoami( args, done ) {
+    var seneca = this
+    var user  = args.user
+    var event = args.event
+
+    if( user ) {
+      if( !user.events[event.id] ) {
+        seneca.act('role:well, cmd:joinevent',{user:user,event:event}, finish)
+      }
+      else {
+        teament.load$({event:event.id,num:user.events[event.id].t},function(err,team){
+          finish(err,{user:user,team:team,event:event})
+        })
+      }
+    }
+    else done(null,{})
+
+    function finish(err,out) {
+      if(err) return done(err);
+      seneca.act('role:user, cmd:clean',{user:out.user},function(err,user){
+        out.user = user
+        done(null,out)
+      })
+    }
+  }
+
 
 
   function well(args,done){
@@ -271,13 +311,15 @@ module.exports = function( options, register ){
       pin:{role:name,cmd:'*'},
       map:{
 
-        joinevent:{ auth:true, POST:function(req,res,args,act,respond) {
+        whoami:{GET:function(req,res,args,act,respond) {
           args.user = req.seneca.user
           act(args,respond)
         }},
+
+        members:{ alias:'player/members/:team' },
         
         getevent:{ suffix:'/:event' }, // GET without dispatch is default
-        getteam:{ suffix:'/:team' },
+
         
         getuser:{ suffix:'/:nick', GET:function(req,res,args,act,respond){
           act(args,function(err,user){
@@ -288,7 +330,7 @@ module.exports = function( options, register ){
           })
         }},
         
-        well:{ auth:true, POST:function(req,res,args,act,done) {
+        well:{POST:function(req,res,args,act,done) {
           args.user = req.seneca.user
           act(args,done)
         }}

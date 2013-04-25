@@ -19,7 +19,7 @@ Ext.define('well.store.Team', {
 //      url : '/well/getteam',
       reader: {
         type: 'json',
-        //            rootProperty: 'users'
+        rootProperty: 'members'
       }
     }
   }
