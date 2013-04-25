@@ -61,7 +61,7 @@ if( !module.parent ) {
     else next()
   })
 
-  app.use( express.static(__dirname+'/front') )  
+  app.use( express.static(__dirname+config.sencha.public) )  
 
   app.listen(3333)
 }
