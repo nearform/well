@@ -1,7 +1,10 @@
 Ext.define('well.view.Team', {
   extend: 'Ext.navigation.View',
   xtype:'wellteam',
-  requires: ['well.view.Suit'],
+  requires: [
+    'well.view.Suit',
+    'well.view.Member'
+  ],
   
 
   config: {

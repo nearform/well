@@ -27,8 +27,9 @@ module.exports = function( options, register ){
 
 
   seneca.add({role:name,cmd:'whoami'},   whoami)
-  seneca.add({role:name,cmd:'members'},   members)
-  seneca.add({role:name,cmd:'well'},        well)
+  seneca.add({role:name,cmd:'members'},  members)
+  seneca.add({role:name,cmd:'well'},     well)
+  seneca.add({role:name,cmd:'member'},   member)
 
   seneca.add({role:name,cmd:'createevent'}, createevent)
   seneca.add({role:name,cmd:'joinevent'},   joinevent)
@@ -142,6 +143,28 @@ module.exports = function( options, register ){
       members.push( {nick:nick,name:teamuser.name,well:connected} )
     })
     done(null,{members:members})
+  }
+
+
+
+  function member( args, done ){
+    var other = args.other
+    var event = args.event
+
+    var userevent = event.users[other]
+    if( !userevent ) {
+      return seneca.fail('not in event: '+event.name+' user:'+other,done);
+    }
+
+    userent.load$({nick:other},function(err,user){
+      if( err ) return done(user);
+      if( !user ) return seneca.fail('unknown user: '+other,done);
+      
+      done(null,{
+        nick:user.nick,
+        name:user.name
+      })
+    })
   }
 
 
@@ -260,7 +283,7 @@ module.exports = function( options, register ){
 
             console.dir(team)
 
-            done(null,{ok:true})
+            done(null,{team:team})
           })
         }
         else return seneca.fail('Well from user '+user.nick+' to '+other+' fails as card does not match, event '+event.id,done)
@@ -319,7 +342,7 @@ module.exports = function( options, register ){
 
 
 
-  function setuser(req,res,args,act,respond) {
+  function setuserarg(req,res,args,act,respond) {
     args.user = req.seneca.user
     act(args,respond)
   }
@@ -332,21 +355,15 @@ module.exports = function( options, register ){
       pin:{role:name,cmd:'*'},
       map:{
 
-        whoami:{GET:setuser},
+        whoami:{GET:setuserarg},
 
-        members:{ alias:'player/members/:team', GET:function(req,res,args,act,respond) {
-          args.user = req.seneca.user
-          act(args,respond)
-        }},
-        
-        well:{ alias:'player/well/:other/:card', POST:function(req,res,args,act,done) {
-          args.user = req.seneca.user
-          act(args,done)
-        }},
+        members: { alias:'player/members/:team',     GET:  setuserarg  },
+        well:    { alias:'player/well/:other/:card', POST: setuserarg },
+        member:  { alias:'player/member/:other',     GET:  setuserarg  },
 
+/*
         getevent:{ suffix:'/:event' }, // GET without dispatch is default
 
-        
         getuser:{ suffix:'/:nick', GET:function(req,res,args,act,respond){
           act(args,function(err,user){
             if( err ) { return res.send(500,err) }
@@ -355,7 +372,7 @@ module.exports = function( options, register ){
             respond(null,user)
           })
         }},
-        
+*/
       }
     })
   })

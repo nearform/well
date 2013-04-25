@@ -4,22 +4,27 @@ Ext.define('well.controller.Main', {
   config: {
     refs: {
       team: 'wellteam',
-      main: 'wellmain'
+      main: 'wellmain',
+      member: 'wellmember'
     },
     control: {
       'wellmain': {
         activeitemchange:'onTabChange'
       },
       wellteam: {
-        activate:'onTeam'
+
       },
       '#wellteamlist': {
         select: 'showDetail',
-        show:'onShow'
+        //show:'onTeam',
+        //activate:'onTeam'
       },
       '#wellmain-tab-home': {
         activate:'onHome'
-      }
+      },
+      wellmember: {
+        activate:'onMember'
+      },
 
     }
   },
@@ -27,19 +32,36 @@ Ext.define('well.controller.Main', {
   showDetail: function(list, record) {
     var data = record.getData()
     console.log('showDetail',data)
-    this.getTeam().push({
-      xtype: 'wellsuit',
-      title: data.name,
-      data: data
-    })
+
+    var mywells = app.team.wells[app.user.nick]
+    if( mywells && mywells[data.nick] ) {
+      this.getTeam().push({
+        xtype: 'wellmember',
+        title: data.name,
+        data: {nick:data.nick}
+      })
+    }
+    else {
+      this.getTeam().push({
+        xtype: 'wellsuit',
+        title: data.name,
+        data: data
+      })
+    }
   },
 
+/*
   onShow: function(){
     console.log('C Main onshow')
   },
+*/
 
   onTabChange: function(main,tab){
     console.log('C Main tab '+tab.id)
+
+    if( 'wellmain-tab-team' == tab.id ) {
+      this.onTeam()
+    }
   },
 
   onTeam: function(){
@@ -69,5 +91,27 @@ Ext.define('well.controller.Main', {
     home.child('#wellhome-card').setData({
       card:'&'+app.suitindex[card.suit]+'; '+app.numberindex[card.number]
     })
-  }
+  },
+
+  onMember: function(){
+    var member = this.getMember()
+    var other = member.config.data.nick
+
+    console.log('MC on Member ',other)
+
+
+    Ext.Ajax.request({
+      url: '/well/player/member/'+other,
+      success: function (response) {
+        var resobj = Ext.JSON.decode(response.responseText);
+        member.child('#wellmember-name').setData(resobj)
+      },
+      failure: function (response) {
+        //Ext.fly('appLoadingIndicator').destroy();
+      }
+    })
+
+  },
+
+
 });

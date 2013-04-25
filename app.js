@@ -31,6 +31,11 @@ w.createevent({name:'NodeJSDublin-Apr-2013'},function(out,event){
     this.parent(args,done)
   })
 
+  seneca.add({role:'well',cmd:'member'},function(args,done){
+    args.event = event
+    this.parent(args,done)
+  })
+
 })
 
 
