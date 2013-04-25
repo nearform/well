@@ -4,7 +4,22 @@ Ext.define('well.view.Login', {
   config: {
     title: 'Login',
 
+    layout: {
+      type: 'vbox',
+      align: 'center',
+      autoSize: true
+    },
+
+
     items:[
+      {
+        xtype:'panel',
+        html:[
+          'Well!'
+        ],
+        style:'font-size:2em;margin:30px'
+      },
+ 
       {
         xtype: 'button',
         itemId: 'logInButton',
@@ -12,7 +27,18 @@ Ext.define('well.view.Login', {
         padding: '10px',
         margin: '10px',
         text: 'Login with Twitter'
-      }
+      },
+
+      {
+        xtype:'panel',
+        html:[
+          "<p>Once you login, you'll be assigned to a randomly chosen team.</p>",
+          "<p>Connect your fellow team members to win the game!</p>"
+        ].join(''),
+        style:'margin:30px'
+      },
+ 
+
     ]
   }
 });

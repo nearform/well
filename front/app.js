@@ -133,9 +133,13 @@ var app = {
   },
 
   startLoading: function(kind,store) {
+    return
     app.loadingIntervals[kind] = setInterval(function(){
       store.load(function(){})
     },10000)
-  }
+  },
 
+  upperFirst: function(str) {
+    return 0<str.length?str.substring(0,1).toUpperCase()+str.substring(1):str
+  }
 }

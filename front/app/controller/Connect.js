@@ -8,8 +8,8 @@ Ext.define('well.controller.Connect', {
       number: 'wellnumber'
     },
     control: {
-      wellsuit: {
-        activate:'onSuit'
+      wellnumber: {
+        show:'onNumber'
       },
 
       'wellsuit button': {
@@ -21,24 +21,33 @@ Ext.define('well.controller.Connect', {
     }
   },
 
-  onSuit: function(wellsuit) {
-    console.log('onSuit',wellsuit.config.data)
+
+  onNumber: function(wellsuit) {
+    var suit = wellsuit.config.data.suit
+    var topleft  = this.getNumber().down('#num-top-left')    
+    var topright = this.getNumber().down('#num-top-right')    
+    var color = ('hearts'==suit || 'diams'==suit) ? 'red' : 'black'
+    topleft.setHtml( '<font color="'+color+'">&'+suit+';</font>' )
+    topright.setHtml( '<font color="'+color+'">&'+suit+';</font>' )
   },
+
 
   tapSuit: function(button) {
     console.log('tapSuit',button.id)
 
     this.getTeam().push({
       xtype: 'wellnumber',
-      title: button.id,
-      data: {suit:button.id}
+      title: app.upperFirst(button.id),
+      data:  {suit:button.id}
     })
   },
 
+
   tapNumber: function(button) {
-    var other = this.getSuit().config.data.nick
-    var name = this.getSuit().config.data.name
-    var card = (app.suitindex[this.getNumber().config.data.suit] * 13) + app.numberindex[button.id]
+    var data  = this.getSuit().config.data
+    var other = data.nick
+    var name  = data.name
+    var card  = (app.suitindex[this.getNumber().config.data.suit] * 13) + app.numberindex[button.id]
     console.log('tapNumber card',card,other)
 
     wrongCard = this.wrongCard
@@ -56,7 +65,7 @@ Ext.define('well.controller.Connect', {
           team.push({
             xtype: 'wellmember',
             title: name,
-            data: {nick:other,name:name}
+            data: data
           })
 
           var teamstore = Ext.getStore('Team')
@@ -79,31 +88,6 @@ Ext.define('well.controller.Connect', {
 
   wrongCard: function(name) {
     Ext.Msg.alert('Sorry!', "That's not the right card for "+name, Ext.emptyFn);
-
-/*
-    var popup = new Ext.Panel({
-      floating: true,
-      centered: true,
-      modal: true,
-      width: 300,
-      height: 400,
-      styleHtmlContent: true,
-      html: 'Hello! I\'m a PopUp',
-      dockedItems: [{
-        xtype: 'toolbar',
-        title: 'PopUp',
-        items: [{
-          xtype: 'spacer'
-        },{
-          text: 'Close',
-          handler: function(){
-            popup.hide();
-          }
-        }]
-      }]
-    });
-    popup.show()
- */
   }
 
 

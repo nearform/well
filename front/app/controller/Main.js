@@ -11,13 +11,8 @@ Ext.define('well.controller.Main', {
       'wellmain': {
         activeitemchange:'onTabChange'
       },
-      wellteam: {
-
-      },
       '#wellteamlist': {
         select: 'showDetail',
-        //show:'onTeam',
-        //activate:'onTeam'
       },
       '#wellmain-tab-home': {
         activate:'onHome'
@@ -31,14 +26,13 @@ Ext.define('well.controller.Main', {
 
   showDetail: function(list, record) {
     var data = record.getData()
-    console.log('showDetail',data)
 
     var mywells = app.team.wells[app.user.nick]
     if( mywells && mywells[data.nick] ) {
       this.getTeam().push({
         xtype: 'wellmember',
         title: data.name,
-        data: {nick:data.nick}
+        data: data
       })
     }
     else {
@@ -49,12 +43,6 @@ Ext.define('well.controller.Main', {
       })
     }
   },
-
-/*
-  onShow: function(){
-    console.log('C Main onshow')
-  },
-*/
 
   onTabChange: function(main,tab){
     console.log('C Main tab '+tab.id)
@@ -75,28 +63,25 @@ Ext.define('well.controller.Main', {
     var teamstore = Ext.getStore('Team')
     teamstore.getProxy().setUrl('/well/player/members/'+app.team.id)
     teamstore.load(function(){
-      console.log('getteam')
+      console.log(teamstore)
     })
     app.startLoading('team',teamstore)
   },
 
   onHome: function(home){
-    console.log('onHome')
-    //home.config.data = home.config.data || {}
-    //home.config.data.cardnumber = app.card
-    //home.setData({cardnumber:'card:'+app.card})
-    //console.log(home.getData())
-
     var card = app.reversecard(app.card)
-    home.child('#wellhome-user').setData({
+    home.down('#wellhome-user').setData({
       nick:app.user.nick,
       name:app.user.name,
+      avatar:app.avatar
     })
-    home.child('#wellhome-team').setData({
+    home.down('#wellhome-team').setData({
       team:app.team.name,
     })
-    home.child('#wellhome-card').setData({
-      card:'&'+app.suitindex[card.suit]+'; '+app.numberindex[card.number]
+
+    var color = ('hearts'==card.suit || 'diams'==card.suit) ? 'red' : 'black'
+    home.down('#wellhome-card').setData({
+      card:'<font color="'+color+'">&'+app.suitindex[card.suit]+';'+app.numberindex[card.number].substring(4)+'</font>'
     })
   },
 
@@ -104,14 +89,11 @@ Ext.define('well.controller.Main', {
     var member = this.getMember()
     var other = member.config.data.nick
 
-    console.log('MC on Member ',other)
-
-
     Ext.Ajax.request({
       url: '/well/player/member/'+other,
       success: function (response) {
         var resobj = Ext.JSON.decode(response.responseText);
-        member.child('#wellmember-name').setData(resobj)
+        member.child('#wellmember-user').setData(resobj)
       },
       failure: function (response) {
         //Ext.fly('appLoadingIndicator').destroy();

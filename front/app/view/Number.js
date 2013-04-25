@@ -4,19 +4,37 @@ Ext.define('well.view.Number', {
 
   config: {
     title: 'Number',
-    layout: "vbox",
+
+    layout: {
+      type: 'vbox',
+      align: 'center',
+      autoSize: true
+    },
+
+
+
 
     items:[
-
       { 
         xtype: 'panel', 
         layout: "hbox", 
         items: [
           {
+            id:'num-top-left',
+            xtype: "label",
+            cls:'numberbtn topsuit'
+          },
+          {
             id:'num-A',
             xtype: "button",
             ui: "normal",
-            text: "A" 
+            text: "A",
+            cls:'numberbtn'
+          },
+          {
+            id:'num-top-right',
+            xtype: "label",
+            cls:'numberbtn topsuit'
           },
         ]
       },
@@ -29,19 +47,22 @@ Ext.define('well.view.Number', {
             id:'num-2',
             xtype: "button",
             ui: "normal",
-            text: "2" 
+            text: "2",
+            cls:'numberbtn'
           },
           {
             id:'num-3',
             xtype: "button",
             ui: "normal",
-            text: "3" 
+            text: "3",
+            cls:'numberbtn'
           },
           {
             id:'num-4',
             xtype: "button",
             ui: "normal",
-            text: "4" 
+            text: "4",
+            cls:'numberbtn'
           },
         ]
       },
@@ -54,19 +75,22 @@ Ext.define('well.view.Number', {
             id:'num-5',
             xtype: "button",
             ui: "normal",
-            text: "5" 
+            text: "5",
+            cls:'numberbtn'
           },
           {
             id:'num-6',
             xtype: "button",
             ui: "normal",
-            text: "6" 
+            text: "6",
+            cls:'numberbtn'
           },
           {
             id:'num-7',
             xtype: "button",
             ui: "normal",
-            text: "7" 
+            text: "7",
+            cls:'numberbtn'
           },
         ]
       },
@@ -79,19 +103,22 @@ Ext.define('well.view.Number', {
             id:'num-8',
             xtype: "button",
             ui: "normal",
-            text: "8" 
+            text: "8",
+            cls:'numberbtn'
           },
           {
             id:'num-9',
             xtype: "button",
             ui: "normal",
-            text: "9" 
+            text: "9",
+            cls:'numberbtn'
           },
           {
             id:'num-10',
             xtype: "button",
             ui: "normal",
-            text: "10" 
+            text: "10",
+            cls:'numberbtn'
           },
         ]
       },
@@ -104,19 +131,22 @@ Ext.define('well.view.Number', {
             id:'num-J',
             xtype: "button",
             ui: "normal",
-            text: "J" 
+            text: "J",
+            cls:'numberbtn'
           },
           {
             id:'num-Q',
             xtype: "button",
             ui: "normal",
-            text: "Q" 
+            text: "Q",
+            cls:'numberbtn'
           },
           {
             id:'num-K',
             xtype: "button",
             ui: "normal",
-            text: "K" 
+            text: "K",
+            cls:'numberbtn'
           },
         ]
       },

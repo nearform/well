@@ -10,3 +10,24 @@
 @include icon('help');
 @include icon('favorites');
 @include icon('list');
+
+
+.suitbtn {
+  width: 60px;
+  height: 60px;
+  font-size:1.5em;
+  margin: 20px;
+}
+
+.numberbtn {
+  width: 40px;
+  height: 40px;
+  font-size:0.9em;
+  margin: 10px;
+}
+
+.topsuit {
+  text-align:center;
+  font-size:1.5em;
+  line-height:40px;
+}

@@ -5,7 +5,13 @@ Ext.define('well.view.Suit', {
 
   config: {
     title: 'Suit',
-    layout: "vbox",
+
+    layout: {
+      type: 'vbox',
+      align: 'center',
+      autoSize: true
+    },
+
 
     items:[
 
@@ -17,13 +23,15 @@ Ext.define('well.view.Suit', {
             id:'spades',
             xtype: "button",
             ui: "normal",
-            text: "&spades;" 
+            text: "&spades;", 
+            cls:'suitbtn'
           },
           {
             id:'clubs',
             xtype: "button",
             ui: "normal",
-            text: "&clubs;" 
+            text: "&clubs;",
+            cls:'suitbtn' 
           }, 
         ]
       },
@@ -36,13 +44,17 @@ Ext.define('well.view.Suit', {
             id:'hearts',
             xtype: "button",
             ui: "normal",
-            text: "&hearts;" 
+            text: "&hearts;", 
+            style:"color:red",
+            cls:'suitbtn'
           },
           {
             id:'diams',
             xtype: "button",
             ui: "normal",
-            text: "&diams;" 
+            text: "&diams;",
+            style:"color:red",
+            cls:'suitbtn'
           }, 
         ]
       }

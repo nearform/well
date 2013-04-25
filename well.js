@@ -53,35 +53,43 @@ module.exports = function( options, register ){
 
 
   function createevent( args, done ){
-    var event = eventent.make$(_.extend({
-      numcards: options.numcards,
-      numteams: options.numteams,
-      name:     'example',
-      modulo:   rand(9),
-      users:    {}
-    },_.omit(args,['role','cmd'])))
-
-    event.save$( function(err, event){
+    eventent.load$({name:args.name},function(err,event){
       if( err ) return done(err);
+      if( event ) {
+        return done(null,event)
+      }
+      else {
+        event = eventent.make$(_.extend({
+          numcards: options.numcards,
+          numteams: options.numteams,
+          name:     args.name,
+          modulo:   rand(9),
+          users:    {}
+        },_.omit(args,['role','cmd'])))
 
-      seneca.util.recurse(
-        event.numteams,
-        function( index, next ){
-          teament
-            .make$({
-              num:index, 
-              event:event.id, 
-              name:maketeamname(index,event.numteams), 
-              wells:{},
-              numwells:0,
-              users:{}
-            })
-            .save$(next)
-        },
-        function(err){
-          done(err,event)
-        }
-      )
+        event.save$( function(err, event){
+          if( err ) return done(err);
+
+          seneca.util.recurse(
+            event.numteams,
+            function( index, next ){
+              teament
+                .make$({
+                  num:index, 
+                  event:event.id, 
+                  name:maketeamname(index,event.numteams), 
+                  wells:{},
+                  numwells:0,
+                  users:{}
+                })
+                .save$(next)
+            },
+            function(err){
+              done(err,event)
+            }
+          )
+        })
+      }
     })
   }
 
@@ -137,12 +145,16 @@ module.exports = function( options, register ){
     var members = []
     _.each(team.users,function(teamuser,nick){
       var connected = team.wells[nick] ? team.wells[nick][user.nick] ? true : false : false
-      console.log('connected:'+connected+' nick:'+nick+' user.nick:'+user.nick)
+      var out = {nick:nick,name:teamuser.name,well:connected,avatar:teamuser.avatar||false}
+      console.log(out)
 
-      members.push( {nick:nick,name:teamuser.name,well:connected} )
+      if( nick != user.nick ) {
+        members.push( out )
+      }
     })
     done(null,{members:members})
   }
+
 
 
 
@@ -161,7 +173,7 @@ module.exports = function( options, register ){
       
       done(null,{
         nick:user.nick,
-        name:user.name
+        name:user.name,
       })
     })
   }
@@ -202,9 +214,7 @@ module.exports = function( options, register ){
       }
       else {
         teament.load$({event:event.id,num:user.events[event.id].t},function(err,team){
-          //console.dir(event)
-          var cardnumber = event.users[user.nick].c
-          finish(err,{card:cardnumber,user:user,team:team,event:event})
+          finish(err,{user:user,team:team,event:event})
         })
       }
     }
@@ -213,7 +223,13 @@ module.exports = function( options, register ){
     function finish(err,out) {
       if(err) return done(err);
 
-      //console.dir(out)
+      var user = out.user
+
+      //console.dir(user)
+      out.card   = event.users[user.nick].c
+      out.avatar = user.service ? user.service.twitter.userdata._json.profile_image_url : false 
+
+      console.log(out.card+' '+out.avatar)
 
       seneca.act('role:user, cmd:clean',{user:out.user},function(err,user){
         out.user = user
@@ -272,10 +288,6 @@ module.exports = function( options, register ){
 
 
 
-
-
-
-
   function sanitizeuser( orig, opts ) {
     opts = opts || {}
     orig = orig || {}
@@ -291,19 +303,6 @@ module.exports = function( options, register ){
     return out
   }
 
-
-/*
-  function loadevent(eventid,cb) {
-    eventent.load$({id:eventid},function(err,event){
-      if( err ) return cb(err);
-
-      if( !event ) {
-        return seneca.fail('unknown event: '+eventid,cb)
-      }
-      else cb(null, event);
-    })
-  }
-*/
 
 
   this.act({
@@ -339,18 +338,6 @@ module.exports = function( options, register ){
         well:    { alias:'player/well/:other/:card', POST: setuserarg },
         member:  { alias:'player/member/:other',     GET:  setuserarg  },
 
-/*
-        getevent:{ suffix:'/:event' }, // GET without dispatch is default
-
-        getuser:{ suffix:'/:nick', GET:function(req,res,args,act,respond){
-          act(args,function(err,user){
-            if( err ) { return res.send(500,err) }
-            var myself = req.seneca.user && req.seneca.user.id==user.id
-            user = sanitizeuser(user,{private:myself})
-            respond(null,user)
-          })
-        }},
-*/
       }
     })
   })
@@ -366,10 +353,8 @@ function rand(bound) {
 }
 
 
-var names = ["accelerator","airbag","air conditioner","air conditioning","air filter","air vent","alarm","all-wheel drive","alternator","antenna","anti-lock brakes","armrest","auto","automatic transmission","automobile","axle","baby car seat","baby seat","back-up lights","battery","bench seat","bonnet","brake light","brake pedal","brakes","bucket seat","bumper","camshaft","car","carburetor","catalytic converter","chassis","child car seat","chrome trim","clutch","computer","console","cooling system","crankshaft","cruise control","cylinder","dashboard","defroster","diesel engine","dip stick","differential","door","door handle","drive belt","drive shaft","driver's seat","emergency brake","emergency lights","emissions","engine","engine block","exhaust pipe","exhaust system","fan belt","fender","filter","floor mat","fog light","four-wheel drive","frame","fuel","fuel cap","fuel gauge","fuse","gas","gasket","gas pedal","gas gauge","gasoline","gas tank","gauge","gearbox","gear shift","gear stick","glove compartment","GPS","grille","hand brake","headlamp","headlight","headrest","heater","high-beam headlights","hood","horn","hubcap","hybrid","ignition","instrument panel","interior light","internal combustion engine","jack","key","license plate","lights","lock","low-beam headlights","lug bolt","lug nut","manifold","manual transmission","mat","mirror","moon roof","motor","mud flap","muffler","navigation system","odometer","oil","oil filter","oil tank","parking brake","parking lights","passenger seat","pedal","piston","power brakes","power steering","power window switch","radiator","radio","rag top","rear-view mirror","rear window defroster","reverse light","rims","roof","roof rack","rotary engine","seat","seat belt","shift","shock absorber","side airbags","side mirror","spare tire","spark plug","speaker","speedometer","spoiler","starter","steering column","steering wheel","sunroof","sun visor","suspension","tachometer","tailgate","temperature gauge","thermometer","tire","trailer hitch","transmission","trim","trip computer","trunk","turbo charger","turn signal","undercarriage","unleaded gas","valve","vents","visor","warning light","wheel","wheel well","window","windshield","windshield wiper"]
+var teamnames = ["Plain Porter","Oyster Stout","Porterhouse Red","Hop Head"]
 
-
-function maketeamname(tnum,numteams){
-  var nI = tnum + (tnum * numteams * rand( Math.floor( names.length / numteams) )) 
-  return names[nI % names.length]
+function maketeamname(tnum){
+  return teamnames[tnum]
 }

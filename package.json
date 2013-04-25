@@ -20,14 +20,13 @@
   ],
   "author": "Richard Rodger",
   "license": "MIT",
-
   "dependencies": {
-    "express":    "*",
+    "express": "*",
     "underscore": "*",
-    "dispatch":   "*",
-    "ejs":        "*"
+    "dispatch": "*",
+    "ejs": "*",
+    "optimist": "~0.4.0"
   },
-
   "devDependencies": {
     "eyes": "*"
   }
