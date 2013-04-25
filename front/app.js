@@ -43,7 +43,10 @@ Ext.application({
 
   stores: ['Team','Leader'],
 
-  autoMaximize: true,
+
+  viewport: {
+    autoMaximize: true
+  },
 
   icon: {
     '57': 'resources/icons/Icon.png',
