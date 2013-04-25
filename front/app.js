@@ -39,9 +39,9 @@ Ext.application({
   ],
 
 
-  models: ['Member'],
+  models: ['Member','Leader'],
 
-  stores: ['Team'],
+  stores: ['Team','Leader'],
 
   icon: {
     '57': 'resources/icons/Icon.png',
@@ -124,6 +124,18 @@ var app = {
       suit:Math.floor(card/13),
       number:card % 13
     }
+  },
+
+  loadingIntervals: {},
+
+  stopLoading: function(kind) {
+    clearInterval(app.loadingIntervals[kind])
+  },
+
+  startLoading: function(kind,store) {
+    app.loadingIntervals[kind] = setInterval(function(){
+      store.load(function(){})
+    },10000)
   }
 
 }

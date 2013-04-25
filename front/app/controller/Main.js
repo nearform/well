@@ -59,8 +59,14 @@ Ext.define('well.controller.Main', {
   onTabChange: function(main,tab){
     console.log('C Main tab '+tab.id)
 
+    app.stopLoading('team')
+    app.stopLoading('leader')
+
     if( 'wellmain-tab-team' == tab.id ) {
       this.onTeam()
+    }
+    else if( 'wellmain-tab-leader' == tab.id ) {
+      this.onLeader()
     }
   },
 
@@ -71,6 +77,7 @@ Ext.define('well.controller.Main', {
     teamstore.load(function(){
       console.log('getteam')
     })
+    app.startLoading('team',teamstore)
   },
 
   onHome: function(home){
@@ -112,6 +119,17 @@ Ext.define('well.controller.Main', {
     })
 
   },
+
+
+  onLeader: function(){
+    console.log('on Leader')
+    var leaderstore = Ext.getStore('Leader')
+    leaderstore.load(function(){
+      console.log('leader')
+    })
+    app.startLoading('leader',leaderstore)
+  },
+
 
 
 });

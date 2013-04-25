@@ -41,6 +41,8 @@ Ext.define('well.controller.Connect', {
     var card = (app.suitindex[this.getNumber().config.data.suit] * 13) + app.numberindex[button.id]
     console.log('tapNumber card',card,other)
 
+    wrongCard = this.wrongCard
+
     var team = this.getTeam()
     Ext.Ajax.request({
       url: '/well/player/well/'+other+'/'+card,
@@ -62,13 +64,49 @@ Ext.define('well.controller.Connect', {
             console.log('Connect getteam')
           })
         }
+        else wrongCard(name)
+
       },
       failure: function (response) {
-        //Ext.fly('appLoadingIndicator').destroy();
+        wrongCard(name)
       }
     })
 
+  },
+
+
+
+
+  wrongCard: function(name) {
+    Ext.Msg.alert('Sorry!', "That's not the right card for "+name, Ext.emptyFn);
+
+/*
+    var popup = new Ext.Panel({
+      floating: true,
+      centered: true,
+      modal: true,
+      width: 300,
+      height: 400,
+      styleHtmlContent: true,
+      html: 'Hello! I\'m a PopUp',
+      dockedItems: [{
+        xtype: 'toolbar',
+        title: 'PopUp',
+        items: [{
+          xtype: 'spacer'
+        },{
+          text: 'Close',
+          handler: function(){
+            popup.hide();
+          }
+        }]
+      }]
+    });
+    popup.show()
+ */
   }
+
+
 
 });
 

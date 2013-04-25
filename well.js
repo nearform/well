@@ -27,15 +27,14 @@ module.exports = function( options, register ){
 
 
   seneca.add({role:name,cmd:'whoami'},   whoami)
+  seneca.add({role:name,cmd:'leader'},   leader)
+
   seneca.add({role:name,cmd:'members'},  members)
   seneca.add({role:name,cmd:'well'},     well)
   seneca.add({role:name,cmd:'member'},   member)
 
   seneca.add({role:name,cmd:'createevent'}, createevent)
   seneca.add({role:name,cmd:'joinevent'},   joinevent)
-  seneca.add({role:name,cmd:'getevent'},    getevent)
-  //seneca.add({role:name,cmd:'getteam'},     getteam)
-  //seneca.add({role:name,cmd:'getuser'},     getuser)
 
 
   seneca.add({role:'user',cmd:'register'},      function register(args,done){
@@ -72,7 +71,7 @@ module.exports = function( options, register ){
             .make$({
               num:index, 
               event:event.id, 
-              name:maketeamname(index,event.modulo), 
+              name:maketeamname(index,event.numteams), 
               wells:{},
               numwells:0,
               users:{}
@@ -168,49 +167,27 @@ module.exports = function( options, register ){
   }
 
 
+  function leader( args, done ){
+    var event   = args.event
 
-  function getevent( args, done ){
-    var event = args.event
-    eventent.load$({id:event.id},done)
-  }
+    teament.list$({event:event.id},function(err,list){
+      if( err ) return done(err);
 
+      console.dir(teams)
 
-/*
-  function getuser(args,done){
-    var eventid = args.event
+      var teams = []
 
-    var term = _.find(['id','nick','email','twid'],function(t){return !_.isUndefined(args[t])})
-
-    if( term ) {
-      var q = {}
-      q[term]=args[term]
-
-      userent.load$(q,function(err,user){
-        if( err ) return done(err);
-
-        if( user && eventid ) {
-          loadevent(eventid,function(err,event){
-            if( err ) return done(err);
-
-            var usermeta = event.users[user.nick]
-
-            if( usermeta ) {
-              teament.load$({num:usermeta.t,event:eventid},function(err,team){
-                if( err ) return done(err);
-
-                user.team = team
-                done(null,user)
-              })
-            }
-            else return done(null,user);
-          })
-        }
-        else return done(null,user);
+      _.each(list,function(team){
+        teams.push({
+          name:team.name,
+          score:team.numwells
+        })
       })
-    }
-    else seneca.fail("no suitable search term for user",done)
+
+      done(null,{teams:teams})
+    })    
   }
-*/
+
 
 
 
@@ -356,6 +333,7 @@ module.exports = function( options, register ){
       map:{
 
         whoami:{GET:setuserarg},
+        leader:{GET:setuserarg},
 
         members: { alias:'player/members/:team',     GET:  setuserarg  },
         well:    { alias:'player/well/:other/:card', POST: setuserarg },
@@ -391,7 +369,7 @@ function rand(bound) {
 var names = ["accelerator","airbag","air conditioner","air conditioning","air filter","air vent","alarm","all-wheel drive","alternator","antenna","anti-lock brakes","armrest","auto","automatic transmission","automobile","axle","baby car seat","baby seat","back-up lights","battery","bench seat","bonnet","brake light","brake pedal","brakes","bucket seat","bumper","camshaft","car","carburetor","catalytic converter","chassis","child car seat","chrome trim","clutch","computer","console","cooling system","crankshaft","cruise control","cylinder","dashboard","defroster","diesel engine","dip stick","differential","door","door handle","drive belt","drive shaft","driver's seat","emergency brake","emergency lights","emissions","engine","engine block","exhaust pipe","exhaust system","fan belt","fender","filter","floor mat","fog light","four-wheel drive","frame","fuel","fuel cap","fuel gauge","fuse","gas","gasket","gas pedal","gas gauge","gasoline","gas tank","gauge","gearbox","gear shift","gear stick","glove compartment","GPS","grille","hand brake","headlamp","headlight","headrest","heater","high-beam headlights","hood","horn","hubcap","hybrid","ignition","instrument panel","interior light","internal combustion engine","jack","key","license plate","lights","lock","low-beam headlights","lug bolt","lug nut","manifold","manual transmission","mat","mirror","moon roof","motor","mud flap","muffler","navigation system","odometer","oil","oil filter","oil tank","parking brake","parking lights","passenger seat","pedal","piston","power brakes","power steering","power window switch","radiator","radio","rag top","rear-view mirror","rear window defroster","reverse light","rims","roof","roof rack","rotary engine","seat","seat belt","shift","shock absorber","side airbags","side mirror","spare tire","spark plug","speaker","speedometer","spoiler","starter","steering column","steering wheel","sunroof","sun visor","suspension","tachometer","tailgate","temperature gauge","thermometer","tire","trailer hitch","transmission","trim","trip computer","trunk","turbo charger","turn signal","undercarriage","unleaded gas","valve","vents","visor","warning light","wheel","wheel well","window","windshield","windshield wiper"]
 
 
-function maketeamname(tnum,modulo){
-  var nI = (tnum * modulo) % names.length
-  return names[nI]
+function maketeamname(tnum,numteams){
+  var nI = tnum + (tnum * numteams * rand( Math.floor( names.length / numteams) )) 
+  return names[nI % names.length]
 }

@@ -3,6 +3,8 @@ Ext.define('well.view.Main', {
   xtype: 'wellmain',
   requires: [
     'well.view.Team',
+    'well.view.Leader',
+    'Ext.MessageBox',
   ],
   config: {
     tabBarPosition: 'bottom',
@@ -46,18 +48,8 @@ Ext.define('well.view.Main', {
       {
         id:'wellmain-tab-leader',
         title: 'Leaderboard',
-        iconCls: 'favorites',
-
-        styleHtmlContent: true,
-        scrollable: true,
-
-        items: {
-          docked: 'top',
-          xtype: 'titlebar',
-          title: 'Leaderboard'
-        },
-
-        html: 'leader'
+        iconCls: 'list',
+        xtype: 'wellleader',
       },
       {
         id:'wellmain-tab-help',
