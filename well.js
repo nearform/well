@@ -37,6 +37,11 @@ module.exports = function( options, register ){
   seneca.add({role:name,cmd:'joinevent'},   joinevent)
 
 
+  if( options.dev ) {
+    seneca.add({role:name,dev:'fakeusers'},   fakeusers)
+  }
+
+
   seneca.add({role:'user',cmd:'register'},      function register(args,done){
     this.parent(args,function(err,out){
       if( out.exists ) return done(err,out)
@@ -290,6 +295,19 @@ module.exports = function( options, register ){
 
 
 
+  function fakeusers( args, done ) {
+    var count = args.count || 11
+    var nickprefix = args.nickprefix || 'u'
+    var nameprefix = args.nameprefix || 'n'
+    var passprefix = args.passprefix || 'p'
+    for( var i = 0, j = 0; i < count; i++ ) {
+      this.act('role:user,cmd:register',{nick:nickprefix+i,name:nameprefix+i,password:passprefix+i}, function(err){
+        if( err ) return done(err);
+        if( ++j == count ) return done(null);
+      })
+    }
+  }
+
 
   function sanitizeuser( orig, opts ) {
     opts = opts || {}
@@ -327,6 +345,25 @@ module.exports = function( options, register ){
   }
   
 
+  function preware(req,res,next){
+    var fakeI
+    if( options.dev && 0 < (fakeI = req.url.indexOf('/fake/')) ) {
+      var nick = req.url.substring(fakeI+6)
+
+      // TODO: consolidate into role:auth,cmd:login,auto:true
+
+      seneca.act('role:user,cmd:login,auto:true,nick:'+nick,function(err,out){
+        if( err ) return next(err);
+
+        seneca.act('role:auth,cmd:login',{req$:req,res$:res,user:out.user,login:out.login},function(err){
+          if( err ) return next(err);
+
+          res.redirect('/#main')
+        })
+      })
+    }
+    else next()
+  }
 
 
   register(null,{
@@ -342,8 +379,8 @@ module.exports = function( options, register ){
         members: { alias:'player/members/:team',     GET:  setuserarg  },
         well:    { alias:'player/well/:other/:card', POST: setuserarg },
         member:  { alias:'player/member/:other',     GET:  setuserarg  },
-
-      }
+      },
+      preware:preware
     })
   })
 

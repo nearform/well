@@ -7,12 +7,14 @@ var seneca  = require('seneca')()
 
 
 
-seneca.use('mongo-store',config.mongo)
+//seneca.use('mongo-store',config.mongo)
 
 seneca.use('user')
 seneca.use('auth',config.auth)
-seneca.use('./well',{numteams:4})
+seneca.use('./well',{numteams:4,dev:true})
 
+
+seneca.act('role:well,dev:fakeusers')
 
 
 seneca.ready( function(err) {
