@@ -21,28 +21,16 @@ seneca.ready( function(err) {
   var w = seneca.pin({role:'well',cmd:'*'})
   w.createevent({name:'NodeJSDublin-Apr-2013'},function(out,event){
 
-    seneca.add({role:'well',cmd:'whoami'},function(args,done){
+    function injectevent( args, done ) {
       args.event = event
       this.parent(args,done)
-    })
+    }
 
-    seneca.add({role:'well',cmd:'well'},function(args,done){
-      args.event = event
-      this.parent(args,done)
-    })
-
-    seneca.add({role:'well',cmd:'member'},function(args,done){
-      args.event = event
-      this.parent(args,done)
-    })
-
-    seneca.add({role:'well',cmd:'leader'},function(args,done){
-      args.event = event
-      this.parent(args,done)
-    })
-
+    seneca.add({role:'well',cmd:'whoami'},injectevent)
+    seneca.add({role:'well',cmd:'well'},injectevent)
+    seneca.add({role:'well',cmd:'member'},injectevent)
+    seneca.add({role:'well',cmd:'leader'},injectevent)
   })
-
 
 
   var app = express()

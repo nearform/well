@@ -327,6 +327,8 @@ module.exports = function( options, register ){
   }
   
 
+
+
   register(null,{
     name:name,
     service:seneca.http({
