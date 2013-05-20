@@ -68,7 +68,7 @@ Ext.define('well.view.Main', {
               },
               {
                 xtype: 'button',
-                itemId: 'logOutButton',
+                id: 'wellmain-logout',
                 ui: 'action',
                 padding: '10px',
                 margin: '40px 10px 10px 10px',

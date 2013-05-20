@@ -20,7 +20,7 @@ Ext.define('well.controller.Main', {
       wellmember: {
         activate:'onMember'
       },
-      'wellmain button': { 
+      '#wellmain-logout': { 
         tap: 'tapLogout'
       }
     }
