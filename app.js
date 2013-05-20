@@ -27,10 +27,10 @@ seneca.ready( function(err) {
   app.use( function(req,res,next){
     var host = req.headers.host
     if( 'vilniusjs.nearform.com' == host ) {
-      res.redirect('http://well.nearform.com/well/vilniusjs')
+      res.redirect('http://well.nearform.com/well/vilniusjs-201305/')
     }
     else if( 'copenhagenjs.nearform.com' == host ) {
-      res.redirect('http://well.nearform.com/well/copenhagenjs')
+      res.redirect('http://well.nearform.com/well/copenhagenjs-201305/')
     }
     else next();
   })
