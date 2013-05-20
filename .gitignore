@@ -19,3 +19,7 @@ config.mine.js
 .sass-cache
 *~
 .DS_Store
+
+front/build
+front/archive
+db

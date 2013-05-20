@@ -33,8 +33,6 @@ Ext.define('well.controller.Connect', {
 
 
   tapSuit: function(button) {
-    console.log('tapSuit',button.id)
-
     this.getTeam().push({
       xtype: 'wellnumber',
       title: app.upperFirst(button.id),
@@ -48,13 +46,12 @@ Ext.define('well.controller.Connect', {
     var other = data.nick
     var name  = data.name
     var card  = (app.suitindex[this.getNumber().config.data.suit] * 13) + app.numberindex[button.id]
-    console.log('tapNumber card',card,other)
 
     wrongCard = this.wrongCard
 
     var team = this.getTeam()
     Ext.Ajax.request({
-      url: '/well/player/well/'+other+'/'+card,
+      url: '/well/'+app.event.code+'/player/well/'+other+'/'+card,
       method:'POST',
       success: function (response) {
         var resobj = Ext.JSON.decode(response.responseText);
@@ -69,9 +66,7 @@ Ext.define('well.controller.Connect', {
           })
 
           var teamstore = Ext.getStore('Team')
-          teamstore.load(function(){
-            console.log('Connect getteam')
-          })
+          teamstore.load(function(){})
         }
         else wrongCard(name)
 

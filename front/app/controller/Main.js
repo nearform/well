@@ -45,8 +45,6 @@ Ext.define('well.controller.Main', {
   },
 
   onTabChange: function(main,tab){
-    console.log('C Main tab '+tab.id)
-
     app.stopLoading('team')
     app.stopLoading('leader')
 
@@ -59,12 +57,9 @@ Ext.define('well.controller.Main', {
   },
 
   onTeam: function(){
-    console.log('on Team')
     var teamstore = Ext.getStore('Team')
-    teamstore.getProxy().setUrl('/well/player/members/'+app.team.id)
-    teamstore.load(function(){
-      console.log(teamstore)
-    })
+    teamstore.getProxy().setUrl('/well/'+app.event.code+'/player/members/'+app.team.id)
+    teamstore.load(function(){})
     app.startLoading('team',teamstore)
   },
 
@@ -90,13 +85,10 @@ Ext.define('well.controller.Main', {
     var other = member.config.data.nick
 
     Ext.Ajax.request({
-      url: '/well/player/member/'+other,
+      url: '/well/'+app.event.code+'/player/member/'+other,
       success: function (response) {
         var resobj = Ext.JSON.decode(response.responseText);
         member.child('#wellmember-user').setData(resobj)
-      },
-      failure: function (response) {
-        //Ext.fly('appLoadingIndicator').destroy();
       }
     })
 
@@ -104,11 +96,9 @@ Ext.define('well.controller.Main', {
 
 
   onLeader: function(){
-    console.log('on Leader')
     var leaderstore = Ext.getStore('Leader')
-    leaderstore.load(function(){
-      console.log('leader')
-    })
+    leaderstore.getProxy().setUrl('/well/'+app.event.code+'/leader')
+    leaderstore.load(function(){})
     app.startLoading('leader',leaderstore)
   },
 

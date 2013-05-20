@@ -12,7 +12,7 @@ module.exports = function( options, register ){
 
   options = seneca.util.deepextend({
     numcards: 52,
-    numteams: 5,
+    numteams: 4,
   },options)
 
 
@@ -38,11 +38,13 @@ module.exports = function( options, register ){
 
 
   if( options.dev ) {
-    seneca.add({role:name,dev:'fakeusers'},   fakeusers)
+    seneca.add( {role:name,dev:'fakeusers'},  fakeusers)
+    seneca.add( {role:name,dev:'fakeevents'}, fakeevents)
   }
 
 
-  seneca.add({role:'user',cmd:'register'},      function register(args,done){
+
+  seneca.add({role:'user',cmd:'register'}, function register(args,done){
     this.parent(args,function(err,out){
       if( out.exists ) return done(err,out)
       var user = out.user
@@ -52,8 +54,7 @@ module.exports = function( options, register ){
         done(err,out)
       })
     })
-  }
-)
+  })
 
 
 
@@ -65,8 +66,8 @@ module.exports = function( options, register ){
       }
       else {
         event = eventent.make$(_.extend({
-          numcards: options.numcards,
-          numteams: options.numteams,
+          numcards: args.numcards || options.numcards,
+          numteams: args.numteams || options.numteams,
           name:     args.name,
           modulo:   rand(9),
           users:    {}
@@ -133,7 +134,6 @@ module.exports = function( options, register ){
           team.users[user.nick]={card:card,name:user.name,avatar:avatar}
           team.save$(function(err){
             var out = {card:card,user:user,team:team,event:event}
-            //console.dir(out)
             done(err,out)
           })
         })
@@ -145,7 +145,6 @@ module.exports = function( options, register ){
 
 
   function members( args, done ){
-    //var event = args.event
     var team  = args.team
     var user  = args.user
 
@@ -153,7 +152,6 @@ module.exports = function( options, register ){
     _.each(team.users,function(teamuser,nick){
       var connected = team.wells[nick] ? team.wells[nick][user.nick] ? true : false : false
       var out = {nick:nick,name:teamuser.name,well:connected,avatar:teamuser.avatar||false}
-      console.log(out)
 
       if( nick != user.nick ) {
         members.push( out )
@@ -193,8 +191,6 @@ module.exports = function( options, register ){
     teament.list$({event:event.id},function(err,list){
       if( err ) return done(err);
 
-      console.dir(teams)
-
       var teams = []
 
       _.each(list,function(team){
@@ -228,19 +224,27 @@ module.exports = function( options, register ){
     }
     else done(null,{})
 
-    function finish(err,out) {
+    function finish(err,data) {
       if(err) return done(err);
 
-      var user = out.user
+      var user = data.user
 
-      //console.dir(user)
-      out.card   = event.users[user.nick].c
-      out.avatar = user.service ? user.service.twitter.userdata._json.profile_image_url : false 
+      data.card   = event.users[user.nick].c
+      data.avatar = user.service ? user.service.twitter.userdata._json.profile_image_url : false 
 
-      console.log(out.card+' '+out.avatar)
+      seneca.act('role:user, cmd:clean',{user:user},function(err,user){
+        
+        var out = {
+          card:data.card,
+          avatar:data.avatar,
+          user:user,
+          team:data.team.data$(),
+          event:data.event.data$()
+        }
 
-      seneca.act('role:user, cmd:clean',{user:out.user},function(err,user){
-        out.user = user
+        delete out.team.users
+        delete out.event.users
+
         done(null,out)
       })
     }
@@ -262,8 +266,6 @@ module.exports = function( options, register ){
 
       if( !team ) return seneca.fail('unkown team '+usermeta.t+' for user '+user.nick+' at event '+event.id,done)
 
-      console.dir(team)
-      
       var otherusermeta = event.users[other]
       if( !otherusermeta ) return seneca.fail('unkown user '+other+' at event '+event.id,done)
 
@@ -282,8 +284,6 @@ module.exports = function( options, register ){
           team.save$(function(err,team){
             if( err ) return done(err);
 
-            console.dir(team)
-
             done(null,{team:team})
           })
         }
@@ -296,7 +296,7 @@ module.exports = function( options, register ){
 
 
   function fakeusers( args, done ) {
-    var count = args.count || 11
+    var count = args.count || 16
     var nickprefix = args.nickprefix || 'u'
     var nameprefix = args.nameprefix || 'n'
     var passprefix = args.passprefix || 'p'
@@ -309,6 +309,23 @@ module.exports = function( options, register ){
   }
 
 
+  function fakeevents( args, done ) {
+    var seneca = this
+    var names = _.keys(args.events)
+    var count = names.length
+    for( var i = 0; i < count; i++ ) {
+      var name = names[i]
+      var event = args.events[name]
+      event.name = name
+      seneca.act('role:well,cmd:createevent',event,function(err,event){
+        if( err ) return done(err);
+        if( i+1 == count ) return done(null);
+      })
+    }
+  }
+
+
+/*
   function sanitizeuser( orig, opts ) {
     opts = opts || {}
     orig = orig || {}
@@ -323,7 +340,7 @@ module.exports = function( options, register ){
     }
     return out
   }
-
+*/
 
 
   this.act({
@@ -339,51 +356,88 @@ module.exports = function( options, register ){
 
 
 
-  function setuserarg(req,res,args,act,respond) {
-    args.user = req.seneca.user
-    act(args,respond)
-  }
   
 
   function preware(req,res,next){
+    var seneca = this
+
     var fakeI
-    if( options.dev && 0 < (fakeI = req.url.indexOf('/fake/')) ) {
-      var nick = req.url.substring(fakeI+6)
+    if( options.dev ) {
+      var m = /^\/fake\/(.*?)\/(.*?)$/.exec(req.url)
+      if( m ) { 
+        var nick  = m[1]
+        var event = m[2]
 
-      // TODO: consolidate into role:auth,cmd:login,auto:true
-
-      seneca.act('role:user,cmd:login,auto:true,nick:'+nick,function(err,out){
-        if( err ) return next(err);
-
-        seneca.act('role:auth,cmd:login',{req$:req,res$:res,user:out.user,login:out.login},function(err){
+        seneca.act('role:auth,cmd:login,auto:true,nick:'+nick,function(err,out){
           if( err ) return next(err);
 
-          res.redirect('/#main')
+          res.redirect('/well/'+event+'/#main')
         })
-      })
+      }
+      else next();
     }
-    else next()
+    else next();
   }
 
 
-  register(null,{
-    name:name,
-    service:seneca.http({
-      prefix:'/well/',
-      pin:{role:name,cmd:'*'},
-      map:{
+  function postware(req,res,next){
+    var m = /^\/well\/[^\/]+\/?(.*)?/.exec(req.url)
+    req.url = m ? '/'+(m[1]||'') : req.url
 
-        whoami:{GET:setuserarg},
-        leader:{GET:setuserarg},
+    next()
+  }
 
-        members: { alias:'player/members/:team',     GET:  setuserarg  },
-        well:    { alias:'player/well/:other/:card', POST: setuserarg },
-        member:  { alias:'player/member/:other',     GET:  setuserarg  },
-      },
-      preware:preware
+
+  if( options.dev ) {
+    seneca.act('role:well,dev:fakeusers',options.dev_setup.users,function(err){
+      if( err ) return register(err)
+
+      seneca.act('role:well,dev:fakeevents',{events:options.dev_setup.events},function(err){
+        if( err ) return register(err)
+
+        do_register()
+      })
     })
-  })
+  }
+  else return do_register();
 
+
+
+  function setcontext(req,res,args,act,respond) {
+    console.dir(req.params)
+    eventent.load$({code:req.params.event},function(err,event){
+      if( err ) return respond(err);
+      if( !event ) return res.send(404); 
+
+      args.event = event
+      args.user = req.seneca.user
+      act(args,respond)
+    })
+  }
+
+
+  function do_register() {
+    register(null,{
+      name:name,
+      service:seneca.http({
+        prefix:'/well/:event/',
+        pin:{role:name,cmd:'*'},
+
+        preware:preware,
+
+        map:{
+          whoami:{GET:setcontext},
+          leader:{GET:setcontext},
+
+          members: { alias:'player/members/:team',     GET:  setcontext  },
+          well:    { alias:'player/well/:other/:card', POST: setcontext },
+          member:  { alias:'player/member/:other',     GET:  setcontext  },
+        },
+
+        postware:postware,
+      })
+    })
+  }
 }
 
 
@@ -395,7 +449,7 @@ function rand(bound) {
 }
 
 
-var teamnames = ["Plain Porter","Oyster Stout","Porterhouse Red","Hop Head"]
+var teamnames = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet']
 
 function maketeamname(tnum){
   return teamnames[tnum]

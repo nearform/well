@@ -1,38 +1,24 @@
 "use strict";
 
-var config  = require('./config.mine.js')
+var dev = '--dev' == process.argv[2]
+
 
 var express = require('express')
 var seneca  = require('seneca')()
 
+seneca.use('config',{object:require('./config.mine.js')})
 
-
-//seneca.use('mongo-store',config.mongo)
+if( !dev ) {
+  seneca.use('mongo-store',config.mongo)
+}
 
 seneca.use('user')
-seneca.use('auth',config.auth)
-seneca.use('./well',{numteams:4,dev:true})
-
-
-seneca.act('role:well,dev:fakeusers')
+seneca.use('auth')
+seneca.use('well',{dev:dev})
 
 
 seneca.ready( function(err) {
   if( err ) return console.log(err);
-
-  var w = seneca.pin({role:'well',cmd:'*'})
-  w.createevent({name:'NodeJSDublin-Apr-2013'},function(out,event){
-
-    function injectevent( args, done ) {
-      args.event = event
-      this.parent(args,done)
-    }
-
-    seneca.add({role:'well',cmd:'whoami'},injectevent)
-    seneca.add({role:'well',cmd:'well'},injectevent)
-    seneca.add({role:'well',cmd:'member'},injectevent)
-    seneca.add({role:'well',cmd:'leader'},injectevent)
-  })
 
 
   var app = express()
@@ -42,14 +28,15 @@ seneca.ready( function(err) {
   app.use( express.bodyParser() )
   app.use( express.methodOverride() )
   app.use( express.json() )
-  app.use( express.session({ secret: 'nodejsdublin' }) )
+  app.use( express.session({ secret: 'waterford' }) )
 
   app.use( seneca.service() )
 
-  app.use( express.static(__dirname+config.sencha.public) )  
+  seneca.act('role:config,cmd:get,base:main', function(err,main){
+    app.use( express.static(__dirname+main.public) )  
 
-  app.listen(3333)
-
+    app.listen( main.port )
+  })
 })
 
 

@@ -9,7 +9,6 @@ Ext.define('well.store.Leader', {
     }],
     proxy: {
       type: 'ajax',
-      url : '/well/leader',
       reader: {
         type: 'json',
         rootProperty: 'teams'

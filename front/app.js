@@ -67,11 +67,8 @@ Ext.application({
   },
 
   launch: function() {
-    console.log('LAUNCH')
-
     Ext.Viewport.add([
       { xtype: 'welllogin' },
-      //      { xtype: 'wellmain' }
     ])
 
 
