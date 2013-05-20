@@ -19,7 +19,6 @@ Ext.define('well.view.Team', {
         store:'Team',
 
         itemTpl: [
-          //'{[JSON.stringify(values)]}',
           '<img src="{[values.avatar?values.avatar:"/resources/icons/user.png"]}"',
           '  style="width:40;height:40;float:left;margin-right:5px;border:1px solid #ccc""></img>',
           '<b style="font-size:1.5em">{name}</b>&nbsp;&nbsp;',
@@ -31,8 +30,10 @@ Ext.define('well.view.Team', {
     ]
   },
 
+/*
   onShow: function() {
     console.log('Team show')
   }
+*/
 
-});
+})

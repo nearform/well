@@ -26,6 +26,7 @@ module.exports = function( options, register ){
   var eventent = seneca.make('event')
 
 
+
   seneca.add({role:name,cmd:'whoami'},   whoami)
   seneca.add({role:name,cmd:'leader'},   leader)
 
@@ -69,7 +70,6 @@ module.exports = function( options, register ){
           numcards: args.numcards || options.numcards,
           numteams: args.numteams || options.numteams,
           name:     args.name,
-          modulo:   rand(9),
           users:    {}
         },_.omit(args,['role','cmd'])))
 
@@ -222,7 +222,11 @@ module.exports = function( options, register ){
         })
       }
     }
-    else done(null,{})
+    else done(null,{
+      event:{
+        name:event.name
+      }
+    })
 
     function finish(err,data) {
       if(err) return done(err);
@@ -325,22 +329,6 @@ module.exports = function( options, register ){
   }
 
 
-/*
-  function sanitizeuser( orig, opts ) {
-    opts = opts || {}
-    orig = orig || {}
-    var out = {
-      nick:orig.nick,
-      team:orig.team,
-      name:orig.name,
-
-      card:opts.private?orig.card:undefined,
-      email:opts.private?orig.email:undefined,
-      events:opts.private?orig.events:undefined,
-    }
-    return out
-  }
-*/
 
 
   this.act({
@@ -404,7 +392,6 @@ module.exports = function( options, register ){
 
 
   function setcontext(req,res,args,act,respond) {
-    console.dir(req.params)
     eventent.load$({code:req.params.event},function(err,event){
       if( err ) return respond(err);
       if( !event ) return res.send(404); 
@@ -422,18 +409,18 @@ module.exports = function( options, register ){
       service:seneca.http({
         prefix:'/well/:event/',
         pin:{role:name,cmd:'*'},
-
+        
         preware:preware,
-
+        
         map:{
           whoami:{GET:setcontext},
           leader:{GET:setcontext},
-
+          
           members: { alias:'player/members/:team',     GET:  setcontext  },
           well:    { alias:'player/well/:other/:card', POST: setcontext },
           member:  { alias:'player/member/:other',     GET:  setcontext  },
         },
-
+        
         postware:postware,
       })
     })

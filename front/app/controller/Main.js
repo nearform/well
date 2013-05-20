@@ -9,7 +9,7 @@ Ext.define('well.controller.Main', {
     },
     control: {
       'wellmain': {
-        activeitemchange:'onTabChange'
+        activeitemchange:'onTabChange',
       },
       '#wellteamlist': {
         select: 'showDetail',
@@ -20,7 +20,9 @@ Ext.define('well.controller.Main', {
       wellmember: {
         activate:'onMember'
       },
-
+      'wellmain button': { 
+        tap: 'tapLogout'
+      }
     }
   },
 
@@ -103,5 +105,7 @@ Ext.define('well.controller.Main', {
   },
 
 
-
+  tapLogout: function() {
+    window.location.href = '/auth/logout?prefix=/well/'+app.eventcode+'/&urlhost='+location.host
+  }
 });

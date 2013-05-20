@@ -66,6 +66,15 @@ Ext.define('well.view.Main', {
                 ],
                 style:'font-size:1.5em;margin:20px'
               },
+              {
+                xtype: 'button',
+                itemId: 'logOutButton',
+                ui: 'action',
+                padding: '10px',
+                margin: '40px 10px 10px 10px',
+                text: 'Logout'
+              },
+
             ]
           }
         ]

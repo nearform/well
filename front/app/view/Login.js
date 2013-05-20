@@ -15,27 +15,38 @@ Ext.define('well.view.Login', {
       {
         xtype:'panel',
         html:[
-          'Well!'
+          'Well!'          
         ],
-        style:'font-size:2em;margin:30px'
+        style:'font-size:2em;margin:20px'
+      },
+      {
+        id:'welllogin-event',
+        xtype:'label',
+        tpl:[
+          'Welcome to {event}'          
+        ],
+        style:'font-size:1em;margin:10px',
+        hidden:true
       },
  
       {
         xtype: 'button',
-        itemId: 'logInButton',
         ui: 'action',
         padding: '10px',
         margin: '10px',
-        text: 'Login with Twitter'
+        text: 'Login with Twitter',
+        hidden:true
       },
 
       {
+        id:'welllogin-intro',
         xtype:'panel',
         html:[
-          "<p>Once you login, you'll be assigned to a randomly chosen team.</p>",
-          "<p>Connect your fellow team members to win the game!</p>"
+          "<p>Once you login, you'll be assigned a randomly chosen team.</p>",
+          "<p>Connect with your fellow team members to win the game!</p>"
         ].join(''),
-        style:'margin:30px'
+        style:'margin:30px',
+        hidden:true
       },
  
 
