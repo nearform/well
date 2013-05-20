@@ -23,6 +23,19 @@ seneca.ready( function(err) {
 
   var app = express()
 
+
+  app.use( function(req,res,next){
+    var host = req.headers.host
+    if( 'vilniusjs.nearform.com' == host ) {
+      res.redirect('http://well.nearform.com/well/vilniusjs')
+    }
+    else if( 'copenhagenjs.nearform.com' == host ) {
+      res.redirect('http://well.nearform.com/well/copenhagenjs')
+    }
+    else next();
+  })
+
+
   app.use( express.cookieParser() )
   app.use( express.query() )
   app.use( express.bodyParser() )
