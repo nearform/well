@@ -18,7 +18,7 @@ Ext.define('well.controller.Login', {
   },
 
   tapLogin: function(button) {
-    var authurl = '/auth/twitter?context='+app.eventcode+'&prefix=/well/'+app.eventcode+'/&urlhost='+location.host
+    var authurl = '/auth/twitter?context='+app.eventcode+'&prefix=/well/'+app.eventcode
     window.location.href = authurl
   },
 

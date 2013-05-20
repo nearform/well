@@ -106,6 +106,6 @@ Ext.define('well.controller.Main', {
 
 
   tapLogout: function() {
-    window.location.href = '/auth/logout?prefix=/well/'+app.eventcode+'/&urlhost='+location.host
+    window.location.href = '/auth/logout?prefix=/well/'+app.eventcode
   }
 });
