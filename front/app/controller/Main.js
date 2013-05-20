@@ -73,6 +73,7 @@ Ext.define('well.controller.Main', {
       avatar:app.avatar
     })
     home.down('#wellhome-team').setData({
+      event:app.event.name,
       team:app.team.name,
     })
 

@@ -51,10 +51,11 @@ Ext.define('well.view.Main', {
                 xtype:'label',
                 tpl:[
                   '<div style="text-align:center">',
+                  '{event}<br><br>',
                   '<small>Your Team:</small><br><i>{team}</i>',
                   '</div>'
                 ],
-                style:'font-size:1.5em;margin:20px'
+                style:'font-size:1.5em;margin:10px'
               },
               {
                 id:'wellhome-card',
@@ -64,7 +65,7 @@ Ext.define('well.view.Main', {
                   'Your Card: <br><div style="font-size:2em">{card}</div>',
                   '</div>'
                 ],
-                style:'font-size:1.5em;margin:20px'
+                style:'font-size:1.5em;margin:10px'
               },
               {
                 xtype: 'button',
