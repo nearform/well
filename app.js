@@ -9,7 +9,7 @@ var seneca  = require('seneca')()
 seneca.use('config',{object:require('./config.mine.js')})
 
 if( !dev ) {
-  seneca.use('mongo-store',config.mongo)
+  seneca.use('mongo-store')
 }
 
 seneca.use('user')
@@ -34,6 +34,19 @@ seneca.ready( function(err) {
     }
     else next();
   })
+
+
+  if( dev ) {
+    seneca.act('role:config,cmd:get,base:well', function(err,well){
+      seneca.act('role:well,dev:fakeusers',well.dev_setup.users,function(err){
+        if( err ) return register(err)
+
+        seneca.act('role:well,dev:fakeevents',{events:well.dev_setup.events},function(err){
+          if( err ) return register(err)
+        })
+      })
+    })
+  }
 
 
   app.use( express.cookieParser() )

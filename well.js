@@ -300,6 +300,8 @@ module.exports = function( options, register ){
 
 
   function fakeusers( args, done ) {
+    if( !args.count ) return done();
+
     var count = args.count || 16
     var nickprefix = args.nickprefix || 'u'
     var nameprefix = args.nameprefix || 'n'
@@ -307,7 +309,7 @@ module.exports = function( options, register ){
     for( var i = 0, j = 0; i < count; i++ ) {
       this.act('role:user,cmd:register',{nick:nickprefix+i,name:nameprefix+i,password:passprefix+i}, function(err){
         if( err ) return done(err);
-        if( ++j == count ) return done(null);
+        if( ++j == count ) return done();
       })
     }
   }
@@ -376,20 +378,6 @@ module.exports = function( options, register ){
   }
 
 
-  if( options.dev ) {
-    seneca.act('role:well,dev:fakeusers',options.dev_setup.users,function(err){
-      if( err ) return register(err)
-
-      seneca.act('role:well,dev:fakeevents',{events:options.dev_setup.events},function(err){
-        if( err ) return register(err)
-
-        do_register()
-      })
-    })
-  }
-  else return do_register();
-
-
 
   function setcontext(req,res,args,act,respond) {
     eventent.load$({code:req.params.event},function(err,event){
@@ -403,28 +391,27 @@ module.exports = function( options, register ){
   }
 
 
-  function do_register() {
-    register(null,{
-      name:name,
-      service:seneca.http({
-        prefix:'/well/:event/',
-        pin:{role:name,cmd:'*'},
+  register(null,{
+    name:name,
+    service:seneca.http({
+      prefix:'/well/:event/',
+      pin:{role:name,cmd:'*'},
+      
+      preware:preware,
+      
+      map:{
+        whoami:{GET:setcontext},
+        leader:{GET:setcontext},
         
-        preware:preware,
-        
-        map:{
-          whoami:{GET:setcontext},
-          leader:{GET:setcontext},
-          
-          members: { alias:'player/members/:team',     GET:  setcontext  },
-          well:    { alias:'player/well/:other/:card', POST: setcontext },
-          member:  { alias:'player/member/:other',     GET:  setcontext  },
-        },
-        
-        postware:postware,
-      })
+        members: { alias:'player/members/:team',     GET:  setcontext  },
+        well:    { alias:'player/well/:other/:card', POST: setcontext },
+        member:  { alias:'player/member/:other',     GET:  setcontext  },
+      },
+      
+      postware:postware,
     })
-  }
+  })
+
 }
 
 
