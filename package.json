@@ -25,7 +25,11 @@
     "underscore": "*",
     "dispatch": "*",
     "ejs": "*",
-    "optimist": "~0.4.0"
+    "optimist": "*",
+    "seneca": "*",
+    "seneca-user": "*",
+    "seneca-auth": "*",
+    "seneca-mongo-store": "*"
   },
   "devDependencies": {
     "eyes": "*"
