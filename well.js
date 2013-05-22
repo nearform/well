@@ -70,6 +70,7 @@ module.exports = function( options, register ){
           numcards: args.numcards || options.numcards,
           numteams: args.numteams || options.numteams,
           name:     args.name,
+          code:     args.code,
           users:    {}
         },_.omit(args,['role','cmd'])))
 

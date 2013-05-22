@@ -125,6 +125,7 @@ Ext.application({
     },
 
     app.startLoading = function(kind,store) {
+      return
       app.loadingIntervals[kind] = setInterval(function(){
         store.load(function(){})
       },10000)

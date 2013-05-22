@@ -19,7 +19,7 @@ Ext.define('well.view.Team', {
         store:'Team',
 
         itemTpl: [
-          '<img src="{[values.avatar?values.avatar:"/resources/icons/user.png"]}"',
+          '<img src="{["false"!=values.avatar?values.avatar:"/resources/icons/user.png"]}"',
           '  style="width:40;height:40;float:left;margin-right:5px;border:1px solid #ccc""></img>',
           '<b style="font-size:1.5em">{name}</b>&nbsp;&nbsp;',
           '<img src="/resources/icons/{["false"==values.well?"help_black.png":"favorites_circle.png"]}" width="20" height="20"></img>',
