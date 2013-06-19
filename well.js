@@ -61,9 +61,7 @@ module.exports = function( options, register ){
 
 
   function init( args, done ) {
-    seneca.act('role:options,cmd:get,base:well', function(err,conf){
-      seneca.act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:conf.admin.pass,admin:true},done)
-    })
+    seneca.act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:options.admin.pass,admin:true},done)
   }
 
 
@@ -399,6 +397,11 @@ module.exports = function( options, register ){
       act(args,respond)
     })
   }
+
+
+  seneca.add({init:name},function(args,done){
+    this.act('role:util, cmd:define_sys_entity', {list:['-/-/team','-/-/event']},done)
+  })
 
 
   register(null,{
