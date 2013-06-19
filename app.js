@@ -13,21 +13,30 @@ var express = require('express')
 // load the seneca module and create a new instance
 var seneca  = require('seneca')()
 
-// register the seneca config plugin, and load the config from a local file
-seneca.use('config',{object:require('./config.mine.js')})
-
+// register the seneca options plugin, and load the options from a local file
+var options = seneca.use('options','options.mine.js')
 
 // if not developing, use a mongo database
 if( !dev ) {
   seneca.use('mongo-store')
 }
+else {
+  seneca.use('mem-store',{web:{dump:true}})
+}
 
 
-// register the user plugin - this provides user account business logic
+// register the seneca-user plugin - this provides user account business logic
 seneca.use('user')
 
-// register the auth plugin - this provides authentication business logic
+// register the seneca-auth plugin - this provides authentication business logic
 seneca.use('auth')
+
+// register the seneca-perm plugin - this provides permission checking
+seneca.use('perm',{entity:[{}]})
+
+
+// register the seneca-data-editor plugin - this provides a user interface for data admin
+seneca.use('data-editor')
 
 
 // register yur own plugin - the well app business logic!
@@ -35,10 +44,10 @@ seneca.use('auth')
 seneca.use('well',{dev:dev})
 
 
+
 // wait for all the seneca plugins to initialize
 seneca.ready( function(err) {
   if( err ) return console.log(err);
-
 
   // create an express app
   var app = express()
@@ -46,17 +55,14 @@ seneca.ready( function(err) {
   
   // set up fake users and events for development testing
   if( dev ) {
-    seneca.act('role:config,cmd:get,base:well', function(err,well){
-      seneca.act('role:well,dev:fakeusers',well.dev_setup.users,function(err){
-        if( err ) return register(err)
+    seneca.act('role:well,dev:fakeusers',options.well.dev_setup.users,function(err){
+      if( err ) return register(err)
 
-        seneca.act('role:well,dev:fakeevents',{events:well.dev_setup.events},function(err){
-          if( err ) return register(err)
-        })
+      seneca.act('role:well,dev:fakeevents',{events:options.well.dev_setup.events},function(err){
+        if( err ) return register(err)
       })
     })
   }
-
 
   // setup express
   app.use( express.cookieParser() )
@@ -70,12 +76,10 @@ seneca.ready( function(err) {
   app.use( seneca.service() )
 
   // serve static files from a config defined folder
-  seneca.act('role:config,cmd:get,base:main', function(err,main){
-    app.use( express.static(__dirname+main.public) )  
+  app.use( express.static(__dirname+options.main.public) )  
 
-    // start listening for HTTP requests
-    app.listen( main.port )
-  })
+  // start listening for HTTP requests
+  app.listen( options.main.port )
 })
 
 

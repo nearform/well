@@ -26,9 +26,10 @@ module.exports = function( options, register ){
   var eventent = seneca.make('event')
 
 
+  seneca.add({init:name}, init)
 
-  seneca.add({role:name,cmd:'whoami'},   whoami)
-  seneca.add({role:name,cmd:'leader'},   leader)
+  seneca.add({role:name,cmd:'whoami'}, whoami)
+  seneca.add({role:name,cmd:'leader'}, leader)
 
   seneca.add({role:name,cmd:'members'},  members)
   seneca.add({role:name,cmd:'well'},     well)
@@ -56,6 +57,14 @@ module.exports = function( options, register ){
       })
     })
   })
+
+
+
+  function init( args, done ) {
+    seneca.act('role:options,cmd:get,base:well', function(err,conf){
+      seneca.act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:conf.admin.pass,admin:true},done)
+    })
+  }
 
 
 
