@@ -29,7 +29,8 @@
     "seneca": "*",
     "seneca-user": "*",
     "seneca-auth": "*",
-    "seneca-mongo-store": "*"
+    "seneca-mongo-store": "*",
+    "async": "~0.2.9"
   },
   "devDependencies": {
     "eyes": "*"

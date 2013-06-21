@@ -1,9 +1,8 @@
 "use strict";
 
 
-// use the optimist module for command line parsing
-var argv = require('optimist').argv
-var dev = argv.dev
+// get environment tag (=dev|prod) from environment variable
+var env = process.env['NODE_ENV']
 
 
 // load the express module
@@ -17,11 +16,13 @@ var seneca  = require('seneca')()
 var options = seneca.use('options','options.mine.js')
 
 // if not developing, use a mongo database
-if( !dev ) {
-  seneca.use('mongo-store')
+if( 'dev' == env ) {
+  // use throw-away in-process database
+  // also enable http://localhost:3333/mem-store/dump so you can debug db contents
+  seneca.use('mem-store',{web:{dump:true}})
 }
 else {
-  seneca.use('mem-store',{web:{dump:true}})
+  seneca.use('mongo-store')
 }
 
 
@@ -41,7 +42,7 @@ seneca.use('data-editor')
 
 // register yur own plugin - the well app business logic!
 // in the options, indicate if you're in development mode
-seneca.use('well',{dev:dev})
+seneca.use('well',{env:env})
 
 
 
@@ -52,9 +53,9 @@ seneca.ready( function(err) {
   // create an express app
   var app = express()
 
-  
+  /*
   // set up fake users and events for development testing
-  if( dev ) {
+  if( 'dev' == env ) {
     seneca.act('role:well,dev:fakeusers',options.well.dev_setup.users,function(err){
       if( err ) return register(err)
 
@@ -63,6 +64,7 @@ seneca.ready( function(err) {
       })
     })
   }
+*/
 
   // setup express
   app.use( express.cookieParser() )

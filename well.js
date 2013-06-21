@@ -1,12 +1,12 @@
 "use strict";
 
-var _ = require('underscore')
+var _     = require('underscore')
+var async = require('async')
 
 
 
 
-
-module.exports = function( options, register ){
+module.exports = function( options ) { 
   var seneca = this
   var name = 'well'
 
@@ -17,11 +17,6 @@ module.exports = function( options, register ){
 
 
   var userent
-  seneca.act('role:user, cmd:entity, kind:user',function(err, user){
-    if( err ) return register(err);
-    userent = user
-  })
-
   var teament  = seneca.make('team')
   var eventent = seneca.make('event')
 
@@ -39,7 +34,7 @@ module.exports = function( options, register ){
   seneca.add({role:name,cmd:'joinevent'},   joinevent)
 
 
-  if( options.dev ) {
+  if( 'dev' == options.env ) {
     seneca.add( {role:name,dev:'fakeusers'},  fakeusers)
     seneca.add( {role:name,dev:'fakeevents'}, fakeevents)
   }
@@ -60,8 +55,25 @@ module.exports = function( options, register ){
 
 
 
+
   function init( args, done ) {
-    seneca.act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:options.admin.pass,admin:true},done)
+    async.series([
+      function(next){
+        seneca.act('role:user, cmd:entity, kind:user',function(err, user){
+          if( err ) return next(err);
+          userent = user
+          next()
+        })
+      },
+
+      seneca.next_act('role:util, cmd:define_sys_entity', {list:['-/-/team','-/-/event']}),
+      seneca.next_act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:options.admin.pass,admin:true}),
+
+      // set up fake users and events for development testing
+      seneca.next_act(_.extend({role:'well',dev:'fakeusers',default$:{},users:options.dev_setup.users})),
+      seneca.next_act(_.extend({role:'well',dev:'fakeevents',default$:{},events:options.dev_setup.events})),
+
+    ], done)
   }
 
 
@@ -308,12 +320,15 @@ module.exports = function( options, register ){
 
 
   function fakeusers( args, done ) {
-    if( !args.count ) return done();
+    var users = args.users
 
-    var count = args.count || 16
-    var nickprefix = args.nickprefix || 'u'
-    var nameprefix = args.nameprefix || 'n'
-    var passprefix = args.passprefix || 'p'
+    if( users ) return done();
+    if( 0 === users.count ) return done();
+
+    var count = users.count || 16
+    var nickprefix = users.nickprefix || 'u'
+    var nameprefix = users.nameprefix || 'n'
+    var passprefix = users.passprefix || 'p'
     for( var i = 0, j = 0; i < count; i++ ) {
       this.act('role:user,cmd:register',{nick:nickprefix+i,name:nameprefix+i,password:passprefix+i}, function(err){
         if( err ) return done(err);
@@ -360,7 +375,7 @@ module.exports = function( options, register ){
     var seneca = this
 
     var fakeI
-    if( options.dev ) {
+    if( 'dev' == options.env ) {
       var m = /^\/fake\/(.*?)\/(.*?)$/.exec(req.url)
       if( m ) { 
         var nick  = m[1]
@@ -399,12 +414,9 @@ module.exports = function( options, register ){
   }
 
 
-  seneca.add({init:name},function(args,done){
-    this.act('role:util, cmd:define_sys_entity', {list:['-/-/team','-/-/event']},done)
-  })
 
 
-  register(null,{
+  return {
     name:name,
     service:seneca.http({
       prefix:'/well/:event/',
@@ -423,7 +435,7 @@ module.exports = function( options, register ){
       
       postware:postware,
     })
-  })
+  }
 
 }
 
