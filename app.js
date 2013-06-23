@@ -115,8 +115,7 @@ seneca.ready( function(err) {
 
   // you can't use a single node in-memory session store if you want to scale
   // well.js defines a session store that uses seneca entities
-  app.use( express.session({ secret: 'CHANGE-THIS' }) )
-  //app.use( express.session({ secret: 'CHANGE-THIS', store:well.makestore(seneca) }) )
+  app.use( express.session({ secret: 'CHANGE-THIS', store:well.makestore(seneca) }) )
 
   // add in the seneca middleware
   // this is how seneca integrates with express (or any connect-style web server module)
