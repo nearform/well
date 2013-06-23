@@ -395,40 +395,53 @@ module.exports = function( options ) {
   }
 
 
-
+  // ACTION: connect one user to another in the same team and event - a "Well!"
+  // args:
+  //   user:  user model
+  //   event: event model
+  //   other: team members nick
+  //   cnum:  card number of other - has to be right!
+  //
+  // result: meta data object: {card:,avatar:,user:,team:,event:}
   function well(args,done){
     var event   = args.event
     var user    = args.user
     var other   = args.other // other nick
     var card    = args.card
 
+    // get current user's team number
     var usermeta = event.users[user.nick]
     if( !usermeta ) return seneca.fail('unknown user '+user.nick+' in event '+event.id,done)
 
+    // load team
     teament.load$({event:event.id,num:usermeta.t},function(err,team){
       if( err ) return done(err);
 
       if( !team ) return seneca.fail('unkown team '+usermeta.t+' for user '+user.nick+' at event '+event.id,done)
 
+      // get other user's team
       var otherusermeta = event.users[other]
       if( !otherusermeta ) return seneca.fail('unkown user '+other+' at event '+event.id,done)
 
-
+      // both need to be on same team
       if( otherusermeta.t == usermeta.t ) {
 
+        // and the card needs to match
         if( card == otherusermeta.c ) {
+
+          // add connection on both sides
+          // no need for a many-to-many join table :)
           team.wells[user.nick] = (team.wells[user.nick] || {})
           team.wells[user.nick][other]     = 1
 
           team.wells[other]     = (team.wells[other]     || {})
           team.wells[other][user.nick] = 1
 
+          // increment team score
           team.numwells++
 
           team.save$(function(err,team){
-            if( err ) return done(err);
-
-            done(null,{team:team})
+            done(err,{team:team})
           })
         }
         else return seneca.fail('Well from user '+user.nick+' to '+other+' fails as card does not match, event '+event.id,done)
@@ -438,7 +451,12 @@ module.exports = function( options ) {
   }
 
 
-
+  // ACTION: create some fake users, for testing
+  // args:
+  //   users:  number to create
+  //   {nick,name,pass}prefix: custom prefixes for generated values
+  //
+  // result: no value
   function fakeusers( args, done ) {
     var users = args.users
 
@@ -449,7 +467,12 @@ module.exports = function( options ) {
     var nickprefix = users.nickprefix || 'u'
     var nameprefix = users.nameprefix || 'n'
     var passprefix = users.passprefix || 'p'
+
+    // we can use for loop here, as it does not matter if we hit the in-memory database hard
     for( var i = 0, j = 0; i < count; i++ ) {
+
+      // use the cmd:register action of the seneca-user plugin to register the fake users
+      // this ensures they are created properly
       this.act('role:user,cmd:register',{nick:nickprefix+i,name:nameprefix+i,password:passprefix+i}, function(err){
         if( err ) return done(err);
         if( ++j == count ) return done();
@@ -458,6 +481,11 @@ module.exports = function( options ) {
   }
 
 
+  // ACTION: create some fake events, for testing
+  // args:
+  //   events:  list of names
+  //
+  // result: no value
   function fakeevents( args, done ) {
     var seneca = this
     var names = _.keys(args.events)
@@ -466,22 +494,38 @@ module.exports = function( options ) {
       var name = names[i]
       var event = args.events[name]
       event.name = name
+
+      // use the createvent action defined above
       seneca.act('role:well,cmd:createevent',event,function(err,event){
         if( err ) return done(err);
-        if( j+1 == count ) return done(null);
+        if( j+1 == count ) return done();
         j++
       })
     }
   }
 
 
-
+  // ACTION: initialize plugin
+  // args: none
+  //
+  // result: no value
   function init( args, done ) {
+
+    // need to call these actions one after the other in series
     async.series([
+
+      // define entities for the data-editor plugin
+      // this will allow you to use the visual data editor to manage the data in your app
+      // the entities are defined using the canonical form <zone>/<base>/<name>, with - meaning undefined
+      // in this case, we're not sharing a database, so we just use simple names: team and event
       seneca.next_act('role:util, cmd:define_sys_entity', {list:['-/-/team','-/-/event']}),
+
+      // register an admin user so that you can login to the data-editor
       seneca.next_act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:options.admin.pass,admin:true}),
 
       // set up fake users and events for development testing
+      // these actions are only defined if in dev mode, so the default$ meta argument 
+      // specifies a default result if they can't be found
       seneca.next_act(_.extend({role:name,dev:'fakeusers',default$:{},users:options.dev_setup.users})),
       seneca.next_act(_.extend({role:name,dev:'fakeevents',default$:{},events:options.dev_setup.events})),
 
@@ -489,10 +533,19 @@ module.exports = function( options ) {
   }
 
 
-
+  // ACTION OVERRIDE: add some custom logic to the seneca-user registration process
+  // In this case, you need to add an events property, which the other actions expect to find
   seneca.add({role:'user',cmd:'register'}, function register(args,done){
-    this.parent(args,function(err,out){
+
+    // the this variable references the current seneca instance
+    // the prior function references the previously added action matching this pattern
+    // the effect is that the standard seneca-user action executes, then you get a chance
+    this.prior(args,function(err,out){
+
+      // existing user, so do nothing
       if( out.exists ) return done(err,out)
+
+      // add events property, and save
       var user = out.user
       user.events = user.events || {}
       user.save$(function(err,user){
@@ -503,11 +556,25 @@ module.exports = function( options ) {
   })
 
 
-
+  // Remember the question in the whoami function? How are the user and event args set? This is part of the answer.
+  // As a convention, Seneca actions expect to get full model objects as arguments - this makes
+  // your life much easier as you don't need to go find them in the database, cluttering up your
+  // code with load$ calls
+  // However, sometimes you'll need to specify entities using their identifier string, because 
+  // that's all you have, so that's a catch 22, right?
+  // The solution is to wrap the actions (so that they become priors) with lookup actions
+  // It would be tedious to write this code all the time, so the builtin util plugin provides an
+  // action that does it for you: cmd:ensure_entity
   seneca.act({
     role:'util',
     cmd:'ensure_entity',
+
+    // specify the action patterns you want to wrap using a 'pin', which is a template
+    // action pattern. Use '*' to match any value.
+    // in this case, actions like role:well,cmd:whoami will be wrapped
     pin:{role:'well',cmd:'*'},
+
+    // look for these arguments, interpret them as entity identifiers, and load them using the given entity 
     entmap:{
       event:eventent,
       user:userent,
@@ -516,12 +583,38 @@ module.exports = function( options ) {
   })
 
 
+  // This is the other part of the solution to the problem of resolving the user and event
+  // this function is used by the web service API of this plugin to find the user and event
+  // from the request context
+  // The parameters to this function are provided by the seneca.http utility - see below for more details
+  function setcontext(req,res,args,act,respond) {
+    // the event parameter is not the event id, it's the code - this makes the URL nice
+    eventent.load$({code:req.params.event},function(err,event){
+      if( err ) return respond(err);
+
+      // send back a HTTP 404 if the event does not exist - it's important to be well behaved
+      if( !event ) return res.send(404); 
+
+      args.event = event
+
+      // the user is provided for you by the seneca-auth plugin,
+      // which sets up the req.seneca context object for each request
+      args.user = req.seneca.user
+
+      // call the business logic function
+      act(args,respond)
+    })
+  }
+
 
   
-
+  // This is a HTTP middleware function that is executed before any business logic actions
+  // use this to provide custom behavior
   function preware(req,res,next){
     var seneca = this
 
+    // provide a special url format for fake logins, for testing
+    // e.g. http://localhost:port/fake/u1/ma means login user 'u1' into event with code 'ma'
     var fakeI
     if( 'dev' == options.env ) {
       var m = /^\/fake\/(.*?)\/(.*?)$/.exec(req.url)
@@ -541,7 +634,10 @@ module.exports = function( options ) {
   }
 
 
+  // This is a HTTP middleware function that is executed after the business logic
   function postware(req,res,next){
+
+    // perform some URL rewriting so that static assets can be found independently of the current event
     var m = /^\/well\/[^\/]+\/?(.*)?/.exec(req.url)
     req.url = m ? '/'+(m[1]||'') : req.url
 
@@ -550,20 +646,23 @@ module.exports = function( options ) {
 
 
 
-  function setcontext(req,res,args,act,respond) {
-    eventent.load$({code:req.params.event},function(err,event){
-      if( err ) return respond(err);
-      if( !event ) return res.send(404); 
 
-      args.event = event
-      args.user = req.seneca.user
-      act(args,respond)
-    })
-  }
+  // to finish the registration of a plugin, you need to return a meta data obect that
+  // defines the name of the plugin, it's tag value (if any, used if there is more than one instance of the same plugin)
+  // and yuo can also, optionally, provide a 'service' middleware function exposing a HTTP API.
+  // The service function is a plain middleware function, and you can do anything you like in it.
+  // However, when there is a relatively direct mapping from your business logic to your HTTP API (which often makes sense),
+  // then the seneca.util utility can make your life easier
+  // Pass in a configuration object that defines the routes for your actions:
+  //  prefix: the shared URL prefix; you can use express route syntax i.e. :param to grad params from the URL
+  //  pin: the actions that can be called - with URL format: /prefix/pin_name - e.g. /well/<event>/whoami
+  //  preware, postware: functions as above
+  //  map: only those actions appearing in the map can actually be called, so use this to expose only the parts you want to
+  //    each map entry specifies the HTTP method to respond to, like so: GET:true, POST:true, etc
+  //    URL parameters, query strings, and request bodies are all merged into a single sets of arguments for the action
+  //    You can also provide custom behaviour, as here, by specifying a function - e.g. setcontext
+  // For more, see: http://senecajs.org/http-mapping.html
 
-
-
-  
   return {
     name:name,
     service:seneca.http({
@@ -596,17 +695,11 @@ function rand(bound) {
 }
 
 
-/*
-var teamnames = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet']
-
-function maketeamname(tnum){
-  return teamnames[tnum]
-}
-*/
 
 
 
-// it's easy to make your own express session store
+// express needs a scalable session store if you want to deploy to more than one machine
+// this is simple implementation using seneca entities
 module.exports.makestore = function(seneca) {
   var sess_ent = seneca.make$('session')
   function WellStore() {
