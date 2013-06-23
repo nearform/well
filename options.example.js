@@ -44,6 +44,13 @@ module.exports = {
   },
 
 
+  // options for memcached
+  memcached:{
+    // uncomment for two servers
+    // servers:['127.0.0.1:11211','127.0.0.1:11212']
+  },
+
+
   // options for seneca-auth
   auth: {
     // where to send user after login etc.
