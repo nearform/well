@@ -30,6 +30,10 @@
     "seneca-user": "*",
     "seneca-auth": "*",
     "seneca-mongo-store": "*",
+    "seneca-memcached": "*",
+    "seneca-vcache": "*",
+    "seneca-perm": "*",
+    "seneca-data-editor": "*",
     "async": "~0.2.9",
     "connect": "~2.7.11"
   },

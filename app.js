@@ -76,6 +76,13 @@ else {
 }
 
 
+// register the seneca-memcached plugin - this provides access to a cache layer backed by memcached
+seneca.use('memcached')
+
+// register the seneca-vcache plugin - this provides version-based caching for 
+// data entities over multiple memcached servers, and caches by query in addition to id
+seneca.use('vcache')
+
 // register the seneca-user plugin - this provides user account business logic
 seneca.use('user')
 
