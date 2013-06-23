@@ -15,6 +15,7 @@ node_modules
 npm-debug.log
 
 config.mine.js
+options.well.js
 
 .sass-cache
 *~

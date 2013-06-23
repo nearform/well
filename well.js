@@ -1,8 +1,10 @@
+/* This file is PUBLIC DOMAIN. You are free to cut-and-paste to start your own projects, of any kind */
 "use strict";
 
-var _     = require('underscore')
-var async = require('async')
 
+var _       = require('underscore')
+var async   = require('async')
+var connect = require('connect')
 
 
 
@@ -32,6 +34,7 @@ module.exports = function( options ) {
 
   seneca.add({role:name,cmd:'createevent'}, createevent)
   seneca.add({role:name,cmd:'joinevent'},   joinevent)
+
 
 
   if( 'dev' == options.env ) {
@@ -70,8 +73,8 @@ module.exports = function( options ) {
       seneca.next_act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:options.admin.pass,admin:true}),
 
       // set up fake users and events for development testing
-      seneca.next_act(_.extend({role:'well',dev:'fakeusers',default$:{},users:options.dev_setup.users})),
-      seneca.next_act(_.extend({role:'well',dev:'fakeevents',default$:{},events:options.dev_setup.events})),
+      seneca.next_act(_.extend({role:name,dev:'fakeusers',default$:{},users:options.dev_setup.users})),
+      seneca.next_act(_.extend({role:name,dev:'fakeevents',default$:{},events:options.dev_setup.events})),
 
     ], done)
   }
@@ -322,7 +325,7 @@ module.exports = function( options ) {
   function fakeusers( args, done ) {
     var users = args.users
 
-    if( users ) return done();
+    if( !users ) return done();
     if( 0 === users.count ) return done();
 
     var count = users.count || 16
@@ -342,13 +345,14 @@ module.exports = function( options ) {
     var seneca = this
     var names = _.keys(args.events)
     var count = names.length
-    for( var i = 0; i < count; i++ ) {
+    for( var i = 0, j = 0; i < count; i++ ) {
       var name = names[i]
       var event = args.events[name]
       event.name = name
       seneca.act('role:well,cmd:createevent',event,function(err,event){
         if( err ) return done(err);
-        if( i+1 == count ) return done(null);
+        if( j+1 == count ) return done(null);
+        j++
       })
     }
   }
@@ -450,6 +454,36 @@ function rand(bound) {
 
 var teamnames = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet']
 
+
 function maketeamname(tnum){
   return teamnames[tnum]
+}
+
+
+
+// it's easy to make your own express session store
+module.exports.makestore = function(seneca) {
+  var sess_ent = seneca.make$('session')
+  function WellStore() {
+    var self = new connect.session.Store(this)
+    self.get = function(sid, cb) {
+      sess_ent.load$({sid:sid},function(err,sess){
+        cb(err,sess&&sess.data)
+      })
+    }
+    self.set = function(sid, data, cb) {
+      sess_ent.load$({sid:sid},function(err,sess){
+        if(err) return cb(err);
+        sess = sess||sess_ent.make$({sid:sid})
+        sess.data = data
+        sess.save$(cb)
+      })
+
+    }
+    self.destroy = function(sid, cb) {
+      sess_ent.remove$({sid:sid},cb)
+    }
+    return self
+  }
+  return new WellStore()
 }

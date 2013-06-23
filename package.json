@@ -1,6 +1,6 @@
 {
   "name": "well",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "well",
   "main": "lib/well.js",
   "scripts": {
@@ -30,7 +30,8 @@
     "seneca-user": "*",
     "seneca-auth": "*",
     "seneca-mongo-store": "*",
-    "async": "~0.2.9"
+    "async": "~0.2.9",
+    "connect": "~2.7.11"
   },
   "devDependencies": {
     "eyes": "*"
