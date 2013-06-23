@@ -61,7 +61,7 @@ var options = seneca.use('options','options.well.js')
 
 
 // if developing, use a throw-away in-process database
-if( 'dev' == env ) {
+if( 'xdev' == env ) {
   // the builtin mem-store plugin provides the database
   // also enable http://localhost:3333/mem-store/dump so you can debug db contents
   seneca.use('mem-store',{web:{dump:true}})
@@ -83,7 +83,8 @@ seneca.use('user')
 seneca.use('auth')
 
 // register the seneca-perm plugin - this provides permission checking
-seneca.use('perm',{entity:[{}]})
+// set the entity option to true, which means, "check all entities"
+seneca.use('perm',{entity:true})
 
 // register the seneca-data-editor plugin - this provides a user interface for data admin
 // Open the /data-editor url path to edit data! (you must be an admin, or on localhost)

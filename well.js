@@ -2,29 +2,63 @@
 "use strict";
 
 
-var _       = require('underscore')
-var async   = require('async')
-var connect = require('connect')
+// load some standard modules
+var _       = require('underscore') // see http://npmjs.org/m/underscore
+var async   = require('async')      // see http://npmjs.org/m/async
+var connect = require('connect')    // see http://npmjs.org/m/connect
 
 
-
+// define a seneca plugin
+// loaded in app.js with seneca.use('well')
+// seneca plugins are just a function that adds some actions to the seneca instance
+// the options for the plugin are passed as the first argument
 module.exports = function( options ) { 
+
+
+  // plugin functions are called with the seneca instance as the context
+  // store a reference so you can the seneca instance later
   var seneca = this
+
+
+  // the name of the plugin
+  // because plugins can be registered more than once (using tags)
+  // this string is often used to identify the "role" that the plugin performs
+  // (this is just a convention, you are free to create action patterns any way you like)
   var name = 'well'
 
+
+  // specify the option defaults
+  // seneca.util.deepextend is like _.extendm except it can handle sub properties
   options = seneca.util.deepextend({
     numcards: 52,
     numteams: 4,
+    teamnames: ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet']
   },options)
 
 
-  var userent
+  // create entity instances to interact with data storage
+  // your data collections ("tables") are team and event
   var teament  = seneca.make('team')
   var eventent = seneca.make('event')
 
+  // this is the standard system entity for user, with
+  // base:sys, name:user, see http://senecajs.org/data-entities.html
+  var userent  = seneca.make('sys/user') 
 
+
+  // add your actions to seneca by providing an input pattern to match 
+
+  // the init:name action is special - it is invoked for each
+  // plugin, in order, after all the plugins are loaded
+  // this is a good place to put any initial data storage interactions
+  // just make sure you've defined a data store already
   seneca.add({init:name}, init)
 
+
+  // define the business logic of your app
+  // the function definitions are below
+  // it's convenient to list all the action patterns in once place
+  // this also serves to document them for maintenance coders 
   seneca.add({role:name,cmd:'whoami'}, whoami)
   seneca.add({role:name,cmd:'leader'}, leader)
 
@@ -36,7 +70,7 @@ module.exports = function( options ) {
   seneca.add({role:name,cmd:'joinevent'},   joinevent)
 
 
-
+  // only define these actions if in dev mode
   if( 'dev' == options.env ) {
     seneca.add( {role:name,dev:'fakeusers'},  fakeusers)
     seneca.add( {role:name,dev:'fakeevents'}, fakeevents)
@@ -44,50 +78,41 @@ module.exports = function( options ) {
 
 
 
-  seneca.add({role:'user',cmd:'register'}, function register(args,done){
-    this.parent(args,function(err,out){
-      if( out.exists ) return done(err,out)
-      var user = out.user
-      user.events = user.events || {}
-      user.save$(function(err,user){
-        out.user = user
-        done(err,out)
-      })
-    })
-  })
+  // action implementations
+  // each of these is a function that takes two arguments:
+  //   args: the input data that matched the action patter
+  //   done: a callback to call when action is complete, standard function(err,result) form
 
 
-
-
-  function init( args, done ) {
-    async.series([
-      function(next){
-        seneca.act('role:user, cmd:entity, kind:user',function(err, user){
-          if( err ) return next(err);
-          userent = user
-          next()
-        })
-      },
-
-      seneca.next_act('role:util, cmd:define_sys_entity', {list:['-/-/team','-/-/event']}),
-      seneca.next_act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:options.admin.pass,admin:true}),
-
-      // set up fake users and events for development testing
-      seneca.next_act(_.extend({role:name,dev:'fakeusers',default$:{},users:options.dev_setup.users})),
-      seneca.next_act(_.extend({role:name,dev:'fakeevents',default$:{},events:options.dev_setup.events})),
-
-    ], done)
-  }
-
-
-
+  // ACTION: create a new event, or provide existing
+  // args:
+  //   name: event name
+  //   code: event code string (for use in URL)
+  //   numteams: number of teams
+  //   numcards: number of playing cards
+  //
+  // result: event
   function createevent( args, done ){
+
+    // load using entity.load$ method, which accepts a set of data fields that have to match
     eventent.load$({name:args.name},function(err,event){
+
+      // if there was a problem, just bail out to calling code
       if( err ) return done(err);
+
+      // found an existing event, so just return it
       if( event ) {
         return done(null,event)
       }
+
+      // you need to create a new event
       else {
+
+        // use the make$ method to create a new event model instance
+        // you pass in a plain object containing the data fields you want to create
+        // use _.extend to handle default values
+        // also accept custom fields by inserting any other properties found in args
+        // (except role and cmd, which are just pattern properties)
         event = eventent.make$(_.extend({
           numcards: args.numcards || options.numcards,
           numteams: args.numteams || options.numteams,
@@ -96,24 +121,40 @@ module.exports = function( options ) {
           users:    {}
         },_.omit(args,['role','cmd'])))
 
+        // now save the new event
         event.save$( function(err, event){
+
+          // again, if there was a problem, bail to calling code
           if( err ) return done(err);
 
+          // now create a set of teams
+          // seneca.util.recurse is a utility function to iterate over an array,
+          // performing the worker function in series for each entry
           seneca.util.recurse(
-            event.numteams,
+
+            event.numteams, // as a convenience, iteration from 0..n-1 if this is a number
+
             function( index, next ){
+
+              // create and save a team
               teament
                 .make$({
                   num:index, 
                   event:event.id, 
-                  name:maketeamname(index,event.numteams), 
+                  eventcode:event.code,
+                  name:options.teamnames[index],
                   wells:{},
                   numwells:0,
                   users:{}
                 })
                 .save$(next)
             },
+
+            // seneca.util.recurse cleanup function, called when iteration completes
+            // provide the event as the action result
             function(err){
+
+              // no need to check for err, just pass it along if it exists
               done(err,event)
             }
           )
@@ -123,41 +164,67 @@ module.exports = function( options ) {
   }
 
 
-
-
+  // ACTION: assign a user to an event, and give them a team
+  // args:
+  //   event: event model
+  //   user:  sys/user model
+  //   tnum:  team number, optional, else random
+  //   cnum:  card number, optional, else random
+  //
+  // result: meta data object: {card:, user:, team:, event:}
   function joinevent( args, done ){
     var event = args.event
-    var user    = args.user
+    var user  = args.user
     
-    // already joined
+    // if the user has already joined the event, provide details
+    // the nick property contains the "username" (or equivalent) of the user
     if( event.users[user.nick] ) {
-      return done(null,event)
+      teament.load$({num:user.events[event.id].t,event:event.id},function(err,team){
+
+        // pass along error, if it exists
+        // NOTE: return is *critical* here, as you need to avoid any further code below
+        return done(err,{card:user.events[event.id].c,user:user,team:team,event:event})
+      })
     }
 
-    var card = _.isUndefined(args.card) ? rand( event.numcards ) : args.card
-    var tnum = _.isUndefined(args.team) ? rand( event.numteams ) : args.team
+      
+    // get the card and team numbers
+    var card = _.isUndefined(args.cnum) ? rand( event.numcards ) : args.cnum
+    var tnum = _.isUndefined(args.tnum) ? rand( event.numteams ) : args.tnum
 
+    // record in event model
     event.users[user.nick] = {t:tnum,c:card}
 
+    // update event storage
     event.save$( function(err,event){
       if( err ) return done(err);
       
+      // update user model
       user.events = user.events || {}
       user.events[event.id] = {t:tnum,c:card}
       
+      // update user storage
       user.save$( function(err, user) {
         if( err ) return done(err);
         
+        // load team based on number and event
         teament.load$({num:tnum,event:event.id},function(err,team){
           if( err ) return done(err);
+
+          // can't find the team, so use seneca.fail to generate error result and return
+          // this ensures the error gets logged
           if( !team ) return seneca.fail('unknown team: '+tnum+' event:'+event.id,done);
           
+          // grad the users avatar URL if defined
           var avatar = user.service ? user.service.twitter.userdata._json.profile_image_url : false 
 
+          // add user details to team, dulicating data already stored above
+          // this classic noSQL denormalisation - don't worry about it, it lets you scale! :)
           team.users[user.nick]={card:card,name:user.name,avatar:avatar}
+
+          // and finally update the team storage
           team.save$(function(err){
-            var out = {card:card,user:user,team:team,event:event}
-            done(err,out)
+            done(err,{card:card,user:user,team:team,event:event})
           })
         })
       })
@@ -165,36 +232,53 @@ module.exports = function( options ) {
   }
 
 
-
-
+  // ACTION: list the members of a team
+  // args:
+  //   team:  team model
+  //   user:  sys/user model - current user
+  //
+  // result: meta data object: {members:[{nick:name:,well:,avatar:},...]}
   function members( args, done ){
     var team  = args.team
     var user  = args.user
 
     var members = []
     _.each(team.users,function(teamuser,nick){
+
+      // is this team member connected to the current user?
       var connected = team.wells[nick] ? team.wells[nick][user.nick] ? true : false : false
+
+      // create meta data description for each member
       var out = {nick:nick,name:teamuser.name,well:connected,avatar:teamuser.avatar||false}
 
+      // don't list current user
       if( nick != user.nick ) {
         members.push( out )
       }
     })
+    
     done(null,{members:members})
   }
 
 
-
-
+  // ACTION: load team members details
+  // args:
+  //   event: event model
+  //   other: team members nick
+  //
+  // result: meta data object: {nick:,name:,avatar}
   function member( args, done ){
     var other = args.other
     var event = args.event
 
+    // confirm other has joined this event
     var userevent = event.users[other]
     if( !userevent ) {
       return seneca.fail('not in event: '+event.name+' user:'+other,done);
     }
 
+    // load other using nick
+    // not really necessary to check if in team as this data is common
     userent.load$({nick:other},function(err,user){
       if( err ) return done(user);
       if( !user ) return seneca.fail('unknown user: '+other,done);
@@ -208,9 +292,15 @@ module.exports = function( options ) {
   }
 
 
+  // ACTION: generate a leaderboard of teams
+  // args:
+  //   event: event model
+  //
+  // result: meta data object: {teams:[{name:,score:},...]}
   function leader( args, done ){
     var event   = args.event
 
+    // search for teams by event
     teament.list$({event:event.id},function(err,list){
       if( err ) return done(err);
 
@@ -219,48 +309,74 @@ module.exports = function( options ) {
       _.each(list,function(team){
         teams.push({
           name:team.name,
+
+          // the score is just the number of users that have connected
           score:team.numwells
         })
       })
 
+      // leaving sorting to the client CPU!
       done(null,{teams:teams})
     })    
   }
 
 
-
-
+  // ACTION: provide client with current user context, if logged in
+  // args:
+  //   user:  user model
+  //   event: event model
+  //
+  // result: meta data object: {card:,avatar:,user:,team:,event:}
   function whoami( args, done ) {
     var seneca = this
+
+    // Question: how do these args get set in the first place?
+    // Answer: see below: the ensure_entity action and also setcontext function
     var user  = args.user
     var event = args.event
 
+    // logged in, so get context data
     if( user ) {
+      
+      // user has not yet joined event, so do that now
       if( !user.events[event.id] ) {
+
+        // here's where you see your business login in action
         seneca.act('role:well, cmd:joinevent',{user:user,event:event}, finish)
       }
+
+      // already joined, so get data and provide result
       else {
         teament.load$({event:event.id,num:user.events[event.id].t},function(err,team){
           finish(err,{user:user,team:team,event:event})
         })
       }
     }
+
+    // not logged, at least return event details
     else done(null,{
       event:{
         name:event.name
       }
     })
 
+
+    // common function to finish action, called in both cases above
+    // this is the sort of thing you have to do to deal with callback control flow...
     function finish(err,data) {
       if(err) return done(err);
 
       var user = data.user
 
+      // set some metadata
       data.card   = event.users[user.nick].c
       data.avatar = user.service ? user.service.twitter.userdata._json.profile_image_url : false 
 
+      // this is a utility action provided by the seneca-user plugin
+      // it removed security sensitive data from the user, such as the encrypted password field
       seneca.act('role:user, cmd:clean',{user:user},function(err,user){
         
+        // create result object
         var out = {
           card:data.card,
           avatar:data.avatar,
@@ -269,6 +385,7 @@ module.exports = function( options ) {
           event:data.event.data$()
         }
 
+        // remove this info to prevent cheating!
         delete out.team.users
         delete out.event.users
 
@@ -359,8 +476,35 @@ module.exports = function( options ) {
 
 
 
+  function init( args, done ) {
+    async.series([
+      seneca.next_act('role:util, cmd:define_sys_entity', {list:['-/-/team','-/-/event']}),
+      seneca.next_act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:options.admin.pass,admin:true}),
 
-  this.act({
+      // set up fake users and events for development testing
+      seneca.next_act(_.extend({role:name,dev:'fakeusers',default$:{},users:options.dev_setup.users})),
+      seneca.next_act(_.extend({role:name,dev:'fakeevents',default$:{},events:options.dev_setup.events})),
+
+    ], done)
+  }
+
+
+
+  seneca.add({role:'user',cmd:'register'}, function register(args,done){
+    this.parent(args,function(err,out){
+      if( out.exists ) return done(err,out)
+      var user = out.user
+      user.events = user.events || {}
+      user.save$(function(err,user){
+        out.user = user
+        done(err,out)
+      })
+    })
+  })
+
+
+
+  seneca.act({
     role:'util',
     cmd:'ensure_entity',
     pin:{role:'well',cmd:'*'},
@@ -419,7 +563,7 @@ module.exports = function( options ) {
 
 
 
-
+  
   return {
     name:name,
     service:seneca.http({
@@ -452,12 +596,13 @@ function rand(bound) {
 }
 
 
+/*
 var teamnames = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet']
-
 
 function maketeamname(tnum){
   return teamnames[tnum]
 }
+*/
 
 
 
