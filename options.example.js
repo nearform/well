@@ -26,10 +26,11 @@ module.exports = {
     // HTTP listen port
     port:3333,
 
+    // uncomment to run development code
     public:'/front'
 
-    // uncomment to run sencha production code
-    //public:'/front/build/well/production'
+    // runs production version by default
+    public:'/front/build/well/production'
   },
 
 

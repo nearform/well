@@ -613,6 +613,13 @@ module.exports = function( options ) {
   function preware(req,res,next){
     var seneca = this
 
+    // ensure we start on correct route: /well/<event-code>/#main
+    if( req.url.match( /^\/well\/[^\/#]+$/) ) {
+      res.redirect(req.url+'/#main')
+      return
+    }
+    
+
     // provide a special url format for fake logins, for testing
     // e.g. http://localhost:port/fake/u1/ma means login user 'u1' into event with code 'ma'
     var fakeI

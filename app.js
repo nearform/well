@@ -61,7 +61,7 @@ var options = seneca.use('options','options.well.js')
 
 
 // if developing, use a throw-away in-process database
-if( 'xdev' == env ) {
+if( 'dev' == env ) {
   // the builtin mem-store plugin provides the database
   // also enable http://localhost:3333/mem-store/dump so you can debug db contents
   seneca.use('mem-store',{web:{dump:true}})
@@ -73,15 +73,15 @@ if( 'xdev' == env ) {
 // for more, see http://senecajs.org/data-entities.html
 else {
   seneca.use('mongo-store')
+
+  // register the seneca-memcached plugin - this provides access to a cache layer backed by memcached
+  seneca.use('memcached')
+
+  // register the seneca-vcache plugin - this provides version-based caching for 
+  // data entities over multiple memcached servers, and caches by query in addition to id
+  seneca.use('vcache')
 }
 
-
-// register the seneca-memcached plugin - this provides access to a cache layer backed by memcached
-seneca.use('memcached')
-
-// register the seneca-vcache plugin - this provides version-based caching for 
-// data entities over multiple memcached servers, and caches by query in addition to id
-seneca.use('vcache')
 
 // register the seneca-user plugin - this provides user account business logic
 seneca.use('user')
