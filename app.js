@@ -50,6 +50,11 @@ process.on('uncaughtException', function(err) {
 var seneca  = require('seneca')()
 
 
+var node_root = process.env['NODE_ROOT']
+node_root = node_root ? node_root+'/' : ''
+console.log('node_root='+node_root)
+
+
 // register the seneca builtin options plugin, and load the options from a local file
 // you'll normally do this first -
 // each seneca plugin can be given options when you register it ("seneca.use"),
@@ -57,7 +62,7 @@ var seneca  = require('seneca')()
 // see the options.well.js file for more
 // NOTE: unlike other plugins, the options plugin is *synchronous*
 // and returns the options immediately
-var options = seneca.use('options','options.well.js')
+var options = seneca.use('options',node_root+'options.well.js')
 
 
 // if developing, use a throw-away in-process database
