@@ -26,14 +26,6 @@
     "dispatch": "0.2.0",
     "optimist": "0.4.0",
     "async": "0.2.9",
-    "connect": "2.7.11",
-    "seneca": "git://github.com/nearform/well.git#99c9af0d87a37abfeb6cdd8c38c351101b6697d4",
-    "seneca-user": "git://github.com/nearform/well.git#912154117924cb48b2317b76af6569787dded405",
-    "seneca-auth": "git://github.com/nearform/well.git#cef497ebf4e7ef7f14e6de2de2da2523fdd98d84",
-    "seneca-mongo-store": "git://github.com/nearform/well.git#e3a3f7898688a29ca43655b13cd3b1c467050dc6",
-    "seneca-memcached": "git://github.com/nearform/well.git#1f7d00aeb7d3e675c90b9fa338c8ddf4a2cfe431",
-    "seneca-vcache": "git://github.com/nearform/well.git#cbadb8ca1dabc4a65d07dd9829667f1bdaff9b28",
-    "seneca-perm": "git://github.com/nearform/well.git#ec45d76e0a4e33273a7b3e21a76e8d75a225acd1",
-    "seneca-data-editor": "git://github.com/nearform/well.git#ead3c0bcc5d2632616224f98cc81505e8cb7ef37"
+    "connect": "2.7.11"
   }
 }
