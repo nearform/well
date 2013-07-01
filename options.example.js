@@ -24,6 +24,7 @@ module.exports = {
   // generic options
   main: {
     // HTTP listen port
+    // get from PORT environment variable if defined
     port:process.env['PORT']||3333,
 
     // uncomment to run development code
