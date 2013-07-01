@@ -23,7 +23,7 @@
   "dependencies": {
     "express": "3.2.0",
     "underscore": "1.4.4",
-    "dispatch": "0.2.06",
+    "dispatch": "0.2.0",
     "optimist": "0.4.0",
     "async": "0.2.9",
     "connect": "2.7.11",
