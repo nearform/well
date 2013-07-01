@@ -27,7 +27,7 @@ module.exports = {
     port:3333,
 
     // uncomment to run development code
-    public:'/front'
+    // public:'/front'
 
     // runs production version by default
     public:'/front/build/well/production'
