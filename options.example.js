@@ -24,7 +24,7 @@ module.exports = {
   // generic options
   main: {
     // HTTP listen port
-    port:3333,
+    port:process.env['PORT']||3333,
 
     // uncomment to run development code
     // public:'/front'
