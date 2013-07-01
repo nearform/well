@@ -6,8 +6,11 @@
  * folder. Create options.example.js to create this file. It is loaded
  * as a node.js module, so you can use JavaScript inside it.
  *
- * The NODE_ENV environment variable is used to start the app in a 
+ * The --env command line argument can be used to start the app in a 
  * development mode for debugging:
+ * $ node app.js --env=dev
+ * 
+ * The NODE_ENV environment variable can also be used for this purpose
  * $ NODE_ENV=dev node app.js
  */
 
@@ -20,13 +23,14 @@
 var argv = require('optimist').argv
 
 
+// get deployment type (set to 'dev' for development)
+// use environment variable NODE_ENV, or command line argument --env
+var env = argv.env || process.env['NODE_ENV']
+
+
 // load the well module, which contains the main app logic and utilities
 var well = require('./well')
 
-
-// get deployment type (set to 'dev' for development)
-// use environment variable NODE_ENV, or command line argument --env
-var env = process.env['NODE_ENV'] || argv.env
 
 
 // always capture, log and exit on uncaught exceptions
@@ -38,10 +42,6 @@ process.on('uncaughtException', function(err) {
   process.exit(1)
 })
 
-
-// load the express module
-// this provides the basic web server
-var express = require('express')
 
 
 // load the seneca module and create a new instance
@@ -111,6 +111,11 @@ seneca.use('well',{env:env})
 seneca.ready( function(err) {
   if( err ) return console.log(err);
 
+
+  // load the express module
+  // this provides the basic web server
+  var express = require('express')
+
   // create an express app
   var app = express()
 
@@ -131,6 +136,7 @@ seneca.ready( function(err) {
 
   // serve static files from a folder defined in your options file
   app.use( express.static(__dirname+options.main.public) )  
+
 
   // start listening for HTTP requests
   app.listen( options.main.port )
