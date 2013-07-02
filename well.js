@@ -610,7 +610,7 @@ module.exports = function( options ) {
   
   // This is a HTTP middleware function that is executed before any business logic actions
   // use this to provide custom behavior
-  function premap(req,res,next){
+  function startware(req,res,next){
     var seneca = this
 
     // ensure we start on correct route: /well/<event-code>/#main
@@ -676,7 +676,7 @@ module.exports = function( options ) {
       prefix:'/well/:event/',
       pin:{role:name,cmd:'*'},
       
-      premap:premap,
+      startware:startware,
       
       map:{
         whoami:{GET:setcontext},
