@@ -610,7 +610,7 @@ module.exports = function( options ) {
   
   // This is a HTTP middleware function that is executed before any business logic actions
   // use this to provide custom behavior
-  function preware(req,res,next){
+  function premap(req,res,next){
     var seneca = this
 
     // ensure we start on correct route: /well/<event-code>/#main
@@ -642,7 +642,7 @@ module.exports = function( options ) {
 
 
   // This is a HTTP middleware function that is executed after the business logic
-  function postware(req,res,next){
+  function endware(req,res,next){
 
     // perform some URL rewriting so that static assets can be found independently of the current event
     var m = /^\/well\/[^\/]+\/?(.*)?/.exec(req.url)
@@ -676,7 +676,7 @@ module.exports = function( options ) {
       prefix:'/well/:event/',
       pin:{role:name,cmd:'*'},
       
-      preware:preware,
+      premap:premap,
       
       map:{
         whoami:{GET:setcontext},
@@ -687,7 +687,7 @@ module.exports = function( options ) {
         member:  { alias:'player/member/:other',     GET:  setcontext  },
       },
       
-      postware:postware,
+      endware:endware,
     })
   }
 
