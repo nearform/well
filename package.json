@@ -34,7 +34,7 @@
     "seneca-memcached": "git://github.com/rjrodger/seneca-memcached.git#1f7d00aeb7d3e675c90b9fa338c8ddf4a2cfe431",
     "seneca-vcache": "git://github.com/rjrodger/seneca-vcache.git#cbadb8ca1dabc4a65d07dd9829667f1bdaff9b28",
     "seneca-perm": "git://github.com/rjrodger/seneca-perm.git#ec45d76e0a4e33273a7b3e21a76e8d75a225acd1",
-    "seneca-data-editor": "git://github.com/rjrodger/seneca-data-editor.git#ead3c0bcc5d2632616224f98cc81505e8cb7ef37",
+    "seneca-data-editor": "git://github.com/rjrodger/seneca-data-editor.git#716f58ab1226c38f676045d87199ae0f133f34d6",
     "seneca-jsonrest-api": "git://github.com/rjrodger/seneca-jsonrest-api.git#7a927ed00357383b5881e822c57bdb7f809f73ae"
   }
 }
