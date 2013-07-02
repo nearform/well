@@ -120,6 +120,7 @@ seneca.ready( function(err) {
 
   // create an express app
   var app = express()
+  app.use( express.logger() )
 
   // setup express
   app.use( express.cookieParser() )

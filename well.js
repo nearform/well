@@ -712,21 +712,22 @@ module.exports.makestore = function(seneca) {
   function WellStore() {
     var self = new connect.session.Store(this)
     self.get = function(sid, cb) {
-      sess_ent.load$({sid:sid},function(err,sess){
+      sess_ent.load$(sid,function(err,sess){
         cb(err,sess&&sess.data)
       })
     }
     self.set = function(sid, data, cb) {
-      sess_ent.load$({sid:sid},function(err,sess){
+      sess_ent.load$(sid,function(err,sess){
         if(err) return cb(err);
-        sess = sess||sess_ent.make$({sid:sid})
+        sess = sess||sess_ent.make$({id$:sid})
+        sess.last = new Date().getTime()
         sess.data = data
         sess.save$(cb)
       })
 
     }
     self.destroy = function(sid, cb) {
-      sess_ent.remove$({sid:sid},cb)
+      sess_ent.remove$(sid,cb)
     }
     return self
   }
