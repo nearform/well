@@ -71,7 +71,7 @@ module.exports = function( options ) {
 
 
   // only define these actions if in dev mode
-  if( 'dev' == options.env ) {
+  if( options.fake ) {
     seneca.add( {role:name,dev:'fakeusers'},  fakeusers)
     seneca.add( {role:name,dev:'fakeevents'}, fakeevents)
   }
@@ -623,7 +623,7 @@ module.exports = function( options ) {
     // provide a special url format for fake logins, for testing
     // e.g. http://localhost:port/fake/u1/ma means login user 'u1' into event with code 'ma'
     var fakeI
-    if( 'dev' == options.env ) {
+    if( options.fake ) {
       var m = /^\/fake\/(.*?)\/(.*?)$/.exec(req.url)
       if( m ) { 
         var nick  = m[1]

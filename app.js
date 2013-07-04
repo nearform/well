@@ -8,10 +8,10 @@
  *
  * The --env command line argument can be used to start the app in a 
  * development mode for debugging:
- * $ node app.js --env=dev
+ * $ node app.js --env=development
  * 
  * The NODE_ENV environment variable can also be used for this purpose
- * $ NODE_ENV=dev node app.js
+ * $ NODE_ENV=development node app.js
  */
 
 /* This file is PUBLIC DOMAIN. You are free to cut-and-paste to start your own projects, of any kind */
@@ -23,7 +23,7 @@
 var argv = require('optimist').argv
 
 
-// get deployment type (set to 'dev' for development)
+// get deployment type (set to 'development' for development)
 // use environment variable NODE_ENV, or command line argument --env
 var env = argv.env || process.env['NODE_ENV']
 
@@ -59,11 +59,11 @@ var seneca  = require('seneca')()
 // NOTE: unlike other plugins, the options plugin is *synchronous*
 // and returns the options immediately
 var optionsfolder = 'production' == env ? '/home/deploy/' : './'
-var options = seneca.use('options',optionsfolder+'options.well.js')
+seneca.use('options',optionsfolder+'options.well.js')
 
 
 // if developing, use a throw-away in-process database
-if( 'dev' == env ) {
+if( 'development' == env ) {
   // the builtin mem-store plugin provides the database
   // also enable http://localhost:3333/mem-store/dump so you can debug db contents
   seneca.use('mem-store',{web:{dump:true}})
@@ -102,8 +102,8 @@ seneca.use('data-editor')
 
 // register yur own plugin - the well app business logic!
 // in the options, indicate if you're in development mode
-// set the env option, which triggers creation of test users and events if env == 'dev'
-seneca.use('well',{env:env})
+// set the fake option, which triggers creation of test users and events if env == 'development'
+seneca.use('well',{fake:'development'==env})
 
 
 
@@ -112,6 +112,16 @@ seneca.use('well',{env:env})
 // the callback to seneca.ready will pass any errors as the first argument
 seneca.ready( function(err) {
   if( err ) return console.log(err);
+
+  // seneca plugins can export objects for external use
+  // you can access these using the seneca.export method
+
+  // get the configuration options
+  var options = seneca.export('options')
+
+  // get the middleware function from the builtin web plugin
+  var web = seneca.export('web')
+
 
 
   // load the express module
@@ -135,11 +145,10 @@ seneca.ready( function(err) {
 
   // add in the seneca middleware
   // this is how seneca integrates with express (or any connect-style web server module)
-  app.use( seneca.service() )
+  app.use( web )
 
   // serve static files from a folder defined in your options file
   app.use( express.static(__dirname+options.main.public) )  
-
 
   // start listening for HTTP requests
   app.listen( options.main.port )
