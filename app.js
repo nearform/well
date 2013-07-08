@@ -28,10 +28,6 @@ var argv = require('optimist').argv
 var env = argv.env || process.env['NODE_ENV']
 
 
-// load the well module, which contains the main app logic and utilities
-var well = require('./well')
-
-
 
 // always capture, log and exit on uncaught exceptions
 // your production system should auto-restart the app
@@ -141,7 +137,7 @@ seneca.ready( function(err) {
 
   // you can't use a single node in-memory session store if you want to scale
   // well.js defines a session store that uses seneca entities
-  app.use( express.session({ secret: 'CHANGE-THIS', store:well.makestore(seneca) }) )
+  app.use( express.session({ secret: 'CHANGE-THIS', store:seneca.export('well/session-store') }) )
 
   // add in the seneca middleware
   // this is how seneca integrates with express (or any connect-style web server module)

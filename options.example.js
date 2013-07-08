@@ -48,8 +48,9 @@ module.exports = {
 
   // options for memcached
   memcached:{
-    // uncomment for two servers
-    // servers:['127.0.0.1:11211','127.0.0.1:11212']
+    servers:['127.0.0.1:11211']
+    // uncomment for two servers in production
+    // servers:['10.11.12.13:11211','10.11.12.13:11211']
   },
 
 

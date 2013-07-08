@@ -535,7 +535,7 @@ module.exports = function( options ) {
 
   // ACTION OVERRIDE: add some custom logic to the seneca-user registration process
   // In this case, you need to add an events property, which the other actions expect to find
-  seneca.add({role:'user',cmd:'register'}, function register(args,done){
+  seneca.add({role:'user',cmd:'register'}, function(args,done){
 
     // the this variable references the current seneca instance
     // the prior function references the previously added action matching this pattern
@@ -543,7 +543,7 @@ module.exports = function( options ) {
     this.prior(args,function(err,out){
 
       // existing user, so do nothing
-      if( out.exists ) return done(err,out)
+      if( out.exists ) return done(err,out);
 
       // add events property, and save
       var user = out.user
@@ -581,6 +581,7 @@ module.exports = function( options ) {
       team:teament,
     }
   })
+
 
 
   // This is the other part of the solution to the problem of resolving the user and event
@@ -654,63 +655,60 @@ module.exports = function( options ) {
 
 
 
-  // to finish the registration of a plugin, you need to return a meta data obect that
-  // defines the name of the plugin, it's tag value (if any, used if there is more than one instance of the same plugin)
-  // and yuo can also, optionally, provide a 'service' middleware function exposing a HTTP API.
-  // The service function is a plain middleware function, and you can do anything you like in it.
-  // However, when there is a relatively direct mapping from your business logic to your HTTP API (which often makes sense),
-  // then the seneca.util utility can make your life easier
-  // Pass in a configuration object that defines the routes for your actions:
-  //  prefix: the shared URL prefix; you can use express route syntax i.e. :param to grad params from the URL
-  //  pin: the actions that can be called - with URL format: /prefix/pin_name - e.g. /well/<event>/whoami
-  //  preware, postware: functions as above
-  //  map: only those actions appearing in the map can actually be called, so use this to expose only the parts you want to
-  //    each map entry specifies the HTTP method to respond to, like so: GET:true, POST:true, etc
-  //    URL parameters, query strings, and request bodies are all merged into a single sets of arguments for the action
-  //    You can also provide custom behaviour, as here, by specifying a function - e.g. setcontext
-  // For more, see: http://senecajs.org/http-mapping.html
+  // To expose your actions to the outside world over HTTP you can,
+  // optionally, provide a 'service' middleware function You do this
+  // by calling the role:web action with a use argument. The use
+  // argument can be a plain middleware function, and you can do
+  // anything you like in it.  
 
-  return {
+  // However, when there is a relatively direct mapping from your
+  // business logic to your HTTP API (which often makes sense), then
+  // you can provide a configuration object that defines the routes
+  // for your actions.
+
+  // You can use the following properties:
+  // name: the name of your plugin
+  // prefix: the shared URL prefix; you can use express route syntax
+  //         i.e. :param to grad params from the URL pin: the actions that can
+  //         be called - with URL format: /prefix/pin_name -
+  //         e.g. /well/<event>/whoami 
+  // startware, endware: functions as above
+  // map: only those actions appearing in the map can actually be
+  //      called, so use this to expose only the parts you want to each map
+  //      entry specifies the HTTP method to respond to, like so: GET:true,
+  //      POST:true, etc URL parameters, query strings, and request bodies
+  //      are all merged into a single sets of arguments for the action You
+  //      can also provide custom behaviour, as here, by specifying a
+  //      function - e.g. setcontext For more, see:
+  //      http://senecajs.org/http-mapping.html
+
+  seneca.act({role:'web',use:{
     name:name,
-    service:seneca.http({
-      prefix:'/well/:event/',
-      pin:{role:name,cmd:'*'},
+    prefix:'/well/:event/',
+    pin:{role:name,cmd:'*'},
       
-      startware:startware,
+    startware:startware,
       
-      map:{
-        whoami:{GET:setcontext},
-        leader:{GET:setcontext},
-        
-        members: { alias:'player/members/:team',     GET:  setcontext  },
-        well:    { alias:'player/well/:other/:card', POST: setcontext },
-        member:  { alias:'player/member/:other',     GET:  setcontext  },
-      },
+    map:{
+      whoami:{GET:setcontext},
+      leader:{GET:setcontext},
       
-      endware:endware,
-    })
-  }
-
-}
-
-
-
-
-// rand int between 0..bound-1
-function rand(bound) {
-  return Math.floor(bound * Math.abs(Math.random()))
-}
+      members: { alias:'player/members/:team',     GET:  setcontext  },
+      well:    { alias:'player/well/:other/:card', POST: setcontext },
+      member:  { alias:'player/member/:other',     GET:  setcontext  },
+    },
+      
+    endware:endware,
+  }})
 
 
 
-
-
-// express needs a scalable session store if you want to deploy to more than one machine
-// this is simple implementation using seneca entities
-module.exports.makestore = function(seneca) {
-  var sess_ent = seneca.make$('session')
+  // express needs a scalable session store if you want to deploy to more than one machine
+  // this is simple implementation using seneca entities
   function WellStore() {
     var self = new connect.session.Store(this)
+    var sess_ent = seneca.make$('session')
+
     self.get = function(sid, cb) {
       sess_ent.load$(sid,function(err,sess){
         cb(err,sess&&sess.data)
@@ -731,5 +729,26 @@ module.exports.makestore = function(seneca) {
     }
     return self
   }
-  return new WellStore()
+
+
+  // to finish the registration of a plugin, you need to return a meta data obect that
+  // defines the name of the plugin, and it's tag value (if any, used if there is more than one instance of the same plugin)
+  // here, you also define an express session store
+  // Just a reminder: plugin definition is synchronous - that's why you return this object
+  return { 
+    name:name, 
+    exportmap:{
+      // this object can be accessed using seneca.export('well/session-store')
+      'session-store':new WellStore()
+    }
+  }
 }
+
+
+
+
+// rand int between 0..bound-1
+function rand(bound) {
+  return Math.floor(bound * Math.abs(Math.random()))
+}
+
