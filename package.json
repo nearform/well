@@ -27,7 +27,7 @@
     "optimist": "0.4.0",
     "async": "0.2.9",
     "connect": "2.7.11",
-    "seneca": "git://github.com/rjrodger/seneca.git#c5cddd7acd771e74d2369faf4adbe22519766100",
+    "seneca": "git://github.com/rjrodger/seneca.git#6a0b273c661f6efbcbf03d8625b89248f58e3f5a",
     "seneca-user": "git://github.com/rjrodger/seneca-user.git#912154117924cb48b2317b76af6569787dded405",
     "seneca-auth": "git://github.com/rjrodger/seneca-auth.git#cef497ebf4e7ef7f14e6de2de2da2523fdd98d84",
     "seneca-mongo-store": "git://github.com/rjrodger/seneca-mongo-store.git#c5e0b5db629eba244304c22d2ebb9e017eb3a71a",
