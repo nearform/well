@@ -1,6 +1,6 @@
 {
   "name": "well",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "well",
   "main": "lib/well.js",
   "scripts": {
@@ -27,14 +27,14 @@
     "optimist": "0.4.0",
     "async": "0.2.9",
     "connect": "2.7.11",
-    "seneca": "git://github.com/rjrodger/seneca.git#6a0b273c661f6efbcbf03d8625b89248f58e3f5a",
-    "seneca-user": "git://github.com/rjrodger/seneca-user.git#912154117924cb48b2317b76af6569787dded405",
-    "seneca-auth": "git://github.com/rjrodger/seneca-auth.git#cef497ebf4e7ef7f14e6de2de2da2523fdd98d84",
-    "seneca-mongo-store": "git://github.com/rjrodger/seneca-mongo-store.git#c5e0b5db629eba244304c22d2ebb9e017eb3a71a",
-    "seneca-memcached": "git://github.com/rjrodger/seneca-memcached.git#1f7d00aeb7d3e675c90b9fa338c8ddf4a2cfe431",
-    "seneca-vcache": "git://github.com/rjrodger/seneca-vcache.git#3b3a33ec7388927544523f315a661f441206f238",
-    "seneca-perm": "git://github.com/rjrodger/seneca-perm.git#ec45d76e0a4e33273a7b3e21a76e8d75a225acd1",
-    "seneca-data-editor": "git://github.com/rjrodger/seneca-data-editor.git#7c1b25e1d8ecae01583550761c2889cccb168b52",
-    "seneca-jsonrest-api": "git://github.com/rjrodger/seneca-jsonrest-api.git#7a927ed00357383b5881e822c57bdb7f809f73ae"
+    "seneca": ">=0.5.9",
+    "seneca-user": ">=0.2.2",
+    "seneca-auth": ">=0.2.5",
+    "seneca-mongo-store": ">=0.1.5",
+    "seneca-memcached": ">=0.2.1",
+    "seneca-vcache": ">=0.2.2",
+    "seneca-perm": ">=0.1.1",
+    "seneca-data-editor": ">=0.1.2",
+    "seneca-jsonrest-api": ">=0.1.2"
   }
 }

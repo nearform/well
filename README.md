@@ -24,9 +24,9 @@ The game is implemented as a mobile web app. This keeps things nice and simple a
 If you're using this example code, feel free to contact me on twitter if you
 have any questions! :) [@rjrodger](http://twitter.com/rjrodger)
 
-Current Version: 0.1.0
+Current Version: 0.2.1
 
-Tested on: node 0.10.6, seneca 0.5.7
+Tested on: Node 0.10.6, 0.8.7, Seneca 0.5.9
 
 
 
@@ -49,7 +49,7 @@ Copy the config.example.js file to config.mine.js.
 First run with:
 
 ```sh
-node app.js --dev --seneca.log=plugin:well
+node app.js --env=development --seneca.log=plugin:well
 ```
 
 This will create a set of fake users and events that you can play around with.
@@ -60,7 +60,7 @@ Create some permanent events using the create-event.js script:
 
 
 ```sh
-node create-event.js --dev --seneca.log.all --name=MyEvent --code=event01 --numteams=2
+node create-event.js --name=MyEvent --code=event01 --numteams=2
 ```
 
 ## Development
