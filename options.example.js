@@ -13,7 +13,7 @@
 "use strict";
 
 // set true to enable unstricted access to /data-editor from localhost
-var local = false
+var local = true 
 
 
 module.exports = {
