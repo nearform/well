@@ -543,7 +543,7 @@ module.exports = function( options ) {
     this.prior(args,function(err,out){
 
       // existing user, so do nothing
-      if( out.exists ) return done(err,out);
+      if( !out.ok ) return done(err,out);
 
       // add events property, and save
       var user = out.user
