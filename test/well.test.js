@@ -71,6 +71,18 @@ describe('seneca, role:well', function(){
 					callback()
 				})
 			},
+			function(callback){
+				eventent.make$(_.extend({
+					numcards: 52,
+					numteams: 1,
+					name:     'MeetupD',
+					code:     'mc',
+					users:    {}
+				},_.omit({name:'MeetupD', code:'md'},['role','cmd']))).save$( function(err, event){
+					if( err ) return console.log(err)
+					callback()
+				})
+			},
 			// Loading events from db
 			function(callback){
 				eventent.list$(function(err,events){
@@ -79,8 +91,8 @@ describe('seneca, role:well', function(){
 				})
 			},
 			// Adding teams
+			// Add a team to event with index 0
 			function(events, callback){
-				// Add a team to event with index 0
 				teament.make$({
 			      num:0, 
 			      event:events[0].id, 
@@ -94,8 +106,8 @@ describe('seneca, role:well', function(){
 			        callback(null, events)
 			    })
 			},
+			// Add a team to event with index 0
 			function(events, callback){
-				// Add a team to a different event (and later make sure the event 0 does not contain it)
 				teament.make$({
 			      num:1, 
 			      event:events[0].id, 
@@ -109,8 +121,8 @@ describe('seneca, role:well', function(){
 			    	callback(null, events)
 			    })
 			},
+			// Add a team to a different event (and later make sure the event 0 does not contain it)
 			function(events, callback){
-				// Add a team to a different event (and later make sure the event 0 does not contain it)
 				teament.make$({
 			      num:0, 
 			      event:events[1].id, 
@@ -138,7 +150,7 @@ describe('seneca, role:well', function(){
 					})
 			    }
 			},
-			// Storing users in temp var to reduce db access and callbacks
+			// Loading users from db
 			function(events, callback){
 				userent.list$(function(err,users){
 					if( err ) return console.log(err)
@@ -147,10 +159,14 @@ describe('seneca, role:well', function(){
 			},
 			// Insert all users into event 0
 			function(events, users, callback){
-				seneca.act('role:well, cmd:joinevent', {user:users[0], event:events[0]}, function(err, data){
-				if( err ) return console.log(err)
-					callback()
-				})
+				for (var i = 0, j = 0; i < users.length; i++){
+					seneca.act('role:well, cmd:joinevent', {user:users[i], event:events[0]}, function(err, data){
+						if( err ) return console.log(err)
+						j++
+						if (j < users.length) return
+						callback()
+					})
+				}
 			}],
            function(err, result) {
 				if( err ) return console.log(err)
@@ -190,13 +206,13 @@ describe('seneca, role:well', function(){
 					// Compare team names
 					assert.deepEqual(dbteams, leader)
 
-					// Make sure no unwanted elements are contained within the array
+					// Make sure an unwanted element is not contained within the array
 					assert.equal(leader.indexOf('Blue'),-1)
 
 					done()
 				})
-			}]
-		)
+			}
+		])
 	})
 
 	it ('cmd:members', function(done){
