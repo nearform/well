@@ -29,10 +29,6 @@ var eventent  = seneca.make('event')
 describe('seneca, role:well', function(){
 
 	before(function(done){
-		// Loads events, then triggers loading teams, then triggers loading users
-		// It's done this way because each entity set depends on the finished loading of previous one
-		// load_events(events_ready)
-
 		async.waterfall([
 			// Adding events
 			function(callback){
@@ -50,36 +46,12 @@ describe('seneca, role:well', function(){
 			function(callback){
 				eventent.make$(_.extend({
 					numcards: 52,
-					numteams: 2,
+					numteams: 1,
 					name:     'MeetupB',
 					code:     'mb',
 					users:    {}
 				},_.omit({name:'MeetupB', code:'mb'},['role','cmd']))).save$( function(err, event){
 					if( err ) return console.log(err);
-					callback()
-				})
-			},
-			function(callback){
-				eventent.make$(_.extend({
-					numcards: 52,
-					numteams: 2,
-					name:     'MeetupC',
-					code:     'mc',
-					users:    {}
-				},_.omit({name:'MeetupC', code:'mc'},['role','cmd']))).save$( function(err, event){
-					if( err ) return console.log(err)
-					callback()
-				})
-			},
-			function(callback){
-				eventent.make$(_.extend({
-					numcards: 52,
-					numteams: 1,
-					name:     'MeetupD',
-					code:     'mc',
-					users:    {}
-				},_.omit({name:'MeetupD', code:'md'},['role','cmd']))).save$( function(err, event){
-					if( err ) return console.log(err)
 					callback()
 				})
 			},
@@ -106,7 +78,7 @@ describe('seneca, role:well', function(){
 			        callback(null, events)
 			    })
 			},
-			// Add a team to event with index 0
+			// Add another team to event with index 0
 			function(events, callback){
 				teament.make$({
 			      num:1, 
@@ -122,6 +94,7 @@ describe('seneca, role:well', function(){
 			    })
 			},
 			// Add a team to a different event (and later make sure the event 0 does not contain it)
+			// Also this team is used in members test case
 			function(events, callback){
 				teament.make$({
 			      num:0, 
@@ -178,6 +151,7 @@ describe('seneca, role:well', function(){
 	it('cmd:leader', function(done){
 
 		async.waterfall([
+			// Loading events from db
 			function(callback){
 				eventent.list$(function(err,events){
 					if( err ) return done(err)
