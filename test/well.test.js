@@ -93,8 +93,9 @@ describe('seneca, role:well', function(){
 			    	callback(null, events)
 			    })
 			},
-			// Add a team to a different event (and later make sure the event 0 does not contain it)
-			// Also this team is used in members test case
+			// Add a team to a different event
+			// Used in leader test case
+			// Used in members test case
 			function(events, callback){
 				teament.make$({
 			      num:0, 
@@ -130,10 +131,11 @@ describe('seneca, role:well', function(){
 					callback(null, events, users)
 				})
 			},
-			// Insert all users into event 0
+			// Insert all users into event 1
+			// Used in members test case
 			function(events, users, callback){
 				for (var i = 0, j = 0; i < users.length; i++){
-					seneca.act('role:well, cmd:joinevent', {user:users[i], event:events[0]}, function(err, data){
+					seneca.act('role:well, cmd:joinevent', {user:users[i], event:events[1]}, function(err, data){
 						if( err ) return console.log(err)
 						j++
 						if (j < users.length) return
@@ -190,9 +192,63 @@ describe('seneca, role:well', function(){
 	})
 
 	it ('cmd:members', function(done){
-		assert.equal('TO BE IMPLEMENTED', 1)
-		// TODO
-		done()
+		async.waterfall([
+			// Loading events from db
+			function(callback){
+				eventent.list$(function(err,events){
+					if( err ) return done(err)
+					callback(null, events)
+				})
+			},
+			// Loading teams of event B from db
+			function(events, callback){
+				teament.list$({event:events[1].id},function(err,teams){
+					if( err ) return done(err)
+					callback(null, teams)
+				})
+			},
+			// Loading user of that team
+			function(teams, callback){
+				userent.list$({nick:'admin'},function(err,users){
+					if( err ) return done(err)
+					callback(null, teams, users[0])
+				})
+			},
+			// Obtaining members
+			function(teams, user, callback){
+
+				seneca.act('role:well, cmd:members', {team:teams[0], user:user}, function(err, members){
+					if (err) return done(err)
+					callback(null, teams, members)
+				})
+			},
+			// Comparing db against members return
+			function(teams, members, callback){
+
+				// admin is being removed, because it's supplied into members call as the user to be ignored
+
+				// Removing admin from list which is db clone
+				// Storing db members in an array
+				var dbnames = []
+			    _.each(teams[0].users,function(teamuser){
+			    	if (teamuser.name != 'admin') dbnames.push(teamuser.name)
+			    })
+
+			    // Storing return members in an array
+			    var memnames = []
+			    _.each(members.members,function(member){
+			    	memnames.push(member.name)
+			    })
+
+			    // Making sure does not contain admin
+			    assert.equal((memnames.indexOf("admin") == -1), true)
+
+			    // Making sure db elements are same as returned elements
+			    assert.deepEqual(dbnames, memnames)
+
+				done()
+			}
+		])
 	})
 
 	it ('cmd:whoami', function(done){
