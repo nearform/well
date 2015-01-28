@@ -31,8 +31,7 @@ describe('seneca, role:well', function(){
 					code:     'ma',
 					users:    {}
 				},_.omit({name:'MeetupA', code:'ma'},['role','cmd']))).save$( function(err, event){
-					if( err ) return console.error(err)
-					callback()
+					callback(err)
 				})
 			},
 			function(callback){
@@ -43,15 +42,13 @@ describe('seneca, role:well', function(){
 					code:     'mb',
 					users:    {}
 				},_.omit({name:'MeetupB', code:'mb'},['role','cmd']))).save$( function(err, event){
-					if( err ) return console.error(err);
-					callback()
+					callback(err)
 				})
 			},
 			// Loading events from db
 			function(callback){
 				eventent.list$(function(err,events){
-					if( err ) return console.error(err)
-					callback(null, events)
+					callback(err, events)
 				})
 			},
 			// Adding teams
@@ -66,8 +63,7 @@ describe('seneca, role:well', function(){
 			      numwells:0,
 			      users:{}
 			    }).save$(function(err, entity){
-			    	if (err) return console.error(err)
-			        callback(null, events)
+			        callback(err, events)
 			    })
 			},
 			// Add another team to event with index 0
@@ -81,8 +77,7 @@ describe('seneca, role:well', function(){
 			      numwells:0,
 			      users:{}
 			    }).save$(function(err, entity){
-			    	if (err) return console.error(err)
-			    	callback(null, events)
+			    	callback(err, events)
 			    })
 			},
 			// Add a team to a different event
@@ -96,8 +91,7 @@ describe('seneca, role:well', function(){
 			      numwells:0,
 			      users:{}
 			    }).save$(function(err, entity){
-			    	if (err) return console.error(err)
-			    	callback(null, events)
+			    	callback(err, events)
 			    })
 			},
 			// Load users, but do not assign them to any events to allow tests for custom setup
@@ -106,17 +100,15 @@ describe('seneca, role:well', function(){
 					// Use the cmd:register action of the seneca-user plugin to register the fake users
 					// This ensures they are created properly
 					seneca.act('role:user,cmd:register',{nick:'u'+i,name:'n'+i,password:'p'+i}, function(err, data){
-						if (err) return console.error(err)
 						j++
 						if (j < count) return
 
-						callback(null, events)
+						callback(err, events)
 					})
 			    }
 			}],
            function(err, result) {
-				if( err ) return done(err)
-				done()
+				done(err)
            }
 		)
 	})
@@ -127,20 +119,18 @@ describe('seneca, role:well', function(){
 			// Loading events from db
 			function(callback){
 				eventent.list$(function(err,events){
-					if( err ) return done(err)
-						callback(null, events)
+						callback(err, events)
 				})
 			},
 			function(events, callback){
 				// Get list of teams in event 0 through leader cmd
 				seneca.act('role:well, cmd:leader', {event:events[0]}, function(err, leader){
-					callback(null, events, leader)
+					callback(err, events, leader)
 				})
 			},
 			function(events, leader, callback){
 				// Get list of teams in event 0 directly from db
 				teament.list$({event:events[0].id},function(err,dbteams){
-					if( err ) return done(err)
 
 					// Format both lists into arrays of names(leader does not contain id data)
 					dbteams = dbteams.map(function (element) {
@@ -155,7 +145,7 @@ describe('seneca, role:well', function(){
 
 					// Make sure an unwanted element is not contained within the array
 					assert.equal(leader.indexOf('Blue'),-1)
-					done()
+					done(err)
 				})
 			}
 		])
@@ -166,55 +156,49 @@ describe('seneca, role:well', function(){
 			// Loading events from db
 			function(callback){
 				eventent.list$(function(err,events){
-					if( err ) return done(err)
-					callback(null, events)
+					callback(err, events)
 				})
 			},
 			// Loading users from db
 			function(events, callback){
 				userent.list$(function(err,users){
-					if( err ) return done(err)
-					callback(null, events, users)
+					callback(err, events, users)
 				})
 			},
 			// Insert all users into event 1
 			function(events, users, callback){
-				for (var i = 0, j = 0; i < users.length; i++){
-					seneca.act('role:well, cmd:joinevent', {user:users[i], event:events[1]}, function(err, data){
-						if( err ) return done(err)
-						j++
-						if (j < users.length) return
-						callback()
+				var count = 0
+				_.each(users, function(user){
+					seneca.act('role:well, cmd:joinevent', {user:user, event:events[1]}, function(err, data){
+						count++
+						if (count < users.length) return
+						callback(err)
 					})
-				}
+				})
 			},
 			// Loading events from db to refresh data
 			function(callback){
 				eventent.list$(function(err,events){
-					if( err ) return done(err)
-					callback(null, events)
+					callback(err, events)
 				})
 			},
 			// Loading teams of event B from db
 			function(events, callback){
 				teament.list$({event:events[1].id},function(err,teams){
-					if( err ) return done(err)
-					callback(null, teams)
+					callback(err, teams)
 				})
 			},
 			// Loading a known user from that team
 			function(teams, callback){
 				userent.load$({nick:'admin'},function(err,user){
-					if( err ) return done(err)
-					callback(null, teams, user)
+					callback(err, teams, user)
 				})
 			},
 			// Obtaining members
 			function(teams, user, callback){
 
 				seneca.act('role:well, cmd:members', {team:teams[0], user:user}, function(err, members){
-					if (err) return done(err)
-					callback(null, teams, members)
+					callback(err, teams, members)
 				})
 			},
 			// Comparing db against members return
@@ -241,9 +225,9 @@ describe('seneca, role:well', function(){
 			    // Making sure db elements are same as returned elements
 			    assert.deepEqual(dbnames, memnames)
 
-				done()
+			    callback()
 			}
-		])
+		], done)
 	})
 
 	it ('cmd:whoami', function(done){
