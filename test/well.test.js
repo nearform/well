@@ -1,5 +1,5 @@
 // TODO:
-// - Six more test cases
+// - Five more test cases
 // - Check dev_setup
 // - Can you ever be a member of two teams at the same time?
 
@@ -28,7 +28,7 @@ var eventent  = seneca.make('event')
 
 describe('seneca, role:well', function(){
 
-	before(function(done){
+	beforeEach(function(done){
 		async.waterfall([
 			// Adding events
 			function(callback){
@@ -94,8 +94,6 @@ describe('seneca, role:well', function(){
 			    })
 			},
 			// Add a team to a different event
-			// Used in leader test case
-			// Used in members test case
 			function(events, callback){
 				teament.make$({
 			      num:0, 
@@ -110,7 +108,7 @@ describe('seneca, role:well', function(){
 			    	callback(null, events)
 			    })
 			},
-			// Load users
+			// Load users, but do not assign them to any events to allow tests for custom setup
 			function(events, callback){
 				for( var i = 0, j = 0, count = 4; i < count; i++ ) {
 					// Use the cmd:register action of the seneca-user plugin to register the fake users
@@ -130,18 +128,6 @@ describe('seneca, role:well', function(){
 					if( err ) return console.log(err)
 					callback(null, events, users)
 				})
-			},
-			// Insert all users into event 1
-			// Used in members test case
-			function(events, users, callback){
-				for (var i = 0, j = 0; i < users.length; i++){
-					seneca.act('role:well, cmd:joinevent', {user:users[i], event:events[1]}, function(err, data){
-						if( err ) return console.log(err)
-						j++
-						if (j < users.length) return
-						callback()
-					})
-				}
 			}],
            function(err, result) {
 				if( err ) return console.log(err)
@@ -200,6 +186,31 @@ describe('seneca, role:well', function(){
 					callback(null, events)
 				})
 			},
+			// Loading users from db
+			function(events, callback){
+				userent.list$(function(err,users){
+					if( err ) return done(err)
+					callback(null, events, users)
+				})
+			},
+			// Insert all users into event 1
+			function(events, users, callback){
+				for (var i = 0, j = 0; i < users.length; i++){
+					seneca.act('role:well, cmd:joinevent', {user:users[i], event:events[1]}, function(err, data){
+						if( err ) return console.log(err)
+						j++
+						if (j < users.length) return
+						callback()
+					})
+				}
+			},
+			// Loading events from db to refresh data
+			function(callback){
+				eventent.list$(function(err,events){
+					if( err ) return done(err)
+					callback(null, events)
+				})
+			},
 			// Loading teams of event B from db
 			function(events, callback){
 				teament.list$({event:events[1].id},function(err,teams){
@@ -207,7 +218,7 @@ describe('seneca, role:well', function(){
 					callback(null, teams)
 				})
 			},
-			// Loading user of that team
+			// Loading users of that team
 			function(teams, callback){
 				userent.list$({nick:'admin'},function(err,users){
 					if( err ) return done(err)
