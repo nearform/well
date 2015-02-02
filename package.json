@@ -27,14 +27,14 @@
     "optimist": "0.4.0",
     "async": "0.2.9",
     "connect": "2.7.11",
-    "seneca": ">=0.5.9",
-    "seneca-user": ">=0.2.2",
-    "seneca-auth": ">=0.2.5",
-    "seneca-mongo-store": ">=0.1.5",
-    "seneca-memcached": ">=0.2.1",
-    "seneca-vcache": ">=0.2.2",
-    "seneca-perm": ">=0.1.1",
-    "seneca-data-editor": ">=0.1.2",
-    "seneca-jsonrest-api": ">=0.1.2"
+    "seneca": "~0.5.20",
+    "seneca-user": "~0.2.10",
+    "seneca-auth": "~0.3.0",
+    "seneca-mongo-store": "~0.1.9",
+    "seneca-memcached": "~0.2.1",
+    "seneca-vcache": "~0.2.2",
+    "seneca-perm": "~0.1.2",
+    "seneca-data-editor": "~0.1.6",
+    "seneca-jsonrest-api": "~0.2.1"
   }
 }

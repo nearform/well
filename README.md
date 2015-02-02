@@ -44,7 +44,7 @@ to get modules you need.
 
 ## Running
 
-Copy the config.example.js file to config.mine.js.
+Copy the options.example.js file to options.well.js.
 
 First run with:
 

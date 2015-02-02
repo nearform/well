@@ -51,7 +51,14 @@ var seneca  = require('seneca')()
 // so you don't have to do this, but it does make life easier
 // see the options.well.js file for more
 var optionsfolder = 'production' == env ? '/home/deploy/' : './'
-seneca.use('options',optionsfolder+'options.well.js')
+var options_file = optionsfolder+'options.well.js'
+try {
+  require('fs').statSync( options_file )
+}
+catch(e) {
+  process.exit( !console.error( "Please copy options.example.js to "+ options_file+': '+e ))
+}
+seneca.use('options',options_file)
 
 
 // if developing, use a throw-away in-process database
