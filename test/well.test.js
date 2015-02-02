@@ -91,26 +91,33 @@ describe('seneca, role:well', function(){
             numwells:0,
             users:{}
           }).save$(function(err, entity){
-            callback(err, events)
+            callback(err)
           })
       },
       // Load users, but do not assign them to any events to allow tests for custom setup
-      function(events, callback){
-        for( var i = 0, j = 0, count = 4; i < count; i++ ) {
-          // Use the cmd:register action of the seneca-user plugin to register the fake users
-          // This ensures they are created properly
-          seneca.act('role:user,cmd:register',{nick:'u'+i,name:'n'+i,password:'p'+i}, function(err, data){
-            j++
-            if (j < count) return
-
-            callback(err, events)
-          })
-          }
-      }],
-           function(err, result) {
-        done(err)
-           }
-    )
+      function(callback){
+        // Use the cmd:register action of the seneca-user plugin to register the fake users
+        // This ensures they are created properly
+        seneca.act('role:user,cmd:register',{nick:'u1',name:'n1',password:'p1'}, function(err, data){
+          callback(err)
+        })
+      },
+      function(callback){
+        seneca.act('role:user,cmd:register',{nick:'u2',name:'n2',password:'p2'}, function(err, data){
+          callback(err)
+        })
+      },
+      function(callback){
+        seneca.act('role:user,cmd:register',{nick:'u3',name:'n3',password:'p3'}, function(err, data){
+          callback(err)
+        })
+      },
+      function(callback){
+        seneca.act('role:user,cmd:register',{nick:'u4',name:'n4',password:'p4'}, function(err, data){
+          done(err)
+        })
+      }
+    ])
   })
 
   it('cmd:leader', function(done){
