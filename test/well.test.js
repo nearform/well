@@ -8,10 +8,10 @@
 
 var Helper   = require('./test-helper.js')
 var helper = new Helper();
-var _     = require('underscore')  // see http://npmjs.org/m/underscore
+var _     = require('lodash')
 var util   = require('util')
 var assert   = require('assert')
-var async   = require('async')     // see http://npmjs.org/m/async
+var async   = require('async')
 var seneca  = helper.seneca
 
 var userent  = helper.userent
