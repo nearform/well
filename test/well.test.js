@@ -148,22 +148,24 @@ describe('data structure integrity', function() {
   it('cmd:leader', function(done) {
     helper.seneca(function(seneca, userent, teament, eventent) {
       async.waterfall([
-        // Loading events from db
+        // Loading event 0 from db
         function(callback) {
-          eventent.list$(callback)
+          eventent.load$({
+            code: 'ma'
+          }, callback)
         },
-        function(events, callback) {
+        function(event, callback) {
           // Get list of teams in event 0 through leader cmd
           seneca.act('role:well, cmd:leader', {
-            event: events[0]
+            event: event
           }, function(err, leader) {
-            callback(err, events, leader)
+            callback(err, event, leader)
           })
         },
-        function(events, leader, callback) {
+        function(event, leader, callback) {
           // Get list of teams in event 0 directly from db
           teament.list$({
-            event: events[0].id
+            event: event.id
           }, function(err, dbteams) {
 
             // Format both lists into arrays of names(leader does not contain id data)
@@ -189,64 +191,69 @@ describe('data structure integrity', function() {
   it('cmd:members', function(done) {
     helper.seneca(function(seneca, userent, teament, eventent) {
       async.waterfall([
-        // Loading events from db
+        // Loading event 1 from db
         function(callback) {
-          eventent.list$(callback)
+          eventent.load$({
+            code: 'mb'
+          }, callback)
         },
         // Loading users from db
-        function(events, callback) {
+        function(event, callback) {
           userent.list$(function(err, users) {
-            callback(err, events, users)
+            callback(err, event, users)
           })
         },
         // Insert all users into event 1
-        function(events, users, callback) {
+        function(event, users, callback) {
           _.each(users, function(user) {
             seneca.act('role:well, cmd:joinevent', {
               user: user,
-              event: events[1]
+              event: event
             }, function(err, data) {
               if (users.indexOf(user) === users.length - 1) callback(err)
             })
           })
         },
-        // Loading events from db to refresh data
+        // Loading event 1 from db to refresh data
         function(callback) {
-          eventent.list$(callback)
+          eventent.load$({
+            code: 'mb'
+          }, callback)
         },
-        // Loading teams of event B from db
-        function(events, callback) {
-          teament.list$({
-            event: events[1].id
+        // Loading the only team in event 1 from db
+        function(event, callback) {
+          teament.load$({
+            event: event.id,
+            num: 0
           }, callback)
         },
         // Loading a known user from that team
-        function(teams, callback) {
+        function(team, callback) {
           userent.load$({
             nick: 'admin'
           }, function(err, user) {
-            callback(err, teams, user)
+            callback(err, team, user)
           })
         },
         // Obtaining members
-        function(teams, user, callback) {
+        function(team, user, callback) {
 
           seneca.act('role:well, cmd:members', {
-            team: teams[0],
+            team: team,
             user: user
           }, function(err, members) {
-            callback(err, teams, members)
+            callback(err, team, members)
           })
         },
         // Comparing db against members return
-        function(teams, members, callback) {
+        function(team, members, callback) {
 
           // admin is being removed, because it's supplied into members call as the user to be ignored
 
           // Removing admin from list which is db clone
           // Storing db members in an array
           var dbnames = []
-          _.each(teams[0].users, function(teamuser) {
+          _.each(team.users, function(teamuser) {
             if (teamuser.name != 'admin') dbnames.push(teamuser.name)
           })
 
