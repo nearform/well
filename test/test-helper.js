@@ -1,10 +1,10 @@
 module.exports =
   function() {
 
-    var async = require('async')
-    var _ = require('lodash')
+    var async    = require('async')
+    var _        = require('lodash')
 
-    this.seneca = function(done) {
+    this.seneca  = function(done) {
       var seneca = require('seneca')()
 
       // Init well.js
@@ -115,6 +115,16 @@ module.exports =
               nick: 'u4',
               name: 'n4',
               password: 'p4'
+            })
+            .act('role:user,cmd:register', {
+              nick: 'u5',
+              name: 'n5',
+              password: 'p5'
+            })
+            .act('role:user,cmd:register', {
+              nick: 'u6',
+              name: 'n6',
+              password: 'p6'
             }, callback)
         }
       ], function() {

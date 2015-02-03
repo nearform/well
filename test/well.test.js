@@ -8,7 +8,83 @@ var util = require('util')
 var assert = require('assert')
 var async = require('async')
 
-describe('seneca, role:well', function() {
+describe('well app', function() {
+  it('happy', function(done) {
+    helper.seneca(function(seneca, userent, teament, eventent) {
+
+      async.waterfall([
+        // add users to both teams in event 0
+        // find two users in the same team
+        // exchange cards
+        // check if the points were added
+
+        // Loading event 0 from db
+        function(callback) {
+          eventent.load$({
+            code: 'ma'
+          }, callback)
+        },
+        // Loading users from db
+        function(event, callback) {
+          userent.list$(function(err, users) {
+            callback(err, event, users)
+          })
+        },
+        // Insert all users into event 0
+        function(event, users, callback) {
+          _.each(users, function(user) {
+            seneca.act('role:well, cmd:joinevent', {
+              user: user,
+              event: event
+            }, function(err, data) {
+              if (users.indexOf(user) === users.length - 1) callback(err, event)
+            })
+          })
+        },
+        // Load team 0 from event 0
+        function(event, callback) {
+          teament.load$({
+            event: event.id,
+            num: 0
+          }, function(err, team) {
+            // load all users from team 0
+            var members = []
+            _.each(team.users, function(user, nick) {
+              members.push(user)
+            })
+            callback(err, event, members)
+          })
+        },
+        // Get member 0 object
+        function(event, members, callback) {
+          userent.load$({
+            name: members[0].name
+          }, function(err, user) {
+            callback(err, event, user, members[1])
+          })
+        },
+        // Make 2 members exchange cards
+        function(event, user, other, callback) {
+          userent.load$({
+            name: other.name
+          }, function(err, other) {
+            seneca.act('role:well, cmd:well', {
+              user: user,
+              event: event,
+              other: other.nick,
+              card: event.users[other.nick].c
+            }, callback)
+          })
+        },
+        // Check if the points were added
+        function(team, callback) {
+          assert.equal(team.team.numwells, 1)
+          done()
+        }
+      ])
+    })
+  })
+
   it('cmd:leader', function(done) {
     helper.seneca(function(seneca, userent, teament, eventent) {
       async.waterfall([
@@ -129,41 +205,6 @@ describe('seneca, role:well', function() {
           done()
         }
       ])
-    })
-  })
-
-  it('cmd:whoami', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
-      // TODO
-      done(new Error('TO BE IMPLEMENTED !'))
-    })
-  })
-
-  it('cmd:well', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
-      // TODO
-      done(new Error('TO BE IMPLEMENTED !'))
-    })
-  })
-
-  it('cmd:member', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
-      // TODO
-      done(new Error('TO BE IMPLEMENTED !'))
-    })
-  })
-
-  it('cmd:createevent', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
-      // TODO
-      done(new Error('TO BE IMPLEMENTED !'))
-    })
-  })
-
-  it('cmd:joinevent', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
-      // TODO
-      done(new Error('TO BE IMPLEMENTED !'))
     })
   })
 })
