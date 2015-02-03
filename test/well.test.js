@@ -9,6 +9,10 @@ var assert = require('assert')
 var async = require('async')
 
 describe('happy', function() {
+
+  // May throw 'Cannot read property 'name' of undefined'
+  // because the app distributes users randomly
+  // without balancing the amount on both teams.
   it('happy main', function(done) {
     helper.seneca(function(seneca, userent, teament, eventent) {
 
@@ -87,6 +91,60 @@ describe('happy', function() {
 })
 
 describe('data structure integrity', function() {
+
+  // Currently does not check for the avatar
+  it('cmd:whoami', function(done) {
+    helper.seneca(function(seneca, userent, teament, eventent) {
+      async.waterfall([
+        // Loading event 0 from db
+        function(callback) {
+          eventent.load$({
+            code: 'ma'
+          }, callback)
+        },
+        // Check logged out user
+        function(event, callback) {
+          seneca.act('role:well, cmd:whoami', {
+            event: event
+          }, function(err, result) {
+            // Should return event name
+            assert.equal(result.event.name, event.name)
+            callback()
+          })
+        },
+        // Check logged in user next
+        // Loading event 0 from db
+        function(callback) {
+          eventent.load$({
+            code: 'ma'
+          }, callback)
+        },
+        // Loading admin from db
+        function(event, callback) {
+          userent.load$({
+            nick: 'admin'
+          }, function(err, user) {
+            callback(err, event, user)
+          })
+        },
+        // Should return meta data object: {card:,avatar:,user:,team:,event:}
+        function(event, user, callback) {
+          seneca.act('role:well, cmd:whoami', {
+            user: user,
+            event: event
+          }, function(err, result) {
+            assert.equal(result.card, user.events[event.id].c)
+            assert.equal((user.avatar === undefined && result.avatar === false), true)
+            assert.equal(result.user.id, user.id)
+            assert.equal(result.team.num, user.events[event.id].t)
+            assert.equal(result.event.id, event.id)
+            done(err)
+          })
+        }
+      ])
+    })
+  })
+
   it('cmd:leader', function(done) {
     helper.seneca(function(seneca, userent, teament, eventent) {
       async.waterfall([
