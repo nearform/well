@@ -267,4 +267,49 @@ describe('data structure integrity', function() {
       ])
     })
   })
+
+  // Currently does not check for the avatar
+  it('cmd:member', function(done) {
+    helper.seneca(function(seneca, userent, teament, eventent) {
+      async.waterfall([
+        // Loading event 0 from db
+        function(callback) {
+          eventent.load$({
+            code: 'ma'
+          }, callback)
+        },
+        // Loading admin from db
+        function(event, callback) {
+          userent.load$({
+            nick: 'admin'
+          }, function(err, user) {
+            callback(err, event, user)
+          })
+        },
+        // Insert admin to event 0
+        function(event, user, callback) {
+          seneca.act('role:well, cmd:joinevent', {
+              user: user,
+              event: event
+            },
+            function(err, data) {
+              callback(err, event, user)
+            })
+        },
+        // Should return meta data object: {nick:,name:,avatar}
+        function(event, user, callback) {
+          seneca.act('role:well, cmd:member', {
+            other: user.nick,
+            event: event
+          }, function(err, result) {
+            assert.equal(result.nick, user.nick)
+            assert.equal(result.name, user.name)
+            assert.equal((user.avatar === undefined && result.avatar === false), true)
+            done(err)
+          })
+        }
+      ])
+    })
+  })
+
 })
