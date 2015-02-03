@@ -8,8 +8,8 @@ var util = require('util')
 var assert = require('assert')
 var async = require('async')
 
-describe('well app', function() {
-  it('happy', function(done) {
+describe('happy', function() {
+  it('happy main', function(done) {
     helper.seneca(function(seneca, userent, teament, eventent) {
 
       async.waterfall([
@@ -84,7 +84,9 @@ describe('well app', function() {
       ])
     })
   })
+})
 
+describe('data structure integrity', function() {
   it('cmd:leader', function(done) {
     helper.seneca(function(seneca, userent, teament, eventent) {
       async.waterfall([
