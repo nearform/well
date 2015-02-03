@@ -1,8 +1,3 @@
-// TODO:
-// - Five more test cases
-// - Check dev_setup
-// - Can you ever be a member of two teams at the same time?
-
 // ADD COPYRIGHT INFO OR A DISCLAIMER
 "use strict";
 
@@ -19,9 +14,7 @@ describe('seneca, role:well', function() {
       async.waterfall([
         // Loading events from db
         function(callback) {
-          eventent.list$(function(err, events) {
-            callback(err, events)
-          })
+          eventent.list$(callback)
         },
         function(events, callback) {
           // Get list of teams in event 0 through leader cmd
@@ -62,9 +55,7 @@ describe('seneca, role:well', function() {
       async.waterfall([
         // Loading events from db
         function(callback) {
-          eventent.list$(function(err, events) {
-            callback(err, events)
-          })
+          eventent.list$(callback)
         },
         // Loading users from db
         function(events, callback) {
@@ -74,31 +65,24 @@ describe('seneca, role:well', function() {
         },
         // Insert all users into event 1
         function(events, users, callback) {
-          var count = 0
           _.each(users, function(user) {
             seneca.act('role:well, cmd:joinevent', {
               user: user,
               event: events[1]
             }, function(err, data) {
-              count++
-              if (count < users.length) return
-              callback(err)
+              if (users.indexOf(user) === users.length - 1) callback(err)
             })
           })
         },
         // Loading events from db to refresh data
         function(callback) {
-          eventent.list$(function(err, events) {
-            callback(err, events)
-          })
+          eventent.list$(callback)
         },
         // Loading teams of event B from db
         function(events, callback) {
           teament.list$({
             event: events[1].id
-          }, function(err, teams) {
-            callback(err, teams)
-          })
+          }, callback)
         },
         // Loading a known user from that team
         function(teams, callback) {
@@ -137,14 +121,14 @@ describe('seneca, role:well', function() {
           })
 
           // Making sure does not contain admin
-          assert.equal((memnames.indexOf("admin") == -1), true)
+          assert.equal((memnames.indexOf("admin") === -1), true)
 
           // Making sure db elements are same as returned elements
           assert.deepEqual(dbnames, memnames)
 
-          callback()
+          done()
         }
-      ], done)
+      ])
     })
   })
 

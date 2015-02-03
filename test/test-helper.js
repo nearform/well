@@ -19,6 +19,10 @@ module.exports =
       var teament = seneca.make('team')
       var eventent = seneca.make('event')
 
+      seneca.seneca({
+        errhandler: done
+      })
+
       // Init entities
       async.waterfall([
         // Adding events
@@ -43,14 +47,12 @@ module.exports =
               name: 'MeetupB',
               code: 'mb'
             }, ['role', 'cmd']))).save$(function(err, event) {
-              callback(err)
+              callback()
             })
         },
         // Loading events from db
         function(callback) {
-          eventent.list$(function(err, events) {
-            callback(err, events)
-          })
+          eventent.list$(callback)
         },
         // Adding teams
         // Add a team to event with index 0
