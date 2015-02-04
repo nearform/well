@@ -8,9 +8,6 @@ var assert = require('assert')
 
 describe('happy', function() {
 
-  // May occasionally throw 'Cannot read property 'name' of undefined'
-  // because the app distributes users randomly
-  // without balancing the amount on both teams.
   it('happy main', function(done) {
     helper.init(function(si) {
 
@@ -22,13 +19,14 @@ describe('happy', function() {
       ;si
         .make$('sys/user')
         .list$(function(err, users){
-      // Insert all users into event A
+      // Insert all users into event A, team 0
       _.each(users, function(user) {
 
       ;si
         .act('role:well, cmd:joinevent', {
           user: user,
-          event: event
+          event: event,
+          tnum:0
         }, function(err, res) {
           if (users.indexOf(user) < users.length - 1) return // <-- Loop control
       // Load team 0 from event A
@@ -67,6 +65,7 @@ describe('happy', function() {
       }) }) }) }) }) }) }) })
     })
   })
+
 })
 
 describe('data structure integrity', function() {
@@ -213,7 +212,7 @@ describe('data structure integrity', function() {
     })
   })
 
-  it ('cmd:member beta', function(done){
+  it ('cmd:member', function(done){
     helper.init(function(si){
 
       // Load event A from db
@@ -244,4 +243,5 @@ describe('data structure integrity', function() {
       }) }) }) })
     })
   })
+
 })
