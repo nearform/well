@@ -244,4 +244,26 @@ describe('data structure integrity', function() {
     })
   })
 
+  it ('cmd:createevent', function(done){
+    helper.init(function(si){
+
+      // Create the event
+      ;si
+        .act('role:well, cmd:createevent', {
+              numcards: 52,
+              numteams: 2,
+              name: 'MeetupX',
+              code: 'mx'
+            }, function(err, event) {
+              // Should exist and contain same data as fed into it
+              assert.equal(event.numcards, 52)
+              assert.equal(event.numteams, 2)
+              assert.equal(event.name, 'MeetupX')
+              assert.equal(event.code, 'mx')
+
+              done()
+      })
+    })
+  })
+
 })
