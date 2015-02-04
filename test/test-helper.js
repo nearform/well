@@ -88,38 +88,14 @@ module.exports =
       })
       .save$(function(err, team_b) {
      
-      ;si
-      .act('role:user,cmd:register', {
-          nick: 'u1',
-          name: 'n1',
-          password: 'p1'
-        })
+      si.util.recurse(6, function( index, next ){
+        si
         .act('role:user,cmd:register', {
-          nick: 'u2',
-          name: 'n2',
-          password: 'p2'
-        })
-        .act('role:user,cmd:register', {
-          nick: 'u3',
-          name: 'n3',
-          password: 'p3'
-        })
-        .act('role:user,cmd:register', {
-          nick: 'u4',
-          name: 'n4',
-          password: 'p4'
-        })
-        .act('role:user,cmd:register', {
-          nick: 'u5',
-          name: 'n5',
-          password: 'p5'
-        })
-        .act('role:user,cmd:register', {
-          nick: 'u6',
-          name: 'n6',
-          password: 'p6'
-        }, function(err, res) {
-
+            nick: 'u' + index,
+            name: 'n' + index,
+            password: 'p' + index
+          }, next)
+      }, function(err, data){
           done(si)
       }) }) }) }) }) })
     }
