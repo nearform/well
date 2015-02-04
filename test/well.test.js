@@ -15,12 +15,12 @@ describe('happy', function() {
   // without balancing the amount on both teams.
   it('happy main', function(done) {
     helper.init(function(si) {
-      
-      // Loading event A from db
+
+      // Load event A from db
       ;si
         .make$('event')
         .load$({code:'ma'}, function(err, event){
-      // Loading users from db
+      // Load users from db
       ;si
         .make$('sys/user')
         .list$(function(err, users){
@@ -28,26 +28,26 @@ describe('happy', function() {
       _.each(users, function(user) {
 
       ;si
-      .act('role:well, cmd:joinevent', {
-        user: user,
-        event: event
-      }, function(err, res) {
-        if (users.indexOf(user) < users.length - 1) return // <-- Loop control
+        .act('role:well, cmd:joinevent', {
+          user: user,
+          event: event
+        }, function(err, res) {
+          if (users.indexOf(user) < users.length - 1) return // <-- Loop control
       // Load team 0 from event A
       ;si
-      .make$('team')
-      .load$({event:event.id, num:0}, function(err, team){
-      // load all members of team 0
-      var members = []
-        _.each(team.users, function(user, nick) {
-          members.push(user)
-      })
+        .make$('team')
+        .load$({event:event.id, num:0}, function(err, team){
+        // load all members of team 0
+        var members = []
+          _.each(team.users, function(user, nick) {
+            members.push(user)
+        })
       // Load member 0
       ;si
-      .make$('sys/user')
-      .load$({
-        name: members[0].name
-      }, function(err, member_zero) {
+        .make$('sys/user')
+        .load$({
+          name: members[0].name
+        }, function(err, member_zero) {
       // Load member 1
       ;si
       .make$('sys/user')
@@ -62,7 +62,7 @@ describe('happy', function() {
           other: member_one.nick,
           card: event.users[member_one.nick].c
         }, function(err, res){
-      // Check if the points were added
+          // Check if the points were added
           assert.equal(res.team.numwells, 1)
 
           done()
@@ -118,46 +118,36 @@ describe('data structure integrity', function() {
     })
   })
 
-  it('cmd:leader', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
-      async.waterfall([
-        // Loading event 0 from db
-        function(callback) {
-          eventent.load$({
-            code: 'ma'
-          }, callback)
-        },
-        function(event, callback) {
-          // Get list of teams in event 0 through leader cmd
-          seneca.act('role:well, cmd:leader', {
-            event: event
-          }, function(err, leader) {
-            callback(err, event, leader)
+  it('cmd:leader', function(done){
+    helper.init(function(si){
+
+      // Load event A from db
+      ;si
+        .make$('event')
+        .load$({code:'ma'}, function(err, event){
+      // Get list of teams in event A through cmd:leader
+      ;si
+        .act('role:well, cmd:leader', {
+          event: event
+        }, function(err, leader){
+      // Get list of teams in event A directly from db
+      ;si
+        .make$('team')
+        .list$({event:event.id}, function(err, dbteams){
+          // Format both lists into arrays of names(leader does not contain id data)
+          dbteams = dbteams.map(function(element) {
+            return element.name
           })
-        },
-        function(event, leader, callback) {
-          // Get list of teams in event 0 directly from db
-          teament.list$({
-            event: event.id
-          }, function(err, dbteams) {
-
-            // Format both lists into arrays of names(leader does not contain id data)
-            dbteams = dbteams.map(function(element) {
-              return element.name
-            })
-            leader = leader.teams.map(function(element) {
-              return element.name
-            })
-
-            // Compare team names
-            assert.deepEqual(dbteams, leader)
-
-            // Make sure an unwanted element is not contained within the array
-            assert.equal(leader.indexOf('Blue'), -1)
-            done(err)
+          leader = leader.teams.map(function(element) {
+            return element.name
           })
-        }
-      ])
+          // Compare team names
+          assert.deepEqual(dbteams, leader)
+          // Make sure an unwanted element is not contained within the cmd:leader response
+          assert.equal(leader.indexOf('Blue'), -1)
+
+          done()
+      }) }) })
     })
   })
 
