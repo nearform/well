@@ -10,85 +10,63 @@ var async  = require('async')
 
 describe('happy', function() {
 
-  // May throw 'Cannot read property 'name' of undefined'
+  // May occasionally throw 'Cannot read property 'name' of undefined'
   // because the app distributes users randomly
   // without balancing the amount on both teams.
   it('happy main', function(done) {
-    helper.init(function(seneca) {
-      var userent = seneca.make('sys/user')
-      var teament = seneca.make('team')
-      var eventent = seneca.make('event')
+    helper.init(function(si) {
+      
+      // Loading event A from db
+      ;si
+        .make$('event')
+        .load$({code:'ma'}, function(err, event){
+      // Loading users from db
+      ;si
+        .make$('sys/user')
+        .list$(function(err, users){
+      // Insert all users into event A
+      _.each(users, function(user) {
 
-      async.waterfall([
-        // add users to both teams in event 0
-        // find two users in the same team
-        // exchange cards
-        // check if the points were added
+      ;si
+      .act('role:well, cmd:joinevent', {
+        user: user,
+        event: event
+      }, function(err, res) {
+        if (users.indexOf(user) < users.length - 1) return // <-- Loop control
+      // Load team 0 from event A
+      ;si
+      .make$('team')
+      .load$({event:event.id, num:0}, function(err, team){
+      // load all members of team 0
+      var members = []
+        _.each(team.users, function(user, nick) {
+          members.push(user)
+      })
+      // Load member 0
+      ;si
+      .make$('sys/user')
+      .load$({
+        name: members[0].name
+      }, function(err, member_zero) {
+      // Load member 1
+      ;si
+      .make$('sys/user')
+      .load$({
+        name: members[1].name
+      }, function(err, member_one) {
+      // Make the members exchange a card
+      ;si
+        .act('role:well, cmd:well', {
+          user: member_zero,
+          event: event,
+          other: member_one.nick,
+          card: event.users[member_one.nick].c
+        }, function(err, res){
+      // Check if the points were added
+          assert.equal(res.team.numwells, 1)
 
-        // Loading event 0 from db
-        function(callback) {
-          eventent.load$({
-            code: 'ma'
-          }, callback)
-        },
-        // Loading users from db
-        function(event, callback) {
-          userent.list$(function(err, users) {
-            callback(err, event, users)
-          })
-        },
-        // Insert all users into event 0
-        function(event, users, callback) {
-          _.each(users, function(user) {
-            seneca.act('role:well, cmd:joinevent', {
-              user: user,
-              event: event
-            }, function(err, data) {
-              if (users.indexOf(user) === users.length - 1) callback(err, event)
-            })
-          })
-        },
-        // Load team 0 from event 0
-        function(event, callback) {
-          teament.load$({
-            event: event.id,
-            num: 0
-          }, function(err, team) {
-            // load all users from team 0
-            var members = []
-            _.each(team.users, function(user, nick) {
-              members.push(user)
-            })
-            callback(err, event, members)
-          })
-        },
-        // Get member 0 object
-        function(event, members, callback) {
-          userent.load$({
-            name: members[0].name
-          }, function(err, user) {
-            callback(err, event, user, members[1])
-          })
-        },
-        // Make 2 members exchange cards
-        function(event, user, other, callback) {
-          userent.load$({
-            name: other.name
-          }, function(err, other) {
-            seneca.act('role:well, cmd:well', {
-              user: user,
-              event: event,
-              other: other.nick,
-              card: event.users[other.nick].c
-            }, callback)
-          })
-        },
-        // Check if the points were added
-        function(team, callback) {
-          assert.equal(team.team.numwells, 1)
           done()
-        }
-      ])
+      }) }) }) }) }) }) }) })
     })
   })
 })
@@ -97,15 +75,15 @@ describe('data structure integrity', function() {
 
   it('cmd:whoami logged out', function(done) {
     helper.init(function(si){
-      
+
       // Load event A from DB
       ;si
         .make$('event')
         .load$({code:'ma'},function(err,event){
       // Should return contents of event A
       ;si
-        .act('role:well,cmd:whoami',{event:event},function(err,result){
-          assert.equal(result.event.name, event.name)
+        .act('role:well,cmd:whoami',{event:event},function(err,res){
+          assert.equal(res.event.name, event.name)
           
           done()
       }) })
@@ -128,18 +106,17 @@ describe('data structure integrity', function() {
         .act('role:well, cmd:whoami', {
           user: user,
           event: event
-        }, function(err, result) {
-          assert.equal(result.card, user.events[event.id].c)
-          assert.equal((user.avatar === undefined && result.avatar === false), true)
-          assert.equal(result.user.id, user.id)
-          assert.equal(result.team.num, user.events[event.id].t)
-          assert.equal(result.event.id, event.id)
+        }, function(err, res) {
+          assert.equal(res.card, user.events[event.id].c)
+          assert.equal((user.avatar === undefined && res.avatar === false), true)
+          assert.equal(res.user.id, user.id)
+          assert.equal(res.team.num, user.events[event.id].t)
+          assert.equal(res.event.id, event.id)
             
           done()
       }) }) })
     })
   })
-
 
   it('cmd:leader', function(done) {
     helper.seneca(function(seneca, userent, teament, eventent) {
@@ -205,7 +182,7 @@ describe('data structure integrity', function() {
             seneca.act('role:well, cmd:joinevent', {
               user: user,
               event: event
-            }, function(err, data) {
+            }, function(err, res) {
               if (users.indexOf(user) === users.length - 1) callback(err)
             })
           })
@@ -295,7 +272,7 @@ describe('data structure integrity', function() {
               user: user,
               event: event
             },
-            function(err, data) {
+            function(err, res) {
               callback(err, event, user)
             })
         },
@@ -304,10 +281,10 @@ describe('data structure integrity', function() {
           seneca.act('role:well, cmd:member', {
             other: user.nick,
             event: event
-          }, function(err, result) {
-            assert.equal(result.nick, user.nick)
-            assert.equal(result.name, user.name)
-            assert.equal((user.avatar === undefined && result.avatar === false), true)
+          }, function(err, res) {
+            assert.equal(res.nick, user.nick)
+            assert.equal(res.name, user.name)
+            assert.equal((user.avatar === undefined && res.avatar === false), true)
             done(err)
           })
         }

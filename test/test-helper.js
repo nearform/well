@@ -119,7 +119,7 @@ module.exports =
           nick: 'u6',
           name: 'n6',
           password: 'p6'
-        }, function(err, result) {
+        }, function(err, res) {
 
           done(si)
       }) }) }) }) }) })
