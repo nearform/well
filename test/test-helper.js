@@ -1,10 +1,131 @@
 module.exports =
   function() {
 
-    var async    = require('async')
-    var _        = require('lodash')
+    var async = require('async')
+    var _     = require('lodash')
 
-    this.seneca  = function(done) {
+    this.init = function(done, err_handler) {
+      var si = require('seneca')({
+        errhandler: err_handler
+      })
+
+      // Init well.js
+      si.use('options', '../options.well.js')
+      var options = si.export('options')
+      options.dev_setup = options.well.dev_setup // <- This is not normal, check if app should really work like this
+
+      si.use('user')
+      si.use('../well', options)
+
+      // Add event A
+      ;si
+        .make$('event')
+        .make$(_.extend({
+          numcards: 52,
+          numteams: 2,
+          name: 'MeetupA',
+          code: 'ma',
+          users: {}
+        }, _.omit({
+          name: 'MeetupA',
+          code: 'ma'
+        }, ['role', 'cmd'])))
+        .save$(function(err, event_a){
+
+      // Add event B
+      ;si
+        .make$('event')
+        .make$(_.extend({
+          numcards: 52,
+          numteams: 1,
+          name: 'MeetupB',
+          code: 'mb',
+          users: {}
+        }, _.omit({
+          name: 'MeetupB',
+          code: 'mb'
+        }, ['role', 'cmd'])))
+        .save$(function(err, event_b){
+
+      // Add team Red to event A
+      ;si
+        .make$('team')
+        .make$({
+            num: 0,
+            event: event_a.id,
+            eventcode: event_a.code,
+            name: 'Red',
+            wells: {},
+            numwells: 0,
+            users: {}
+          })
+        .save$(function(err, team_r){
+
+      // Add team Green to event A
+      ;si
+        .make$('team')
+        .make$({
+          num: 1,
+          event: event_a.id,
+          eventcode: event_a.code,
+          name: 'Green',
+          wells: {},
+          numwells: 0,
+          users: {}
+        })
+        .save$(function(err, team_g) {
+        
+      // Add team Blue to event B
+      ;si
+      .make$('team')
+      .make$({
+        num: 0,
+        event: event_b.id,
+        eventcode: event_b.code,
+        name: 'Blue',
+        wells: {},
+        numwells: 0,
+        users: {}
+      })
+      .save$(function(err, team_b) {
+     
+      ;si
+      .act('role:user,cmd:register', {
+          nick: 'u1',
+          name: 'n1',
+          password: 'p1'
+        })
+        .act('role:user,cmd:register', {
+          nick: 'u2',
+          name: 'n2',
+          password: 'p2'
+        })
+        .act('role:user,cmd:register', {
+          nick: 'u3',
+          name: 'n3',
+          password: 'p3'
+        })
+        .act('role:user,cmd:register', {
+          nick: 'u4',
+          name: 'n4',
+          password: 'p4'
+        })
+        .act('role:user,cmd:register', {
+          nick: 'u5',
+          name: 'n5',
+          password: 'p5'
+        })
+        .act('role:user,cmd:register', {
+          nick: 'u6',
+          name: 'n6',
+          password: 'p6'
+        }, function(err, result) {
+
+          done(si)
+      }) }) }) }) }) })
+    }
+
+    this.seneca = function(done) {
       var seneca = require('seneca')()
 
       // Init well.js
@@ -70,7 +191,7 @@ module.exports =
               num: 1,
               event: events[0].id,
               eventcode: events[0].code,
-              name: 'Tan',
+              name: 'Green',
               wells: {},
               numwells: 0,
               users: {}

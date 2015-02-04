@@ -3,10 +3,10 @@
 
 var Helper = require('./test-helper.js')
 var helper = new Helper();
-var _ = require('lodash')
-var util = require('util')
+var _      = require('lodash')
+var util   = require('util')
 var assert = require('assert')
-var async = require('async')
+var async  = require('async')
 
 describe('happy', function() {
 
@@ -14,7 +14,10 @@ describe('happy', function() {
   // because the app distributes users randomly
   // without balancing the amount on both teams.
   it('happy main', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
+    helper.init(function(seneca) {
+      var userent = seneca.make('sys/user')
+      var teament = seneca.make('team')
+      var eventent = seneca.make('event')
 
       async.waterfall([
         // add users to both teams in event 0
@@ -92,58 +95,51 @@ describe('happy', function() {
 
 describe('data structure integrity', function() {
 
-  // Currently does not check for the avatar
-  it('cmd:whoami', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
-      async.waterfall([
-        // Loading event 0 from db
-        function(callback) {
-          eventent.load$({
-            code: 'ma'
-          }, callback)
-        },
-        // Check logged out user
-        function(event, callback) {
-          seneca.act('role:well, cmd:whoami', {
-            event: event
-          }, function(err, result) {
-            // Should return event name
-            assert.equal(result.event.name, event.name)
-            callback()
-          })
-        },
-        // Check logged in user next
-        // Loading event 0 from db
-        function(callback) {
-          eventent.load$({
-            code: 'ma'
-          }, callback)
-        },
-        // Loading admin from db
-        function(event, callback) {
-          userent.load$({
-            nick: 'admin'
-          }, function(err, user) {
-            callback(err, event, user)
-          })
-        },
-        // Should return meta data object: {card:,avatar:,user:,team:,event:}
-        function(event, user, callback) {
-          seneca.act('role:well, cmd:whoami', {
-            user: user,
-            event: event
-          }, function(err, result) {
-            assert.equal(result.card, user.events[event.id].c)
-            assert.equal((user.avatar === undefined && result.avatar === false), true)
-            assert.equal(result.user.id, user.id)
-            assert.equal(result.team.num, user.events[event.id].t)
-            assert.equal(result.event.id, event.id)
-            done(err)
-          })
-        }
-      ])
+  it('cmd:whoami logged out', function(done) {
+    helper.init(function(si){
+      
+      // Load event A from DB
+      ;si
+        .make$('event')
+        .load$({code:'ma'},function(err,event){
+      // Should return contents of event A
+      ;si
+        .act('role:well,cmd:whoami',{event:event},function(err,result){
+          assert.equal(result.event.name, event.name)
+          
+          done()
+      }) })
     })
   })
+
+  // Currently does not check for the avatar
+  it ('cmd:whoami logged in', function(done){
+    helper.init(function(si){
+
+      // Load event A from DB
+      ;si
+        .make$('event')
+        .load$({code:'ma'},function(err,event){
+      // Load admin from DB
+      ;si
+        .make('sys/user').load$({nick:'admin'}, function(err, user) {
+      // Should return meta data object: {card:,avatar:,user:,team:,event:}
+      ;si
+        .act('role:well, cmd:whoami', {
+          user: user,
+          event: event
+        }, function(err, result) {
+          assert.equal(result.card, user.events[event.id].c)
+          assert.equal((user.avatar === undefined && result.avatar === false), true)
+          assert.equal(result.user.id, user.id)
+          assert.equal(result.team.num, user.events[event.id].t)
+          assert.equal(result.event.id, event.id)
+            
+          done()
+      }) }) })
+    })
+  })
+
 
   it('cmd:leader', function(done) {
     helper.seneca(function(seneca, userent, teament, eventent) {
