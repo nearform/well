@@ -146,7 +146,7 @@ module.exports =
 
       // Init entities
       async.waterfall([
-        // Adding events
+        // Add events
         function(callback) {
           eventent.make$(_.extend({
               numcards: 52,
@@ -171,11 +171,11 @@ module.exports =
               callback()
             })
         },
-        // Loading events from db
+        // Load events from db
         function(callback) {
           eventent.list$(callback)
         },
-        // Adding teams
+        // Add teams
         // Add a team to event with index 0
         function(events, callback) {
           teament.make$({

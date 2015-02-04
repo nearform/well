@@ -151,90 +151,67 @@ describe('data structure integrity', function() {
     })
   })
 
-  it('cmd:members', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
-      async.waterfall([
-        // Loading event 1 from db
-        function(callback) {
-          eventent.load$({
-            code: 'mb'
-          }, callback)
-        },
-        // Loading users from db
-        function(event, callback) {
-          userent.list$(function(err, users) {
-            callback(err, event, users)
-          })
-        },
-        // Insert all users into event 1
-        function(event, users, callback) {
-          _.each(users, function(user) {
-            seneca.act('role:well, cmd:joinevent', {
-              user: user,
-              event: event
-            }, function(err, res) {
-              if (users.indexOf(user) === users.length - 1) callback(err)
-            })
-          })
-        },
-        // Loading event 1 from db to refresh data
-        function(callback) {
-          eventent.load$({
-            code: 'mb'
-          }, callback)
-        },
-        // Loading the only team in event 1 from db
-        function(event, callback) {
-          teament.load$({
-            event: event.id,
-            num: 0
-          }, callback)
-        },
-        // Loading a known user from that team
-        function(team, callback) {
-          userent.load$({
-            nick: 'admin'
-          }, function(err, user) {
-            callback(err, team, user)
-          })
-        },
-        // Obtaining members
-        function(team, user, callback) {
+  it ('cmd:members', function(done){
+    helper.init(function(si){
 
-          seneca.act('role:well, cmd:members', {
+      // Load event A from db
+      ;si
+        .make$('event')
+        .load$({code:'ma'}, function(err, event){
+      // Load users from db
+      ;si
+        .make$('sys/user')
+        .list$(function(err, users){
+      // Insert all users into event A
+      _.each(users, function(user) {
+
+      ;si
+        .act('role:well, cmd:joinevent', {
+          user: user,
+          event: event
+        }, function(err, res) {
+          if (users.indexOf(user) < users.length - 1) return // <-- Loop control
+      // Load event A from db to refresh data
+      ;si
+        .make$('event')
+        .load$({code:'ma'}, function(err, event){
+      // Load the only team in event A from db
+      ;si
+        .make$('team')
+        .load$({event:event.id, num:0}, function(err, team){
+      // Load a known user from that team
+      ;si
+        .make$('sys/user')
+        .load$({nick:'admin'}, function(err, admin){
+      // Obtain members
+      ;si
+        .act('role:well, cmd:members', {
             team: team,
-            user: user
+            user: admin
           }, function(err, members) {
-            callback(err, team, members)
-          })
-        },
-        // Comparing db against members return
-        function(team, members, callback) {
+        // Compare db against members return data:
 
-          // admin is being removed, because it's supplied into members call as the user to be ignored
+        // Store db members in an array and
+        // remove admin from list which is db clone.
+        // Admin is being removed, because it's supplied
+        // into members call as the user to be ignored
+        var dbnames = []
+        _.each(team.users, function(teamuser) {
+          if (teamuser.name != 'admin') dbnames.push(teamuser.name)
+        })
+        // Storing returned members in an array
+        var memnames = []
+        _.each(members.members, function(member) {
+          memnames.push(member.name)
+        })
+        // Make sure does not contain admin
+        assert.equal((dbnames.indexOf('admin') === -1), true)
+        assert.equal((memnames.indexOf('admin') === -1), true)
+        // Make sure db elements are same as returned elements
+        assert.deepEqual(dbnames, memnames)
 
-          // Removing admin from list which is db clone
-          // Storing db members in an array
-          var dbnames = []
-          _.each(team.users, function(teamuser) {
-            if (teamuser.name != 'admin') dbnames.push(teamuser.name)
-          })
-
-          // Storing returned members in an array
-          var memnames = []
-          _.each(members.members, function(member) {
-            memnames.push(member.name)
-          })
-
-          // Making sure does not contain admin
-          assert.equal((memnames.indexOf("admin") === -1), true)
-
-          // Making sure db elements are same as returned elements
-          assert.deepEqual(dbnames, memnames)
-
-          done()
-        }
-      ])
+        done()
+      }) }) }) }) }) }) }) })
     })
   })
 
