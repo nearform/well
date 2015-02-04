@@ -125,136 +125,8 @@ module.exports =
       }) }) }) }) }) })
     }
 
-    this.seneca = function(done) {
-      var seneca = require('seneca')()
-
-      // Init well.js
-      seneca.use('options', '../options.well.js')
-      var options = seneca.export('options')
-      options.dev_setup = options.well.dev_setup // <- This is not normal, check if app should really work like this
-
-      seneca.use('user')
-      seneca.use('../well', options)
-
-      var userent = seneca.make('sys/user')
-      var teament = seneca.make('team')
-      var eventent = seneca.make('event')
-
-      seneca.seneca({
-        errhandler: done
-      })
-
-      // Init entities
-      async.waterfall([
-        // Add events
-        function(callback) {
-          eventent.make$(_.extend({
-              numcards: 52,
-              numteams: 2,
-              name: 'MeetupA',
-              code: 'ma',
-              users: {}
-            }, _.omit({
-              name: 'MeetupA',
-              code: 'ma'
-            }, ['role', 'cmd']))).save$()
-            .make$(_.extend({
-              numcards: 52,
-              numteams: 1,
-              name: 'MeetupB',
-              code: 'mb',
-              users: {}
-            }, _.omit({
-              name: 'MeetupB',
-              code: 'mb'
-            }, ['role', 'cmd']))).save$(function(err, event) {
-              callback()
-            })
-        },
-        // Load events from db
-        function(callback) {
-          eventent.list$(callback)
-        },
-        // Add teams
-        // Add a team to event with index 0
-        function(events, callback) {
-          teament.make$({
-              num: 0,
-              event: events[0].id,
-              eventcode: events[0].code,
-              name: 'Red',
-              wells: {},
-              numwells: 0,
-              users: {}
-            }).save$()
-            .make$({
-              num: 1,
-              event: events[0].id,
-              eventcode: events[0].code,
-              name: 'Green',
-              wells: {},
-              numwells: 0,
-              users: {}
-            }).save$(function(err, entity) {
-              callback(err, events)
-            })
-        },
-        // Add a team to a different event
-        function(events, callback) {
-          teament.make$({
-            num: 0,
-            event: events[1].id,
-            eventcode: events[1].code,
-            name: 'Blue',
-            wells: {},
-            numwells: 0,
-            users: {}
-          }).save$(function(err, entity) {
-            callback(err)
-          })
-        },
-        // Load users, but do not assign them to any events to allow tests for custom setup
-        function(callback) {
-          // Use the cmd:register action of the seneca-user plugin to register the fake users
-          // This ensures they are created properly
-          seneca.act('role:user,cmd:register', {
-              nick: 'u1',
-              name: 'n1',
-              password: 'p1'
-            })
-            .act('role:user,cmd:register', {
-              nick: 'u2',
-              name: 'n2',
-              password: 'p2'
-            })
-            .act('role:user,cmd:register', {
-              nick: 'u3',
-              name: 'n3',
-              password: 'p3'
-            })
-            .act('role:user,cmd:register', {
-              nick: 'u4',
-              name: 'n4',
-              password: 'p4'
-            })
-            .act('role:user,cmd:register', {
-              nick: 'u5',
-              name: 'n5',
-              password: 'p5'
-            })
-            .act('role:user,cmd:register', {
-              nick: 'u6',
-              name: 'n6',
-              password: 'p6'
-            }, callback)
-        }
-      ], function() {
-        done(seneca, userent, teament, eventent)
-      })
-    }
-
-    this.list_all = function list_all(userent, teament, eventent) {
-      eventent.list$(function(err, dblist) {
+    this.list_all = function list_all(seneca) {
+      seneca.make$('event').list$(function(err, dblist) {
         if (err) return console.error(err)
         console.log("\n\t\t ---")
         console.log("\t\tEvents\n")
@@ -264,7 +136,7 @@ module.exports =
         console.log("\n\t\t ---\n");
       })
 
-      teament.list$(function(err, dblist) {
+      seneca.make$('team').list$(function(err, dblist) {
         console.log("\n\t\t ---")
         console.log("\t\tTeams\n")
         if (err) return console.error(err)
@@ -274,7 +146,7 @@ module.exports =
         console.log("\n\t\t ---\n")
       })
 
-      userent.list$(function(err, dblist) {
+      seneca.make$('sys/user').list$(function(err, dblist) {
         console.log("\n\t\t ---")
         console.log("\t\tUsers\n")
         if (err) return console.error(err)

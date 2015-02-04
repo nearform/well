@@ -134,13 +134,13 @@ describe('data structure integrity', function() {
       ;si
         .make$('team')
         .list$({event:event.id}, function(err, dbteams){
-          // Format both lists into arrays of names(leader does not contain id data)
-          dbteams = dbteams.map(function(element) {
-            return element.name
-          })
-          leader = leader.teams.map(function(element) {
-            return element.name
-          })
+            // Format both lists into arrays of names(leader does not contain id data)
+            dbteams = dbteams.map(function(element) {
+              return element.name
+            })
+            leader = leader.teams.map(function(element) {
+              return element.name
+            })
           // Compare team names
           assert.deepEqual(dbteams, leader)
           // Make sure an unwanted element is not contained within the cmd:leader response
@@ -215,48 +215,35 @@ describe('data structure integrity', function() {
     })
   })
 
-  // Currently does not check for the avatar
-  it('cmd:member', function(done) {
-    helper.seneca(function(seneca, userent, teament, eventent) {
-      async.waterfall([
-        // Loading event 0 from db
-        function(callback) {
-          eventent.load$({
-            code: 'ma'
-          }, callback)
-        },
-        // Loading admin from db
-        function(event, callback) {
-          userent.load$({
-            nick: 'admin'
-          }, function(err, user) {
-            callback(err, event, user)
-          })
-        },
-        // Insert admin to event 0
-        function(event, user, callback) {
-          seneca.act('role:well, cmd:joinevent', {
-              user: user,
-              event: event
-            },
-            function(err, res) {
-              callback(err, event, user)
-            })
-        },
-        // Should return meta data object: {nick:,name:,avatar}
-        function(event, user, callback) {
-          seneca.act('role:well, cmd:member', {
-            other: user.nick,
+  it ('cmd:member beta', function(done){
+    helper.init(function(si){
+    
+      // Load event A from db
+      ;si
+        .make$('event')
+        .load$({code:'ma'}, function(err, event){
+      // Load admin from db
+      ;si
+        .make$('sys/user')
+        .load$({nick:'admin'}, function(err, admin){
+      // Insert admin to event A
+      ;si
+        .act('role:well, cmd:joinevent', {
+          user: admin,
+          event: event
+        }, function(err, res) {
+      // Should return meta data object: {nick:,name:,avatar}
+      ;si
+        .act('role:well, cmd:member', {
+            other: admin.nick,
             event: event
           }, function(err, res) {
-            assert.equal(res.nick, user.nick)
-            assert.equal(res.name, user.name)
-            assert.equal((user.avatar === undefined && res.avatar === false), true)
-            done(err)
-          })
-        }
-      ])
+            assert.equal(res.nick, admin.nick)
+            assert.equal(res.name, admin.name)
+            assert.equal((res.avatar === false && admin.avatar === undefined), true)
+
+            done()
+      }) }) }) })
     })
   })
-
 })
