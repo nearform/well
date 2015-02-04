@@ -2,10 +2,12 @@
 "use strict";
 
 
-// load some standard modules
-var _       = require('underscore') // see http://npmjs.org/m/underscore
-var async   = require('async')      // see http://npmjs.org/m/async
-var connect = require('connect')    // see http://npmjs.org/m/connect
+// load system modules
+var util = require('util')
+
+// load utility modules
+var _     = require('lodash')  // see http://npmjs.org/package/lodash
+var async = require('async')   // see http://npmjs.org/package/async
 
 
 // define a seneca plugin
@@ -705,31 +707,39 @@ module.exports = function( options ) {
 
   // express needs a scalable session store if you want to deploy to more than one machine
   // this is simple implementation using seneca entities
-  function WellStore() {
-    var self = new connect.session.Store(this)
-    var sess_ent = seneca.make$('session')
+  function session_store(session) {
 
-    self.get = function(sid, cb) {
-      sess_ent.load$(sid,function(err,sess){
-        cb(err,sess&&sess.data)
-      })
-    }
-    self.set = function(sid, data, cb) {
-      sess_ent.load$(sid,function(err,sess){
-        if(err) return cb(err);
-        sess = sess||sess_ent.make$({id$:sid})
-        sess.last = new Date().getTime()
-        sess.data = data
-        sess.save$(cb)
-      })
+    function WellStore() {
+      var self = this;
 
+      session.Store.call(this, {});
+
+      var sess_ent = seneca.make$('session')
+
+      self.get = function(sid, cb) {
+        sess_ent.load$(sid,function(err,sess){
+          cb(err,sess&&sess.data)
+        })
+      }
+
+      self.set = function(sid, data, cb) {
+        sess_ent.load$(sid,function(err,sess){
+          if(err) return cb(err);
+          sess = sess||sess_ent.make$({id$:sid})
+          sess.last = new Date().getTime()
+          sess.data = data
+          sess.save$(cb)
+        })
+      }
+
+      self.destroy = function(sid, cb) {
+        sess_ent.remove$(sid,cb)
+      }
     }
-    self.destroy = function(sid, cb) {
-      sess_ent.remove$(sid,cb)
-    }
-    return self
+    util.inherits(WellStore,session.Store)
+
+    return new WellStore()
   }
-
 
   // to finish the registration of a plugin, you need to return a meta data obect that
   // defines the name of the plugin, and it's tag value (if any, used if there is more than one instance of the same plugin)
@@ -739,7 +749,7 @@ module.exports = function( options ) {
     name:name, 
     exportmap:{
       // this object can be accessed using seneca.export('well/session-store')
-      'session-store':new WellStore()
+      'session-store':session_store
     }
   }
 }

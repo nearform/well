@@ -44,7 +44,6 @@ var env = argv.env || process.env['NODE_ENV']
 var seneca  = require('seneca')()
 
 
-
 // register the seneca builtin options plugin, and load the options from a local file
 // you'll normally do this first -
 // each seneca plugin can be given options when you register it ("seneca.use"),
@@ -59,6 +58,7 @@ catch(e) {
   process.exit( !console.error( "Please copy options.example.js to "+ options_file+': '+e ))
 }
 seneca.use('options',options_file)
+
 
 
 // if developing, use a throw-away in-process database
@@ -76,7 +76,7 @@ else {
   seneca.use('mongo-store')
 
   // register the seneca-memcached plugin - this provides access to a cache layer backed by memcached
-  seneca.use('memcached')
+  seneca.use('memcached-cache')
 
   // register the seneca-vcache plugin - this provides version-based caching for 
   // data entities over multiple memcached servers, and caches by query in addition to id
@@ -123,21 +123,24 @@ var sessionstore = seneca.export('well/session-store')
 // load the express module
 // this provides the basic web server
 var express = require('express')
+var session = require('express-session')
 
 // create an express app
 var app = express()
-app.use( express.logger() )
+
+// Log requests to console
+app.use( function(req,res,next){
+  console.log('EXPRESS',new Date().toISOString(), req.method, req.url)
+  next()
+})
 
 // setup express
-app.use( express.cookieParser() )
-app.use( express.query() )
-app.use( express.bodyParser() )
-app.use( express.methodOverride() )
-app.use( express.json() )
+//app.use( require('cookie-parser') )
+app.use( require('body-parser').json() )
 
 // you can't use a single node in-memory session store if you want to scale
 // well.js defines a session store that uses seneca entities
-app.use( express.session({ secret: 'CHANGE-THIS', store: sessionstore }) )
+app.use( session({ secret: 'CHANGE-THIS', store: sessionstore(session) }) )
 
 // add in the seneca middleware
 // this is how seneca integrates with express (or any connect-style web server module)
@@ -150,4 +153,3 @@ app.use( express.static(__dirname+options.main.public) )
 app.listen( options.main.port )
 
 seneca.log.info('listen',options.main.port)
-
