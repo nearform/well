@@ -1,7 +1,6 @@
 module.exports =
   function() {
 
-    var async = require('async')
     var _     = require('lodash')
 
     this.init = function(done, err_handler) {

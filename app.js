@@ -18,17 +18,6 @@
 "use strict";
 
 
-// the easiest way to parse command line arguments
-// see https://github.com/substack/node-optimist
-var argv = require('optimist').argv
-
-
-// get deployment type (set to 'development' for development)
-// use environment variable NODE_ENV, or command line argument --env
-var env = argv.env || process.env['NODE_ENV']
-
-
-
 // always capture, log and exit on uncaught exceptions
 // your production system should auto-restart the app
 // this is the Node.js way
@@ -39,6 +28,15 @@ process.on('uncaughtException', function(err) {
 })
 
 
+// the easiest way to parse command line arguments
+// see https://github.com/substack/node-optimist
+var argv = require('optimist').argv
+
+
+// get deployment type (set to 'development' for development)
+// use environment variable NODE_ENV, or command line argument --env
+var env = argv.env || process.env['NODE_ENV']
+
 
 // load the seneca module and create a new instance
 // note that module returns a function that constructs seneca instances (just like express)
@@ -46,14 +44,11 @@ process.on('uncaughtException', function(err) {
 var seneca  = require('seneca')()
 
 
-
 // register the seneca builtin options plugin, and load the options from a local file
 // you'll normally do this first -
 // each seneca plugin can be given options when you register it ("seneca.use"),
 // so you don't have to do this, but it does make life easier
 // see the options.well.js file for more
-// NOTE: unlike other plugins, the options plugin is *synchronous*
-// and returns the options immediately
 var optionsfolder = 'production' == env ? '/home/deploy/' : './'
 var options_file = optionsfolder+'options.well.js'
 try {
@@ -63,6 +58,7 @@ catch(e) {
   process.exit( !console.error( "Please copy options.example.js to "+ options_file+': '+e ))
 }
 seneca.use('options',options_file)
+
 
 
 // if developing, use a throw-away in-process database
@@ -80,7 +76,7 @@ else {
   seneca.use('mongo-store')
 
   // register the seneca-memcached plugin - this provides access to a cache layer backed by memcached
-  seneca.use('memcached')
+  seneca.use('memcached-cache')
 
   // register the seneca-vcache plugin - this provides version-based caching for 
   // data entities over multiple memcached servers, and caches by query in addition to id
@@ -103,62 +99,57 @@ seneca.use('perm',{entity:true})
 seneca.use('data-editor')
 
 
-// register yur own plugin - the well app business logic!
+// register your own plugin - the well app business logic!
 // in the options, indicate if you're in development mode
 // set the fake option, which triggers creation of test users and events if env == 'development'
 seneca.use('well',{fake:'development'==env})
 
 
+// seneca plugins can export objects for external use
+// you can access these using the seneca.export method
 
-// wait for all the seneca plugins to initialize
-// in particular, this will wait for the mongo connection to be ready
-// the callback to seneca.ready will pass any errors as the first argument
-seneca.ready( function(err) {
-  if( err ) return console.log(err);
+// get the configuration options
+var options = seneca.export('options')
 
-  // seneca plugins can export objects for external use
-  // you can access these using the seneca.export method
+// get the middleware function from the builtin web plugin
+var web = seneca.export('web')
 
-  // get the configuration options
-  var options = seneca.export('options')
-
-  // get the middleware function from the builtin web plugin
-  var web = seneca.export('web')
-
-  // get the simple database-backed session store defined in well.js
-  var sessionstore = seneca.export('well/session-store')
+// get the simple database-backed session store defined in well.js
+var sessionstore = seneca.export('well/session-store')
 
 
-  // load the express module
-  // this provides the basic web server
-  var express = require('express')
 
-  // create an express app
-  var app = express()
-  app.use( express.logger() )
 
-  // setup express
-  app.use( express.cookieParser() )
-  app.use( express.query() )
-  app.use( express.bodyParser() )
-  app.use( express.methodOverride() )
-  app.use( express.json() )
+// load the express module
+// this provides the basic web server
+var express = require('express')
+var session = require('express-session')
 
-  // you can't use a single node in-memory session store if you want to scale
-  // well.js defines a session store that uses seneca entities
-  app.use( express.session({ secret: 'CHANGE-THIS', store: sessionstore }) )
+// create an express app
+var app = express()
 
-  // add in the seneca middleware
-  // this is how seneca integrates with express (or any connect-style web server module)
-  app.use( web )
-
-  // serve static files from a folder defined in your options file
-  app.use( express.static(__dirname+options.main.public) )  
-
-  // start listening for HTTP requests
-  app.listen( options.main.port )
-
-  seneca.log.info('listen',options.main.port)
+// Log requests to console
+app.use( function(req,res,next){
+  console.log('EXPRESS',new Date().toISOString(), req.method, req.url)
+  next()
 })
 
+// setup express
+//app.use( require('cookie-parser') )
+app.use( require('body-parser').json() )
 
+// you can't use a single node in-memory session store if you want to scale
+// well.js defines a session store that uses seneca entities
+app.use( session({ secret: 'CHANGE-THIS', store: sessionstore(session) }) )
+
+// add in the seneca middleware
+// this is how seneca integrates with express (or any connect-style web server module)
+app.use( web )
+
+// serve static files from a folder defined in your options file
+app.use( express.static(__dirname+options.main.public) )  
+
+// start listening for HTTP requests
+app.listen( options.main.port )
+
+seneca.log.info('listen',options.main.port)

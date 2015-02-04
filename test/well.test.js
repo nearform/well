@@ -4,9 +4,7 @@
 var Helper = require('./test-helper.js')
 var helper = new Helper();
 var _      = require('lodash')
-var util   = require('util')
 var assert = require('assert')
-var async  = require('async')
 
 describe('happy', function() {
 
@@ -217,7 +215,7 @@ describe('data structure integrity', function() {
 
   it ('cmd:member beta', function(done){
     helper.init(function(si){
-    
+
       // Load event A from db
       ;si
         .make$('event')
