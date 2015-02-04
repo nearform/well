@@ -266,4 +266,37 @@ describe('data structure integrity', function() {
     })
   })
 
+  it('cmd:joinevent', function(done) {
+    helper.init(function(si) {
+      // Load event A from db
+      ;si
+        .make$('event')
+        .load$({code:'ma'}, function(err, event){
+      // Load admin from db
+      ;si
+        .make$('sys/user')
+        .load$({nick:'admin'}, function(err, admin){
+      // Insert admin to event A
+      ;si
+        .act('role:well, cmd:joinevent', {
+          user: admin,
+          event: event,
+          tnum: 0
+        }, function(err, res) {
+        // Should return meta data object: {card:, user:, team:, event:}
+         assert.equal((res.card >= 0 && res.card < event.numcards), true)
+         assert.equal(res.user.nick, 'admin')
+         assert.equal(res.team.name, 'Red')
+         assert.equal(res.event.code, 'ma')
+      // Should contain admin
+      ;si
+        .make$('event')
+        .load$({code:'ma'}, function(err, event){
+          assert.equal(event.users.admin !== undefined, true)
+
+          done()
+      }) }) }) })
+    })
+  })
+
 })
