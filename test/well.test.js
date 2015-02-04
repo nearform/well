@@ -19,7 +19,7 @@ describe('happy', function() {
       ;si
         .make$('sys/user')
         .list$(function(err, users){
-      // Insert all users into event A, team 0
+      // Insert all users into event A, team Red
       _.each(users, function(user) {
 
       ;si
@@ -29,11 +29,11 @@ describe('happy', function() {
           tnum:0
         }, function(err, res) {
           if (users.indexOf(user) < users.length - 1) return // <-- Loop control
-      // Load team 0 from event A
+      // Load team Red from event A
       ;si
         .make$('team')
         .load$({event:event.id, num:0}, function(err, team){
-        // load all members of team 0
+        // load all members of team Red
         var members = []
           _.each(team.users, function(user, nick) {
             members.push(user)
@@ -299,4 +299,103 @@ describe('data structure integrity', function() {
     })
   })
 
+})
+
+
+describe('scenarios', function() {
+
+  it('two teams play the game as intended', function(done) {
+    helper.init(function(si){
+      
+      // Load event A from db
+      ;si
+        .make$('event')
+        .load$({code:'ma'}, function(err, event){
+      // Load users from db
+      ;si
+        .make$('sys/user')
+        .list$(function(err, users){
+
+      // Insert users into event A
+      var team_r = []
+      var team_g = []
+      _.each(users, function(user) {
+
+        // Ensure at least 3 users in team Red
+        // All others go to team Green
+        var tnum = 0
+        if (users.indexOf(user) > 2) tnum = 1
+      ;si
+        .act('role:well, cmd:joinevent', {
+          user: user,
+          event: event,
+          tnum:tnum
+        }, function(err, res) {
+          // Populate temp arrays while populating the event
+          // since it's easier and cleaner this way
+          if (user.events[event.id].t === 0) team_r.push(user)
+          else if (user.events[event.id].t === 1) team_g.push(user)
+
+          if (users.indexOf(user) < users.length - 1) return // <-- Loop control
+
+      // Exchange some cards
+      ;si
+        .act('role:well, cmd:well', {
+          user: team_r[0],
+          event: event,
+          other: team_r[1].nick,
+          card: event.users[team_r[1].nick].c
+        }, function(err, res){
+      ;si
+        .act('role:well, cmd:well', {
+          user: team_r[1],
+          event: event,
+          other: team_r[2].nick,
+          card: event.users[team_r[2].nick].c
+        }, function(err, res){
+      ;si
+        .act('role:well, cmd:well', {
+          user: team_r[2],
+          event: event,
+          other: team_r[0].nick,
+          card: event.users[team_r[0].nick].c
+        }, function(err, res){
+      ;si
+        .act('role:well, cmd:well', {
+          user: team_r[2],
+          event: event,
+          other: team_r[0].nick,
+          card: event.users[team_r[0].nick].c
+        }, function(err, res){
+          // Check if the points were added
+          assert.equal(res.team.numwells, 4)
+          
+      ;si
+        .act('role:well, cmd:well', {
+          user: team_g[0],
+          event: event,
+          other: team_g[1].nick,
+          card: event.users[team_g[1].nick].c
+        }, function(err, res){
+      ;si
+        .act('role:well, cmd:well', {
+          user: team_g[1],
+          event: event,
+          other: team_g[2].nick,
+          card: event.users[team_g[2].nick].c
+        }, function(err, res){
+      ;si
+        .act('role:well, cmd:well', {
+          user: team_g[2],
+          event: event,
+          other: team_g[0].nick,
+          card: event.users[team_g[0].nick].c
+        }, function(err, res){
+          // Check if the points were added
+          assert.equal(res.team.numwells, 3)
+
+          done()
+      }) }) }) }) }) }) }) }) }) }) })
+    })
+  })
 })

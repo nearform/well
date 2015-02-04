@@ -142,7 +142,7 @@ module.exports =
     }
 
     this.show_routes = function show_routes(seneca) {
-      seneca.act('role:web, cmd:routes', function(err, routes) {
+      seneca.act('role:web, list:route', function(err, routes) {
         console.log("\n\t\t---")
         console.log("\tSENECA ROUTES AVAILABLE:\n");
         console.log(routes)
