@@ -1,5 +1,6 @@
 // ADD COPYRIGHT INFO OR A DISCLAIMER
 "use strict";
+process.setMaxListeners(0)
 
 var Helper = require('./unit.test.helper.js')
 var helper = new Helper();
