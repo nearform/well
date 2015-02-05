@@ -1,7 +1,7 @@
 // ADD COPYRIGHT INFO OR A DISCLAIMER
 "use strict";
 
-var Helper = require('./test-helper.js')
+var Helper = require('./unit.test.helper.js')
 var helper = new Helper();
 var _      = require('lodash')
 var assert = require('assert')

@@ -3,9 +3,9 @@ module.exports =
 
     var _     = require('lodash')
 
-    this.init = function(done, err_handler) {
+    this.init = function(done) {
       var si = require('seneca')({
-        errhandler: err_handler
+        errhandler: done
       })
 
       // Init well.js
@@ -139,14 +139,5 @@ module.exports =
         console.log(element)
       })
       console.log("\n\t\t---\n")
-    }
-
-    this.show_routes = function show_routes(seneca) {
-      seneca.act('role:web, list:route', function(err, routes) {
-        console.log("\n\t\t---")
-        console.log("\tSENECA ROUTES AVAILABLE:\n");
-        console.log(routes)
-        console.log("\n\t\t---\n")
-      })
     }
   }
