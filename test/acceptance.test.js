@@ -39,6 +39,46 @@ describe('acceptance testing', function(){
       })  
   })
 
+  it('data-editor/rest/sys%2Fuser/', function(done){
+
+  var hippie = new Hippie()
+  login('admin', 'admin', function(session, login){
+    hippie
+      .base('http://localhost:3333')
+      .header('Cookie', 'connect.sid=' + session + '; seneca-login=' + login)
+      .get('/data-editor/rest/sys%2Fuser')
+      .expectStatus(200)
+      .expectHeader('Content-Type', 'application/json')
+      .expect(function(res, body, next) {
+        var err = assert.equal(JSON.parse(res.body).list.length > 0, true);
+        next(err);
+      })
+      .end(function(err, res) {
+        if (err) throw err
+        done()
+    }) })
+  })
+
+  it('data-editor/rest/team/', function(done){
+
+  var hippie = new Hippie()
+  login('admin', 'admin', function(session, login){
+    hippie
+      .base('http://localhost:3333')
+      .header('Cookie', 'connect.sid=' + session + '; seneca-login=' + login)
+      .get('/data-editor/rest/team')
+      .expectStatus(200)
+      .expectHeader('Content-Type', 'application/json')
+      .expect(function(res, body, next) {
+        var err = assert.equal(JSON.parse(res.body).list.length > 0, true);
+        next(err);
+      })
+      .end(function(err, res) {
+        if (err) throw err
+        done()
+    }) })
+  })
+
   it('data-editor/rest/event/', function(done){
 
   var hippie = new Hippie()
@@ -59,9 +99,6 @@ describe('acceptance testing', function(){
     }) })
   })
 })
-
-
-
 
 
 function login(login, password, callback){
