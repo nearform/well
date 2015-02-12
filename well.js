@@ -513,25 +513,20 @@ module.exports = function( options ) {
   // result: no value
   function init( args, done ) {
 
-    // need to call these actions one after the other in series
-    async.series([
+    // define entities for the data-editor plugin
+    // this will allow you to use the visual data editor to manage the data in your app
+    // the entities are defined using the canonical form <zone>/<base>/<name>, with - meaning undefined
+    // in this case, we're not sharing a database, so we just use simple names: team and event
+    seneca.act('role:util, cmd:define_sys_entity', {list:['-/-/team','-/-/event']})
 
-      // define entities for the data-editor plugin
-      // this will allow you to use the visual data editor to manage the data in your app
-      // the entities are defined using the canonical form <zone>/<base>/<name>, with - meaning undefined
-      // in this case, we're not sharing a database, so we just use simple names: team and event
-      seneca.next_act('role:util, cmd:define_sys_entity', {list:['-/-/team','-/-/event']}),
-
-      // register an admin user so that you can login to the data-editor
-      seneca.next_act({role:'user',cmd:'register',nick:'admin',name:'admin',pass:options.admin.pass,admin:true}),
-
-      // set up fake users and events for development testing
-      // these actions are only defined if in dev mode, so the default$ meta argument 
-      // specifies a default result if they can't be found
-      seneca.next_act(_.extend({role:name,dev:'fakeusers',default$:{},users:options.dev_setup.users})),
-      seneca.next_act(_.extend({role:name,dev:'fakeevents',default$:{},events:options.dev_setup.events})),
-
-    ], done)
+          // register an admin user so that you can login to the data-editor
+          .act('role:user, cmd:register',{nick:'admin',name:'admin',password:options.admin.pass,admin:true})
+          
+          // set up fake users and events for development testing
+          // these actions are only defined if in dev mode, so the default$ meta argument 
+          // specifies a default result if they can't be found
+          .act(_.extend({role:name,dev:'fakeusers',default$:{},users:options.dev_setup.users}))
+          .act(_.extend({role:name,dev:'fakeevents',default$:{},events:options.dev_setup.events}), done)
   }
 
 
