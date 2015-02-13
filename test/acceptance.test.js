@@ -7,37 +7,9 @@ var util   = require('util')
 var Hippie = require('hippie')
 var _      = require('lodash')
 
+var base = 'http://localhost:3333'
+
 describe('acceptance testing', function(){
-
-  it('data-editor/', function(done){
-  // Hippie does not flush its expectations field after use
-  // God knows what else it does not flush,
-  // so make a new instance in each test case
-  var hippie = new Hippie()
-
-    hippie
-      .base('http://localhost:3333')
-      .get('/data-editor/')
-      .expectStatus(200)
-      .expectHeader('Content-Type', 'text/html; charset=UTF-8')
-      .end(function(err, res) {
-        if (err) throw err
-        done()
-      })  
-  })
-
-  it('data-editor/config', function(done){
-  var hippie = new Hippie()
-    hippie
-      .base('http://localhost:3333')
-      .get('/data-editor/config')
-      .expectStatus(200)
-      .expectHeader('Content-Type', 'application/json')
-      .end(function(err, res) {
-        if (err) throw err
-        done()
-      })  
-  })
 
   it('data-editor/rest/sys%2Fuser/', function(done){
     test_entity('sys%2Fuser', done)
@@ -50,16 +22,40 @@ describe('acceptance testing', function(){
   it('data-editor/rest/event/', function(done){
     test_entity('event', done)
   })
+
+  it('well/:event/whoami', function(done) {
+    var hippie = new Hippie()
+    login('admin', 'admin', function(session, login) {
+      hippie
+        .base(base)
+        .header('Cookie', 'connect.sid=' + session + '; seneca-login=' + login)
+        .get('/well/ma/whoami')
+        .expectStatus(200)
+        .expectHeader('Content-Type', 'application/json')
+        .expect(function(res, body, next) {
+          var err = assert.equal(JSON.parse(res.body).user.nick, 'admin');
+          next(err);
+        })
+        .end(function(err, res) {
+          if (err) throw err
+          done()
+        })
+    })
+  })
+
 })
 
 // ---
 // Utility Methods
 
-function test_entity(entity, done){
+function test_entity(entity, done) {
+  // Hippie does not flush its expectations field after use
+  // God knows what else it does not flush,
+  // so make a new instance in each test case
   var hippie = new Hippie()
-  login('admin', 'admin', function(session, login){
+  login('admin', 'admin', function(session, login) {
     hippie
-      .base('http://localhost:3333')
+      .base(base)
       .header('Cookie', 'connect.sid=' + session + '; seneca-login=' + login)
       .get('/data-editor/rest/' + entity)
       .expectStatus(200)
@@ -71,7 +67,8 @@ function test_entity(entity, done){
       .end(function(err, res) {
         if (err) throw err
         done()
-    }) })
+      })
+  })
 }
 
 function login(login, password, callback){
@@ -79,7 +76,7 @@ function login(login, password, callback){
   // Login
   var hippie = new Hippie()
   hippie
-    .base('http://localhost:3333')
+    .base(base)
     .get('/auth/login?username=' + login + '&password=' + password)
     .expectStatus(301)
     .end(function(err, res) {
