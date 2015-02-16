@@ -8,6 +8,9 @@ var Hippie = require('hippie')
 var _      = require('lodash')
 var async  = require('async')
 
+// Storing login credentials for optimization
+var creds = {}
+
 var base = 'http://localhost:3333'
 
 // Links
@@ -27,37 +30,11 @@ var base = 'http://localhost:3333'
 
 // Covered:
 
-// '/well/:event/whoami'
 // '/well/:event/player/members/:team'
-// '/data-editor/config'
 // '/data-editor/rest/:kind/:id'
+// '/well/:event/whoami'
 
 describe('acceptance testing', function(){
-
-  it('data-editor/rest/sys%2Fuser/', function(done){
-    test_entity('sys%2Fuser', done)
-  })
-
-  it('data-editor/rest/team/', function(done){
-    test_entity('team', done)
-  })
-
-  it('data-editor/rest/event/', function(done){
-    test_entity('event', done)
-  })
-
-  it('well/:event/whoami', function(done) {
-    auth_get({url:'/well/ma/whoami', status:200, type:'json'}, function(err, hippie) {
-      if (err) done(err)
-      hippie
-        .expect(function(res, body, next) {
-          // Expect admin entity
-          var err = assert.equal(JSON.parse(res.body).user.nick, 'admin');
-          next(err);
-        })
-        .end(done)
-    })
-  })
 
   it('well/:event/player/members/:team', function(done) {
     // Get all users
@@ -103,6 +80,31 @@ describe('acceptance testing', function(){
     })
   })
 
+  it('data-editor/rest/sys%2Fuser/', function(done){
+    test_entity('sys%2Fuser', done)
+  })
+
+  it('data-editor/rest/team/', function(done){
+    test_entity('team', done)
+  })
+
+  it('data-editor/rest/event/', function(done){
+    test_entity('event', done)
+  })
+
+  it('well/:event/whoami', function(done) {
+    auth_get({url:'/well/ma/whoami', status:200, type:'json'}, function(err, hippie) {
+      if (err) done(err)
+      hippie
+        .expect(function(res, body, next) {
+          // Expect admin entity
+          var err = assert.equal(JSON.parse(res.body).user.nick, 'admin');
+          next(err);
+        })
+        .end(done)
+    })
+  })
+
 })
 
 // ---
@@ -125,11 +127,18 @@ function test_entity(entity, callback) {
 //    url:       url to access
 //    login:     
 //    password:  
-//    session:   
-//    login_key: 
+//    session:   (optional)
+//    login_key: (optional)
+//    force:     true if want to force login
 function auth_get(args, callback){
   if (!args.login) args.login = 'admin'
   if (!args.password) args.password = 'admin'
+
+  // Check for prev used creds
+  if (!args.force && creds[args.login]) {
+      args.session = creds[args.login].session
+      args.login_key = creds[args.login].login_key
+  }
 
   // Hippie does not flush its expectations field after use
   // God knows what else it does not flush,
@@ -188,7 +197,8 @@ var url = '/auth/login?username=' + login + '&password=' + password
         if (cookie.indexOf('connect.sid') > -1) session = cookie.split('=')[1]
       })
 
-      // Return cookies
+      // Return cookies and set up creds
+      if (login_key) creds[login] = {session:session, login_key:login_key}
       callback(err, session, login_key)
 
   })
