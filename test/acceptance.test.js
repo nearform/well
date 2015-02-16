@@ -25,11 +25,11 @@ var base = 'http://localhost:3333'
 // '/auth/load_reset'
 // '/auth/register'
 // '/auth/update_user'
-// '/mem-store/dump' <---------------------- Is not secure!
-// '/well/:event/leader'
+// '/mem-store/dump'
 
 // Covered:
 
+// '/well/:event/leader'
 // '/well/:event/player/members/:team'
 // '/well/:event/player/member/:other'
 // '/well/:event/player/well/:other/:card'
@@ -37,6 +37,23 @@ var base = 'http://localhost:3333'
 // '/well/:event/whoami'
 
 describe('acceptance testing', function(){
+
+  it('well/:event/leader', function(done) {
+    ;auth_get({url:'/well/ma/leader', status:200, type:'json'}, function(err, res) {
+      if (err) return done(err)
+    assert.equal(JSON.parse(res.body).teams.length, 1)
+
+    ;auth_get({url:'/well/mb/leader', status:200, type:'json'}, function(err, res) {
+      if (err) return done(err)
+    assert.equal(JSON.parse(res.body).teams.length, 2)
+
+    ;auth_get({url:'/well/mc/leader', status:200, type:'json'}, function(err, res) {
+      if (err) return done(err)
+      assert.equal(JSON.parse(res.body).teams.length, 4)
+
+      done()
+    }) }) })
+  })
 
   it('well/:event/player/members/:team', function(done) {
     // Get all users
@@ -100,7 +117,7 @@ describe('acceptance testing', function(){
       if (err) return done(err)
     ;join({event:'ma', login:'u1', password:'p1'}, function(err){
       if (err) return done(err)
-        
+
     // Get event object
     ;auth_get({url:'/data-editor/rest/event', status:200, type:'json'}, function(err, res) {
       if (err) return done(err)
