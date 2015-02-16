@@ -25,12 +25,12 @@ var base = 'http://localhost:3333'
 // '/auth/update_user'
 // '/mem-store/dump' <---------------------- Is not secure!
 // '/well/:event/leader'
-// '/well/:event/player/member/:other'
 // '/well/:event/player/well/:other/:card'
 
 // Covered:
 
 // '/well/:event/player/members/:team'
+// '/well/:event/player/member/:other'
 // '/data-editor/rest/:kind/:id'
 // '/well/:event/whoami'
 
@@ -78,6 +78,31 @@ describe('acceptance testing', function(){
             done()
       }) }) }) }) }) }) })
     })
+  })
+
+  it('well/:event/player/member/:other', function(done){
+    // Add two users to event A
+    ;auth_get({url:'/well/ma/whoami', login:'admin', password:'admin', status:200, type:'json'}, function(err, hippie){
+      hippie
+        .end(function(err, res){
+        if(err) done(err)
+
+    ;auth_get({url:'/well/ma/whoami', login:'u1', password:'u2', status:200, type:'json'}, function(err, hippie, session, login_key){
+      hippie
+        .end(function(err, res){
+        if(err) done(err)
+
+    // Access the url and expect admin object
+    ;auth_get({url:'/well/ma/player/member/admin', login:'u1', session:session, login_key:login_key, status:200, type:'json'},
+    function(err, hippie){
+      hippie
+        .end(function(err, res){
+        if(err) done(err)
+
+          assert.equal(JSON.parse(res.body).nick, 'admin')
+
+        done()
+    }) }) }) }) }) })
   })
 
   it('data-editor/rest/sys%2Fuser/', function(done){
