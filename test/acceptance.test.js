@@ -27,12 +27,12 @@ var base = 'http://localhost:3333'
 // '/auth/update_user'
 // '/mem-store/dump' <---------------------- Is not secure!
 // '/well/:event/leader'
-// '/well/:event/player/member/:other'
+// '/well/:event/player/well/:other/:card'
 
 // Covered:
 
 // '/well/:event/player/members/:team'
-// '/well/:event/player/well/:other/:card'
+// '/well/:event/player/member/:other'
 // '/data-editor/rest/:kind/:id'
 // '/well/:event/whoami'
 
@@ -40,46 +40,40 @@ describe('acceptance testing', function(){
 
   it('well/:event/player/members/:team', function(done) {
     // Get all users
-    ;auth_get({url:'/data-editor/rest/sys%2Fuser', status:200, type:'json'}, function(err, hippie) {
+    ;auth_get({url:'/data-editor/rest/sys%2Fuser', status:200, type:'json'}, function(err, res) {
       if (err) return done(err)
-      hippie
-        .end(function(err, res){
+
+        var users = JSON.parse(res.body).list
+        _.each(users, function(user){
+
+        // Add all users to event C with 4 teams
+        var auth = user.nick === 'admin' ? 'admin' : 'p' + user.nick.slice(1)
+        join({event:'mc', login:user.nick, password:auth}, function(err){
           if (err) return done(err)
 
-          var users = JSON.parse(res.body).list
-          _.each(users, function(user){
-
-          // Add all users to event C with 4 teams
-          var auth = user.nick === 'admin' ? 'admin' : 'p' + user.nick.slice(1)
-          join({event:'mc', login:user.nick, password:auth}, function(err){
-            if (err) return done(err)
-
-            if (users.indexOf(user) < users.length - 1) return
+          if (users.indexOf(user) < users.length - 1) return
 
     // Get all teams' ids
-    ;auth_get({url:'/data-editor/rest/team', status:200, type:'json'}, function(err, hippie){
+    ;auth_get({url:'/data-editor/rest/team', status:200, type:'json'}, function(err, res){
       if (err) return done(err)
-      hippie
-        .end(function(err, res){
-          if (err) return done(err)
-          var teams = JSON.parse(res.body).list
-          teams = teams.filter(function(team){
-            return team.eventcode === 'mc'
-          })
+        var teams = JSON.parse(res.body).list
+        teams = teams.filter(function(team){
+          return team.eventcode === 'mc'
+        })
 
-          // Add up all users in event's teams returned by (..)/members/:team
-          var users_joined = 0
-          _.each(teams, function(team){
-            _.each(team.users, function(member){
-            users_joined++
-          })
-            if (teams.indexOf(team) < teams.length - 1) return
+        // Add up all users in event's teams returned by (..)/members/:team
+        var users_joined = 0
+        _.each(teams, function(team){
+          _.each(team.users, function(member){
+          users_joined++
+        })
+          if (teams.indexOf(team) < teams.length - 1) return
 
-            // See if it corresponds to the actual number of users added
-            assert.equal(users_joined, 17)
-            
-            done()
-      }) }) }) }) }) }) })
+          // See if it corresponds to the actual number of users added
+          assert.equal(users_joined, 17)
+          
+          done()
+      }) }) }) }) })
   })
 
   it('well/:event/player/member/:other', function(done){
@@ -92,16 +86,11 @@ describe('acceptance testing', function(){
       if (err) return done(err)
 
     // Access the url and expect admin object
-    ;auth_get({url:'/well/ma/player/member/admin', login:'u1', password:'p1'},
-    function(err, hippie){
+    ;auth_get({url:'/well/ma/player/member/admin', login:'u1', password:'p1'}, function(err, res){
       if (err) return done(err)
-      hippie
-        .expect(function(res, body, next) {
-          // Expect admin object
-          var err = assert.equal(JSON.parse(res.body).nick, 'admin');
-          next(err);
-        })
-        .end(done)
+
+      assert.equal(JSON.parse(res.body).nick, 'admin')
+      done(err)
     }) }) })
   })
 
@@ -118,15 +107,11 @@ describe('acceptance testing', function(){
   })
 
   it('well/:event/whoami', function(done) {
-    auth_get({url:'/well/ma/whoami', status:200, type:'json'}, function(err, hippie) {
+    auth_get({url:'/well/ma/whoami', status:200, type:'json'}, function(err, res) {
       if (err) return done(err)
-      hippie
-        .expect(function(res, body, next) {
-          // Expect admin object
-          var err = assert.equal(JSON.parse(res.body).user.nick, 'admin');
-          next(err);
-        })
-        .end(done)
+
+      assert.equal(JSON.parse(res.body).user.nick, 'admin')
+      done()
     })
   })
 
@@ -136,15 +121,11 @@ describe('acceptance testing', function(){
 // Utility Functions
 
 function test_entity(entity, callback) {
-  auth_get({url:'/data-editor/rest/' + entity, status:200, type:'json'}, function(err, hippie) {
+  auth_get({url:'/data-editor/rest/' + entity, status:200, type:'json'}, function(err, res) {
     if (err) return callback(err)
-    hippie
-      .expect(function(res, body, next) {
-        // Expect a list of entities of size > 0
-        var err = assert.equal(JSON.parse(res.body).list.length > 0, true);
-        next(err);
-      })
-      .end(callback)
+    
+    assert.equal(JSON.parse(res.body).list.length > 0, true);
+    callback()
   })
 }
 
@@ -195,7 +176,12 @@ function auth_get(args, callback){
     if (args.type === 'json') hippie.expectHeader('Content-Type', 'application/json')
     if (args.type === 'html') hippie.expectHeader('Content-Type', 'text/html; charset=UTF-8')
 
-    callback(err, hippie, session, login_key)
+    if (err) callback(err, hippie, session, login_key)
+
+    hippie
+      .end(function(err, res){
+          callback(err, res, session, login_key)
+      })
   }
 
 }
@@ -247,22 +233,19 @@ function join(args, callback){
   args.url = '/well/' + args.event + '/whoami'
   args.status = 200
   args.type = 'json'
-  auth_get(args, function(err, hippie){
+  auth_get(args, function(err, res){
     if (err) return callback(err)
-    hippie
-      .end(function(err, res){
-      if (err) return callback(err)
-      else {
-        // Create event members if undefined and push login into it
-        if (!event) joined[args.event] = {members:[]}
-          event = joined[args.event]
-          if (event.members.indexOf(args.login) === -1){
-            var members = event.members
-            members.push(args.login)
-            event = {members:members}
-          }
-      }
+    else {
+      // Create event members if undefined and push login into it
+      if (!event) joined[args.event] = {members:[]}
+        event = joined[args.event]
+        if (event.members.indexOf(args.login) === -1){
+          var members = event.members
+          members.push(args.login)
+          event = {members:members}
+        }
+    }
 
   callback()
-  }) })
+  })
 }
