@@ -25,10 +25,10 @@ var base = 'http://localhost:3333'
 // '/auth/load_reset'
 // '/auth/register'
 // '/auth/update_user'
-// '/mem-store/dump'
 
 // Covered:
 
+// '/mem-store/dump'
 // '/well/:event/leader'
 // '/well/:event/player/members/:team'
 // '/well/:event/player/member/:other'
@@ -37,6 +37,16 @@ var base = 'http://localhost:3333'
 // '/well/:event/whoami'
 
 describe('acceptance testing', function(){
+
+  it('mem-store/dump', function(done) {
+    ;auth_get({url:'/mem-store/dump', status:200, type:'json'}, function(err, res) {
+      if (err) return done(err)
+      assert.equal(JSON.parse(res.body).sys.entity !== undefined, true)
+      assert.equal(JSON.parse(res.body).sys.user !== undefined, true)
+      assert.equal(JSON.parse(res.body).sys.login !== undefined, true)
+      done()
+    })
+  })
 
   it('well/:event/leader', function(done) {
     ;auth_get({url:'/well/ma/leader', status:200, type:'json'}, function(err, res) {
