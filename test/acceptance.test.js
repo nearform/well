@@ -27,12 +27,12 @@ var base = 'http://localhost:3333'
 // '/auth/update_user'
 // '/mem-store/dump' <---------------------- Is not secure!
 // '/well/:event/leader'
-// '/well/:event/player/well/:other/:card'
 
 // Covered:
 
 // '/well/:event/player/members/:team'
 // '/well/:event/player/member/:other'
+// '/well/:event/player/well/:other/:card'
 // '/data-editor/rest/:kind/:id'
 // '/well/:event/whoami'
 
@@ -94,6 +94,44 @@ describe('acceptance testing', function(){
     }) }) })
   })
 
+  it('well/:event/player/well/:other/:card', function(done){
+    // Add two users to event A
+    ;join({event:'ma'}, function(err){
+      if (err) return done(err)
+    ;join({event:'ma', login:'u1', password:'p1'}, function(err){
+      if (err) return done(err)
+        
+    // Get event object
+    ;auth_get({url:'/data-editor/rest/event', status:200, type:'json'}, function(err, res) {
+      if (err) return done(err)
+    var event_ma
+    _.each(JSON.parse(res.body).list, function(event){
+      if (event.code === 'ma') {
+        event_ma = event
+        return false
+      }
+    })
+
+    // Get team object
+    ;auth_get({url:'/data-editor/rest/team', status:200, type:'json'}, function(err, res) {
+      if (err) return done(err)
+    var team_ma
+    _.each(JSON.parse(res.body).list, function(team){
+      if (team.eventcode === 'ma') {
+        team_ma = team
+        return false
+      }
+    })
+
+    // Get card of second user and score a point
+    ;auth_get({url:'/well/ma/player/well/u1/' + event_ma.users['u1'].c, status:200, type:'json', post:true}, function(err, res) {
+      if (err) return done(err)
+
+      assert.equal(JSON.parse(res.body).team.numwells, team_ma.numwells + 1)
+      done()
+    }) }) }) }) })
+  })
+
   it('data-editor/rest/sys%2Fuser/', function(done){
     test_entity('sys%2Fuser', done)
   })
@@ -138,6 +176,7 @@ function test_entity(entity, callback) {
 //    session:   (optional)
 //    login_key: (optional)
 //    force:     true if want to force login
+//    post:      true if want to POST
 function auth_get(args, callback){
   if (!args.login) args.login = 'admin'
   if (!args.password) args.password = 'admin'
@@ -170,11 +209,12 @@ function auth_get(args, callback){
     hippie
       .base(base)
       .header('Cookie', 'connect.sid=' + session + '; seneca-login=' + login_key)
-      .get(args.url)
-
+      
+    if (args.post) hippie.post(args.url)
+    else hippie.get(args.url)
     if (args.status) hippie.expectStatus(args.status)
     if (args.type === 'json') hippie.expectHeader('Content-Type', 'application/json')
-    if (args.type === 'html') hippie.expectHeader('Content-Type', 'text/html; charset=UTF-8')
+    if (args.type === 'html') hippie.expectHeader('Content-Type', 'text/html; charset=utf-8')
 
     if (err) callback(err, hippie, session, login_key)
 
