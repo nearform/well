@@ -15,31 +15,31 @@ var joined = {}
 
 var base = 'http://localhost:3333'
 
-// Links
+// Links covered:
 
-// '/auth/change_password'
-// '/auth/confirm'
-// '/auth/create_reset'
-// '/auth/execute_reset'
-// '/auth/instance'
-// '/auth/load_reset'
-// '/auth/register'
-// '/auth/update_user'
-
-// Covered:
-
-// '/mem-store/dump'
-// '/well/:event/leader'
-// '/well/:event/player/members/:team'
-// '/well/:event/player/member/:other'
-// '/well/:event/player/well/:other/:card'
-// '/data-editor/rest/:kind/:id'
-// '/well/:event/whoami'
+// '/auth/instance'                         GET
+// '/mem-store/dump'                        GET
+// '/well/:event/leader'                    GET
+// '/well/:event/player/members/:team'      GET
+// '/well/:event/player/member/:other'      GET
+// '/well/:event/player/well/:other/:card'  POST
+// '/data-editor/rest/:kind/:id'            GET
+// '/well/:event/whoami'                    GET
 
 describe('acceptance testing', function(){
 
+  it('auth', function(done) {
+    ;auth_get({url:'/auth/instance', status:200, type:'json'}, function(err, res) {
+      if (err) return done(err)
+      assert.equal(JSON.parse(res.body).user.nick, 'admin')
+      assert.equal(JSON.parse(res.body).login.nick, 'admin')
+
+      done()
+    })
+  })
+
   it('mem-store/dump', function(done) {
-    ;auth_get({url:'/mem-store/dump', status:200, type:'json'}, function(err, res) {
+    auth_get({url:'/mem-store/dump', status:200, type:'json'}, function(err, res) {
       if (err) return done(err)
       assert.equal(JSON.parse(res.body).sys.entity !== undefined, true)
       assert.equal(JSON.parse(res.body).sys.user !== undefined, true)
