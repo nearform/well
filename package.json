@@ -4,7 +4,8 @@
   "description": "well",
   "main": "lib/well.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/*.test.js"
+    "//test": "./node_modules/.bin/mocha test/unit.test.js",
+    "posttest": "./node_modules/.bin/mocha test/acceptance.test.js"
   },
   "repository": {
     "type": "git",

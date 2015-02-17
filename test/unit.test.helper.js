@@ -15,6 +15,7 @@ module.exports =
 
       si.use('user')
       si.use('../well', options)
+      if (options.db === 'mongo') si.use('mongo-store')
 
       // Add event A
       ;si

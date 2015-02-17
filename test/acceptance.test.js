@@ -12,7 +12,6 @@ var helper = new Helper()
 // Links covered:
 
 // '/auth/instance'                         GET
-// '/mem-store/dump'                        GET
 // '/well/:event/leader'                    GET
 // '/well/:event/player/members/:team'      GET
 // '/well/:event/player/member/:other'      GET
@@ -28,16 +27,6 @@ describe('acceptance testing', function(){
       assert.equal(JSON.parse(res.body).user.nick, 'admin')
       assert.equal(JSON.parse(res.body).login.nick, 'admin')
 
-      done()
-    })
-  })
-
-  it('mem-store/dump', function(done) {
-    helper.auth_get({url:'/mem-store/dump', status:200, type:'json'}, function(err, res) {
-      if (err) return done(err)
-      assert.equal(JSON.parse(res.body).sys.entity !== undefined, true)
-      assert.equal(JSON.parse(res.body).sys.user !== undefined, true)
-      assert.equal(JSON.parse(res.body).sys.login !== undefined, true)
       done()
     })
   })

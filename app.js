@@ -17,7 +17,6 @@
 /* This file is PUBLIC DOMAIN. You are free to cut-and-paste to start your own projects, of any kind */
 "use strict";
 
-
 // always capture, log and exit on uncaught exceptions
 // your production system should auto-restart the app
 // this is the Node.js way
@@ -27,22 +26,18 @@ process.on('uncaughtException', function(err) {
   process.exit(1)
 })
 
-
 // the easiest way to parse command line arguments
 // see https://github.com/substack/node-optimist
 var argv = require('optimist').argv
-
 
 // get deployment type (set to 'development' for development)
 // use environment variable NODE_ENV, or command line argument --env
 var env = argv.env || process.env['NODE_ENV']
 
-
 // load the seneca module and create a new instance
 // note that module returns a function that constructs seneca instances (just like express)
 // so you if you call it right away (as here, with the final () ), you get a default instance
 var seneca  = require('seneca')()
-
 
 // register the seneca builtin options plugin, and load the options from a local file
 // you'll normally do this first -
@@ -58,31 +53,32 @@ catch(e) {
   process.exit( !console.error( "Please copy options.example.js to "+ options_file+': '+e ))
 }
 seneca.use('options',options_file)
+var db = seneca.export('options').db
 
-
-
-// if developing, use a throw-away in-process database
-if( 'development' == env ) {
-  // the builtin mem-store plugin provides the database
-  // also enable http://localhost:3333/mem-store/dump so you can debug db contents
+// for more seneca db stores visit
+// https://github.com/search?q=seneca+store
+if (db === 'mem') {
+  // recommended as development db
+  // the builtin mem-store plugin provides a throw-away in-process database
+  // also enables http://localhost:3333/mem-store/dump so you can debug db contents
   seneca.use('mem-store',{web:{dump:true}})
+  console.log('mem')
 }
-
-// if not developing, use a mongo database
-// NOTE: no code changes are required!
-// this is one of the benefits of the using the seneca data entity model
-// for more, see http://senecajs.org/data-entities.html
-else {
+else if (db === 'mongo') {
+  // mongo database is recommended if not developing
+  // NOTE: no code changes are required!
+  // this is one of the benefits of using the seneca data entity model
+  // for more, see http://senecajs.org/data-entities.html
   seneca.use('mongo-store')
 
   // register the seneca-memcached plugin - this provides access to a cache layer backed by memcached
-  seneca.use('memcached-cache')
+
 
   // register the seneca-vcache plugin - this provides version-based caching for 
   // data entities over multiple memcached servers, and caches by query in addition to id
-  seneca.use('vcache')
-}
 
+  console.log('mongo')
+}
 
 // register the seneca-user plugin - this provides user account business logic
 seneca.use('user')
@@ -98,12 +94,14 @@ seneca.use('perm',{entity:true})
 // Open the /data-editor url path to edit data! (you must be an admin, or on localhost)
 seneca.use('data-editor')
 
-
 // register your own plugin - the well app business logic!
 // in the options, indicate if you're in development mode
 // set the fake option, which triggers creation of test users and events if env == 'development'
-seneca.use('well',{fake:'development'==env})
+console.log('Lets get started!')
+seneca.use('well',{fake:'development'==env}, function(err, res){
+  console.log('Lets get finished!')
 
+})
 
 // seneca plugins can export objects for external use
 // you can access these using the seneca.export method
@@ -117,9 +115,6 @@ var web = seneca.export('web')
 // get the simple database-backed session store defined in well.js
 var sessionstore = seneca.export('well/session-store')
 
-
-
-
 // load the express module
 // this provides the basic web server
 var express = require('express')
@@ -132,6 +127,10 @@ var app = express()
 app.use( function(req,res,next){
   console.log('EXPRESS',new Date().toISOString(), req.method, req.url)
   next()
+})
+
+require('dns').lookup(require('os').hostname(), function (err, add, fam) {
+  console.log('addr: '+add);
 })
 
 // setup express
