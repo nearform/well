@@ -62,22 +62,36 @@ if (db === 'mem') {
   // the builtin mem-store plugin provides a throw-away in-process database
   // also enables http://localhost:3333/mem-store/dump so you can debug db contents
   seneca.use('mem-store',{web:{dump:true}})
-  console.log('mem')
+  console.log('using mem')
 }
 else if (db === 'mongo') {
   // mongo database is recommended if not developing
   // NOTE: no code changes are required!
   // this is one of the benefits of using the seneca data entity model
   // for more, see http://senecajs.org/data-entities.html
+  var util = require('util')
   seneca.use('mongo-store')
 
-  // register the seneca-memcached plugin - this provides access to a cache layer backed by memcached
+  // erase DB:
+  // var q = function(){}
+  // q.all$ = true
+  // seneca.act({role:'entity', cmd:'remove', qent:seneca.make('sys/user'), q:q}, function(err, data){
+  //   if (err) throw err
+  // seneca.act({role:'entity', cmd:'remove', qent:seneca.make('team'), q:q}, function(err, data){
+  //   if (err) throw err
+  // seneca.act({role:'entity', cmd:'remove', qent:seneca.make('event'), q:q}, function(err, data){
+  //   if (err) throw err
 
+  // }) }) })
+
+  // register the seneca-memcached plugin - this provides access to a cache layer backed by memcached
+  seneca.use('memcached-cache')
 
   // register the seneca-vcache plugin - this provides version-based caching for 
   // data entities over multiple memcached servers, and caches by query in addition to id
+  seneca.use('vcache')
 
-  console.log('mongo')
+  console.log('using mongo')
 }
 
 // register the seneca-user plugin - this provides user account business logic
@@ -97,11 +111,8 @@ seneca.use('data-editor')
 // register your own plugin - the well app business logic!
 // in the options, indicate if you're in development mode
 // set the fake option, which triggers creation of test users and events if env == 'development'
-console.log('Lets get started!')
-seneca.use('well',{fake:'development'==env}, function(err, res){
-  console.log('Lets get finished!')
 
-})
+seneca.use('well',{fake:'development'==env})
 
 // seneca plugins can export objects for external use
 // you can access these using the seneca.export method
@@ -130,7 +141,7 @@ app.use( function(req,res,next){
 })
 
 require('dns').lookup(require('os').hostname(), function (err, add, fam) {
-  console.log('addr: '+add);
+  console.log('\n!server addr! '+ add + '\n');
 })
 
 // setup express

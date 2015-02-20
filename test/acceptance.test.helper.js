@@ -9,7 +9,7 @@ module.exports =
     // Storing event-user relationships for optimization
     var joined = {}
 
-    var base = 'http://172.17.0.216:3333'
+    var base = 'http://localhost:3333'
 
     // Connect to url and setup login cookies
     // By default logs in as admin
@@ -44,12 +44,11 @@ module.exports =
         })
       else {
         // if logged in before
-        logged_in(null, hippie, args.session, args.login_key)
+        logged_in(undefined, hippie, args.session, args.login_key)
       }
 
       // Inner function
       function logged_in(err, hippie, session, login_key){
-
         hippie
           .base(base)
           .header('Cookie', 'connect.sid=' + session + '; seneca-login=' + login_key)

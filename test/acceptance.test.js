@@ -49,19 +49,33 @@ describe('acceptance testing', function(){
   })
 
   it('well/:event/player/members/:team', function(done) {
+    this.timeout(3000)
     // Get all users
     ;helper.auth_get({url:'/data-editor/rest/sys%2Fuser', status:200, type:'json'}, function(err, res) {
       if (err) return done(err)
 
         var users = JSON.parse(res.body).list
-        _.each(users, function(user){
 
-        // Add all users to event C with 4 teams
-        var auth = user.nick === 'admin' ? 'admin' : 'p' + user.nick.slice(1)
-        helper.join({event:'mc', login:user.nick, password:auth}, function(err){
-          if (err) return done(err)
+        function recurse_join_all(args, callback)
+        {
+          if (!args.users) return callback(new Error('no users specified'))
+          if (args.users.length === 0) return callback()
 
-          if (users.indexOf(user) < users.length - 1) return
+          if (!args.event) return callback(new Error('no event specified'))
+
+          var user = args.users[args.users.length - 1]
+          var auth = user.nick === 'admin' ? 'admin' : 'p' + user.nick.slice(1)
+          helper.join({event:args.event, login:user.nick, password:auth}, function(err){
+            if (err) return callback(err)
+
+              args.users.pop()
+              recurse_join_all(args, callback)
+          })
+        }
+
+      // Add all users to event C with 4 teams
+      recurse_join_all({event:'mc', users:users}, function(err){
+        if (err) return done(err)
 
     // Get all teams' ids
     ;helper.auth_get({url:'/data-editor/rest/team', status:200, type:'json'}, function(err, res){
@@ -83,7 +97,7 @@ describe('acceptance testing', function(){
           assert.equal(users_joined, 17)
           
       done()
-    }) }) }) }) })
+    }) }) }) })
   })
 
   it('well/:event/player/member/:other', function(done){
