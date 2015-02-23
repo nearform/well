@@ -53,8 +53,8 @@ catch(e) {
   process.exit( !console.error( "Please copy options.example.js to "+ options_file+': '+e ))
 }
 seneca.use('options',options_file)
-var db = seneca.export('options').db
 
+var db = seneca.export('options').db
 // for more seneca db stores visit
 // https://github.com/search?q=seneca+store
 if (db === 'mem') {
@@ -69,29 +69,28 @@ else if (db === 'mongo') {
   // NOTE: no code changes are required!
   // this is one of the benefits of using the seneca data entity model
   // for more, see http://senecajs.org/data-entities.html
-  var util = require('util')
   seneca.use('mongo-store')
 
-  // erase DB:
-  // var q = function(){}
-  // q.all$ = true
-  // seneca.act({role:'entity', cmd:'remove', qent:seneca.make('sys/user'), q:q}, function(err, data){
-  //   if (err) throw err
-  // seneca.act({role:'entity', cmd:'remove', qent:seneca.make('team'), q:q}, function(err, data){
-  //   if (err) throw err
-  // seneca.act({role:'entity', cmd:'remove', qent:seneca.make('event'), q:q}, function(err, data){
-  //   if (err) throw err
-
-  // }) }) })
-
-  // register the seneca-memcached plugin - this provides access to a cache layer backed by memcached
-  seneca.use('memcached-cache')
-
-  // register the seneca-vcache plugin - this provides version-based caching for 
-  // data entities over multiple memcached servers, and caches by query in addition to id
-  seneca.use('vcache')
+  // allow to erase DB if --env=clean:
+  if ('clean' === env)
+  erase('sys/user', function() {
+    erase('team', function() {
+      erase('event', function() {
+        console.log('db is empty now')
+        process.exit(0)
+      })
+    })
+  })
 
   console.log('using mongo')
+}
+
+// used to clean the db
+function erase(entity, callback){
+  seneca.act({role:'entity', cmd:'remove', qent:seneca.make(entity), q:{all$ : true}}, function(err, data){
+    if (err) seneca.error(err)
+      callback(err)
+  })
 }
 
 // register the seneca-user plugin - this provides user account business logic
@@ -140,8 +139,13 @@ app.use( function(req,res,next){
   next()
 })
 
-require('dns').lookup(require('os').hostname(), function (err, add, fam) {
-  console.log('\n!server addr! '+ add + '\n');
+// write server address to output file to allow for automated testing
+require('dns').lookup(require('os').hostname(), function (err, add) {
+  var full_addr = 'http://' + add + ':' + options.main.port
+  require('fs').writeFile("test/addr.out", full_addr, function(err) {
+    if(err) console.log(err)
+    console.log('\nserver address: '+ full_addr + '\n')
+  })
 })
 
 // setup express

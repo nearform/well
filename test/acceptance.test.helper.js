@@ -3,13 +3,17 @@ module.exports =
 
     var Hippie = require('hippie')
     var _      = require('lodash')
+    var fs     = require('fs')
 
     // Storing login credentials for optimization
     var creds = {}
     // Storing event-user relationships for optimization
     var joined = {}
 
-    var base = 'http://localhost:3333'
+    var base = fs.readFileSync('test/addr.out', 'utf-8')
+    if (!base) base = 'http://localhost:3333'
+      console.log('!base! ' + base)
+
 
     // Connect to url and setup login cookies
     // By default logs in as admin
@@ -82,6 +86,7 @@ module.exports =
         .get(url)
         .expectStatus(301)
         .end(function(err, res) {
+          if (err) callback(err)
           if (res.headers.location === '#fail') console.log(res.body)
           if (res.headers.location === '#fail') err = new Error('Invalid login credentials')
 

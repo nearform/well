@@ -54,24 +54,24 @@ describe('acceptance testing', function(){
     ;helper.auth_get({url:'/data-editor/rest/sys%2Fuser', status:200, type:'json'}, function(err, res) {
       if (err) return done(err)
 
-        var users = JSON.parse(res.body).list
+      var users = JSON.parse(res.body).list
 
-        function recurse_join_all(args, callback)
-        {
-          if (!args.users) return callback(new Error('no users specified'))
-          if (args.users.length === 0) return callback()
+      function recurse_join_all(args, callback)
+      {
+        if (!args.users) return callback(new Error('no users specified'))
+        if (args.users.length === 0) return callback()
 
-          if (!args.event) return callback(new Error('no event specified'))
+        if (!args.event) return callback(new Error('no event specified'))
 
-          var user = args.users[args.users.length - 1]
-          var auth = user.nick === 'admin' ? 'admin' : 'p' + user.nick.slice(1)
-          helper.join({event:args.event, login:user.nick, password:auth}, function(err){
-            if (err) return callback(err)
+        var user = args.users[args.users.length - 1]
+        var auth = user.nick === 'admin' ? 'admin' : 'p' + user.nick.slice(1)
+        helper.join({event:args.event, login:user.nick, password:auth}, function(err){
+          if (err) return callback(err)
 
-              args.users.pop()
-              recurse_join_all(args, callback)
-          })
-        }
+            args.users.pop()
+            recurse_join_all(args, callback)
+        })
+      }
 
       // Add all users to event C with 4 teams
       recurse_join_all({event:'mc', users:users}, function(err){
