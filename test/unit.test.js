@@ -21,20 +21,21 @@ describe('happy', function() {
         .make$('sys/user')
         .list$(function(err, users){
       // Insert all users into event A, team Red
-      _.each(users, function(user) {
-
-      ;si
+      si.util.recurse(users.length, function( index, next ){
+        si
         .act('role:well, cmd:joinevent', {
-          user: user,
+          user: users[index],
           event: event,
           tnum:0
-        }, function(err, res) {
-          if (users.indexOf(user) < users.length - 1) return // <-- Loop control
+        }, next)
+      }, function(err, data){
+
       // Load team Red from event A
       ;si
         .make$('team')
         .load$({event:event.id, num:0}, function(err, team){
         // load all members of team Red
+        var util = require('util')
         var members = []
           _.each(team.users, function(user, nick) {
             members.push(user)
@@ -63,7 +64,7 @@ describe('happy', function() {
           assert.equal(res.team.numwells, 1)
 
           done()
-      }) }) }) }) }) }) }) })
+      }) }) }) }) }) }) })
     })
   })
 
@@ -161,14 +162,14 @@ describe('data structure integrity', function() {
         .make$('sys/user')
         .list$(function(err, users){
       // Insert all users into event A
-      _.each(users, function(user) {
-
-      ;si
+      si.util.recurse(users.length, function( index, next ){
+        si
         .act('role:well, cmd:joinevent', {
-          user: user,
-          event: event
-        }, function(err, res) {
-          if (users.indexOf(user) < users.length - 1) return // <-- Loop control
+          user: users[index],
+          event: event,
+        }, next)
+      }, function(err, data){
+
       // Load event A from db to refresh data
       ;si
         .make$('event')
@@ -209,7 +210,7 @@ describe('data structure integrity', function() {
         assert.deepEqual(dbnames, memnames)
 
         done()
-      }) }) }) }) }) }) }) })
+      }) }) }) }) }) }) })
     })
   })
 
@@ -301,7 +302,6 @@ describe('data structure integrity', function() {
   })
 
 })
-
 
 describe('scenarios', function() {
 

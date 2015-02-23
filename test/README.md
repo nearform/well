@@ -1,27 +1,51 @@
+db testing
+do not run unit and acceptance tests at the same time
 
-// CMDS used to run db tests:
+to run unit test using localhost:
+- uncomment localhost db options in options.well.js
+- comment out ENV db options in options.well.js
+- uncomment test in package.json
+- comment out posttest in package.json
 
-// window 1
-docker run --rm -p 27017:27017 -p 28017:28017 --name our-mongo mongo --httpinterface
+- open terminal 1:
+  sudo mongod
 
-// window 2
-docker build --force-rm -t well-app .
-docker run -v /home/km/work/workbench/Well/test:/test -p 3333:3333 --link our-mongo:mongodb well-app
+- open terminal 2:
+  npm test
 
-// window 3
-npm test
+to run acceptance test using docker:
+- uncomment ENV db options in options.well.js
+- comment out localhost db options in options.well.js
+- uncomment posttest in package.json
+- comment out test in package.json
+
+- open terminal 1
+  docker run --rm -p 27017:27017 -p 28017:28017 --name mongo-inst mongo --httpinterface
+
+- open terminal 2
+  docker build --force-rm -t well-app .
+  docker run -v /home/usr/work/workbench/Well/test:/test -p 3333:3333 --link mongo-inst:mongodb well-app
+                          ^
+             Insert your/work/directory/Well/test
+             instead of this path
+             Must be an absolute path
+
+- open terminal 3
+  npm test
 
 --------------
 
-running node app.js --env=clean erases db
+running
+node app.js --env=clean
+erases db
 
 --------------
 
 1) MONGO
 
-All unit tests timeout, still working on code for it
-
 *INIT ISSUES
+
+To be investigated:
 
 seneca-vcache doesn't like working with both seneca-mongo-store and memcached-cache IN DOCKER.
 It causes init failure on seneca-user via timeout.

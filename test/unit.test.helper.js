@@ -13,9 +13,13 @@ module.exports =
       var options = si.export('options')
       options.dev_setup = options.well.dev_setup // <- This is not normal, check if app should really work like this
 
+      if (options.db === 'mongo') si.use('mongo-store')
+
+      clean_db(options.db, si, function(err){
+
       si.use('user')
       si.use('../well', options)
-      if (options.db === 'mongo') si.use('mongo-store')
+
 
       // Add event A
       ;si
@@ -89,6 +93,7 @@ module.exports =
       })
       .save$(function(err, team_b) {
      
+     // add users
       si.util.recurse(6, function( index, next ){
         si
         .act('role:user,cmd:register', {
@@ -97,11 +102,34 @@ module.exports =
             password: 'p' + index
           }, next)
       }, function(err, data){
+
           done(si)
-      }) }) }) }) }) })
+      }) }) }) }) }) }) })
     }
 
-    this.list_all = function list_all(seneca) {
+    // erases all entities from db
+    function clean_db(db, seneca, cb){
+      if (db === 'mongo'){
+        erase('sys/user', seneca, function() {
+          erase('team', seneca, function() {
+            erase('event', seneca, function() {
+              cb()
+            })
+          })
+        })
+      }
+      else cb()
+    }
+
+    // erase particular entity from db
+    function erase(entity, seneca, callback){
+      seneca.act({role:'entity', cmd:'remove', qent:seneca.make(entity), q:{all$ : true}}, function(err, data){
+        if (err) seneca.error(err)
+          callback(err)
+      })
+    }
+
+    this.list_all = function (seneca) {
       seneca.make$('event').list$(function(err, dblist) {
         if (err) return console.error(err)
         console.log("\n\t\t ---")
@@ -133,7 +161,7 @@ module.exports =
       })
     }
 
-    this.show_commands = function show_commands(seneca) {
+    this.show_commands = function (seneca) {
       console.log("\n\t\t---")
       console.log("\tSENECA COMMANDS AVAILABLE:\n")
       seneca.list().forEach(function(element) {

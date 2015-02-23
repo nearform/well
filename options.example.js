@@ -18,6 +18,11 @@ var local = false
 
 module.exports = {
 
+  // db chosen
+  // for more seneca db stores visit
+  // https://github.com/search?q=seneca+store
+  db:'mem',
+
   // admin options
   admin:{local:local},
 
@@ -42,6 +47,8 @@ module.exports = {
     //pass:'PASSWORD',
     host:'localhost',
     port:27017,
+    // host:process.env.MONGODB_PORT_27017_TCP_ADDR,
+    // port:process.env.MONGODB_PORT_27017_TCP_PORT,
     name:'well'
   },
 
