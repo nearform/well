@@ -32,6 +32,7 @@
     "seneca-user": "~0.2.10",
     "seneca-auth": "~0.4.0",
     "seneca-mongo-store": "~0.2.0",
+    "seneca-jsonfile-store": "^0.2.2",
     "seneca-memcached-cache": "~0.2.0",
     "seneca-vcache": "~0.3.1",
     "seneca-perm": "~0.4.0",

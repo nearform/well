@@ -400,3 +400,13 @@ describe('scenarios', function() {
     })
   })
 })
+
+describe('clean-up', function() {
+  it('clean db', function(done){
+    helper.init_empty(function(si){
+      helper.clean_db(si, function(err){
+        done()
+      })
+    })
+  })
+})

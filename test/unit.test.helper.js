@@ -3,25 +3,37 @@ module.exports =
 
     var _     = require('lodash')
 
-    this.init = function(done) {
+    this.init_empty = function(done) {
       var si = require('seneca')({
         errhandler: done
       })
 
-      // Init well.js
+      // get options
       si.use('options', '../options.well.js')
       var options = si.export('options')
-      options.dev_setup = options.well.dev_setup // <- This is not normal, check if app should really work like this
+      options.dev_setup = options.well.dev_setup // <- this is not normal, check if app should really work like this
 
-      if (options.db === 'mongo') si.use('mongo-store')
+      // init and clean db
+      var db = options.db
+      var db_args
+      if (db.indexOf('-store') === -1) db += '-store' // add postfix -store if not found
+      else if (db === 'jsonfile') db_args = {folder:'./'}
 
-      clean_db(options.db, si, function(err){
+      si.use(db, db_args)
+      this.clean_db(si, function(err){
 
-      si.use('user')
-      si.use('../well', options)
+        // init well.js
+        si.use('user')
+        si.use('../well', options)
 
+        done(si)
+      })
+    }
 
-      // Add event A
+    this.init = function(done) {
+      this.init_empty(function(si){
+        
+      // add event A
       ;si
         .make$('event')
         .make$(_.extend({
@@ -36,7 +48,7 @@ module.exports =
         }, ['role', 'cmd'])))
         .save$(function(err, event_a){
 
-      // Add event B
+      // add event B
       ;si
         .make$('event')
         .make$(_.extend({
@@ -51,7 +63,7 @@ module.exports =
         }, ['role', 'cmd'])))
         .save$(function(err, event_b){
 
-      // Add team Red to event A
+      // add team Red to event A
       ;si
         .make$('team')
         .make$({
@@ -65,7 +77,7 @@ module.exports =
           })
         .save$(function(err, team_r){
 
-      // Add team Green to event A
+      // add team Green to event A
       ;si
         .make$('team')
         .make$({
@@ -79,7 +91,7 @@ module.exports =
         })
         .save$(function(err, team_g) {
         
-      // Add team Blue to event B
+      // add team Blue to event B
       ;si
       .make$('team')
       .make$({
@@ -108,17 +120,14 @@ module.exports =
     }
 
     // erases all entities from db
-    function clean_db(db, seneca, cb){
-      if (db === 'mongo'){
-        erase('sys/user', seneca, function() {
-          erase('team', seneca, function() {
-            erase('event', seneca, function() {
-              cb()
-            })
+    this.clean_db = function(seneca, cb){
+      erase('sys/user', seneca, function() {
+        erase('team', seneca, function() {
+          erase('event', seneca, function() {
+            cb()
           })
         })
-      }
-      else cb()
+      })
     }
 
     // erase particular entity from db

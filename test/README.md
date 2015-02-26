@@ -1,5 +1,7 @@
 db testing
-do not run unit and acceptance tests at the same time
+- do not run unit and acceptance tests at the same time
+- make sure options.well.js db field is the name of db
+  preferably with postfix -store
 
 to run unit test using localhost:
 - uncomment localhost db options in options.well.js

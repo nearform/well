@@ -54,36 +54,35 @@ catch(e) {
 }
 seneca.use('options',options_file)
 
-var db = seneca.export('options').db
 // for more seneca db stores visit
 // https://github.com/search?q=seneca+store
-if (db === 'mem') {
-  // recommended as development db
-  // the builtin mem-store plugin provides a throw-away in-process database
+var db = seneca.export('options').db
+if (db.indexOf('-store') === -1) db += '-store' // add postfix -store if not found
+console.log('using ' + db)
+
+var db_args
+if (db === 'mem-store') db_args = {web:{dump:true}}
+  // mem-store is recommended as development db
+  // the built in mem-store plugin provides a throw-away in-process database
   // also enables http://localhost:3333/mem-store/dump so you can debug db contents
-  seneca.use('mem-store',{web:{dump:true}})
-  console.log('using mem')
-}
-else if (db === 'mongo') {
-  // mongo database is recommended if not developing
+
+  // mongo-store is recommended if not developing
   // NOTE: no code changes are required!
   // this is one of the benefits of using the seneca data entity model
   // for more, see http://senecajs.org/data-entities.html
-  seneca.use('mongo-store')
 
-  // allow to erase DB if --env=clean:
-  if ('clean' === env)
-  erase('sys/user', function() {
-    erase('team', function() {
-      erase('event', function() {
-        console.log('db is empty now')
-        process.exit(0)
-      })
+seneca.use(db, db_args)
+
+// allow to erase DB if --env=clean:
+if ('clean' === env)
+erase('sys/user', function() {
+  erase('team', function() {
+    erase('event', function() {
+      console.log('db is empty now')
+      process.exit(0)
     })
   })
-
-  console.log('using mongo')
-}
+})
 
 // used to clean the db
 function erase(entity, callback){
