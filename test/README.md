@@ -21,7 +21,8 @@ to run acceptance test using docker:
 - uncomment posttest in package.json
 - comment out test in package.json
 
-- open terminal 1
+- open terminal 1. first one rebuilds fake db
+  node app.js --env=clean
   docker run --rm -p 27017:27017 -p 28017:28017 --name mongo-inst mongo --httpinterface
 
 - open terminal 2
@@ -39,7 +40,7 @@ to run acceptance test using docker:
 
 running
 node app.js --env=clean
-erases db
+rebuilds fake db
 
 --------------
 
@@ -65,3 +66,13 @@ app.js code fragments to be examined
   // register the seneca-vcache plugin - this provides version-based caching for 
   // data entities over multiple memcached servers, and caches by query in addition to id
   // seneca.use('vcache')
+
+ 2) JSONFILE in separate process
+
+  *INIT ISSUES
+can't init jsonrest-api (tag:data-ditor) on localhost
+have not tried on docker. it fails on localhost and so it will on docker
+
+when data-editor is commented out, some of the acceptance tests work
+
+when both jsonfile-store and app are in same process then everything works

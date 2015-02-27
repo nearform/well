@@ -21,7 +21,7 @@ module.exports = {
   // db chosen
   // for more seneca db stores visit
   // https://github.com/search?q=seneca+store
-  db:'mem',
+  db:'jsonfile-store',
 
   // admin options
   admin:{local:local},

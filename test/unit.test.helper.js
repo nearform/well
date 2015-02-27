@@ -1,3 +1,4 @@
+// ADD COPYRIGHT INFO OR A DISCLAIMER
 module.exports =
   function() {
 
@@ -17,7 +18,7 @@ module.exports =
       var db = options.db
       var db_args
       if (db.indexOf('-store') === -1) db += '-store' // add postfix -store if not found
-      else if (db === 'jsonfile') db_args = {folder:'./'}
+      if (db === 'jsonfile-store') db_args = {folder:'./data/'}
 
       si.use(db, db_args)
       this.clean_db(si, function(err){
@@ -32,7 +33,7 @@ module.exports =
 
     this.init = function(done) {
       this.init_empty(function(si){
-        
+
       // add event A
       ;si
         .make$('event')

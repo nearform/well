@@ -15,7 +15,7 @@
  */
 
 /* This file is PUBLIC DOMAIN. You are free to cut-and-paste to start your own projects, of any kind */
-"use strict";
+"use strict"
 
 // always capture, log and exit on uncaught exceptions
 // your production system should auto-restart the app
@@ -54,12 +54,14 @@ catch(e) {
 }
 seneca.use('options',options_file)
 
+// db is set in options.well.js
 // for more seneca db stores visit
 // https://github.com/search?q=seneca+store
 var db = seneca.export('options').db
 if (db.indexOf('-store') === -1) db += '-store' // add postfix -store if not found
 console.log('using ' + db)
 
+if (db !== 'jsonfile-store') {
 var db_args
 if (db === 'mem-store') db_args = {web:{dump:true}}
   // mem-store is recommended as development db
@@ -71,18 +73,20 @@ if (db === 'mem-store') db_args = {web:{dump:true}}
   // this is one of the benefits of using the seneca data entity model
   // for more, see http://senecajs.org/data-entities.html
 
-seneca.use(db, db_args)
+  // init chosen db
+  seneca.use(db, db_args)
+  ready()
+}
+else
+{
+  seneca
+  .client({type:'web'})
+  .ready(function(){
 
-// allow to erase DB if --env=clean:
-if ('clean' === env)
-erase('sys/user', function() {
-  erase('team', function() {
-    erase('event', function() {
-      console.log('db is empty now')
-      process.exit(0)
-    })
+    seneca = this
+    ready()
   })
-})
+}
 
 // used to clean the db
 function erase(entity, callback){
@@ -91,6 +95,23 @@ function erase(entity, callback){
       callback(err)
   })
 }
+
+function ready(){
+// allow to erase DB if --env=clean:
+if ('clean' === env)
+erase('sys/user', function() {
+  erase('team', function() {
+    erase('event', function() {
+      console.log('db is empty now')
+
+      seneca.use('user')
+      seneca.use('well',{fake:'development'==env})
+
+      console.log('db is rebuilt now')
+      process.exit(0)
+    })
+  })
+})
 
 // register the seneca-user plugin - this provides user account business logic
 seneca.use('user')
@@ -104,12 +125,10 @@ seneca.use('perm',{entity:true})
 
 // register the seneca-data-editor plugin - this provides a user interface for data admin
 // Open the /data-editor url path to edit data! (you must be an admin, or on localhost)
-seneca.use('data-editor')
-
+if (db !== 'jsonfile-store') seneca.use('data-editor') // <----------- remove the if statement for ISSUE ---------------
 // register your own plugin - the well app business logic!
 // in the options, indicate if you're in development mode
 // set the fake option, which triggers creation of test users and events if env == 'development'
-
 seneca.use('well',{fake:'development'==env})
 
 // seneca plugins can export objects for external use
@@ -160,9 +179,11 @@ app.use( session({ secret: 'CHANGE-THIS', store: sessionstore(session) }) )
 app.use( web )
 
 // serve static files from a folder defined in your options file
-app.use( express.static(__dirname+options.main.public) )  
+app.use( express.static(__dirname+options.main.public) )
 
 // start listening for HTTP requests
 app.listen( options.main.port )
 
 seneca.log.info('listen',options.main.port)
+
+}
