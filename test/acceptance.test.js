@@ -49,7 +49,7 @@ describe('acceptance testing', function(){
   })
 
   it('well/:event/player/members/:team', function(done) {
-    this.timeout(3000)
+    this.timeout(5000)
     // Get all users
     ;helper.auth_get({url:'/data-editor/rest/sys%2Fuser', status:200, type:'json'}, function(err, res) {
       if (err) return done(err)

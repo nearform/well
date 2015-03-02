@@ -15,9 +15,6 @@ seneca.use('options', './options.well.js')
 // open db service
 seneca
 .use('jsonfile-store', {folder:'./data/'})
-.listen({
-  type: 'web',
-  pin: 'role:entity'
-})
+.listen({pins:['role:entity, cmd:*',  'cmd:ensure_entity',  'cmd:define_sys_entity']})
 
 // console.log(process.env.HOSTNAME)

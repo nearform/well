@@ -24,3 +24,5 @@ options.well.js
 front/build
 front/archive
 db
+
+data/*.json

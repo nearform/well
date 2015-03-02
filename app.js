@@ -80,7 +80,7 @@ if (db === 'mem-store') db_args = {web:{dump:true}}
 else
 {
   seneca
-  .client({type:'web'})
+  .client({pins:['role:entity, cmd:*',  'cmd:ensure_entity',  'cmd:define_sys_entity']})
   .ready(function(){
 
     seneca = this
@@ -123,9 +123,12 @@ seneca.use('auth')
 // set the entity option to true, which means, "check all entities"
 seneca.use('perm',{entity:true})
 
+seneca.use('well',{fake:'development'==env})
+// seneca.make$('sys/user').list$()
+
 // register the seneca-data-editor plugin - this provides a user interface for data admin
 // Open the /data-editor url path to edit data! (you must be an admin, or on localhost)
-if (db !== 'jsonfile-store') seneca.use('data-editor') // <----------- remove the if statement for ISSUE ---------------
+seneca.use('data-editor')
 // register your own plugin - the well app business logic!
 // in the options, indicate if you're in development mode
 // set the fake option, which triggers creation of test users and events if env == 'development'
