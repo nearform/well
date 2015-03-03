@@ -61,15 +61,18 @@ var db = seneca.export('options').db
 if (db.indexOf('-store') === -1) db += '-store' // add postfix -store if not found
 console.log('using ' + db)
 
-if (db !== 'jsonfile-store') {
-var db_args
-if (db === 'mem-store') db_args = {web:{dump:true}}
+var custom_dbs = ['jsonfile-store']
+
+// if default db
+if (custom_dbs.indexOf(db) === -1) {
+  var db_args
   // mem-store is recommended as development db
   // the built in mem-store plugin provides a throw-away in-process database
   // also enables http://localhost:3333/mem-store/dump so you can debug db contents
+  if (db === 'mem-store') db_args = {web:{dump:true}}
 
-  // mongo-store is recommended if not developing
-  // NOTE: no code changes are required!
+  // mongo-store is recommended as production db
+  // NOTE: no code changes are required! just set db to 'mongo' in options.well.js
   // this is one of the benefits of using the seneca data entity model
   // for more, see http://senecajs.org/data-entities.html
 
@@ -79,6 +82,7 @@ if (db === 'mem-store') db_args = {web:{dump:true}}
 }
 else
 {
+  // if custom db, then connect using seneca client
   seneca
   .client({pins:['role:entity, cmd:*',  'cmd:ensure_entity',  'cmd:define_sys_entity']})
   .ready(function(){
