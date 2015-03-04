@@ -10,10 +10,11 @@ module.exports =
     // Storing event-user relationships for optimization
     var joined = {}
 
-    var base = fs.readFileSync('test/addr.out', 'utf-8')
+    var basepath = '/home/deploy/test/'
+    if (!fs.existsSync(basepath)) basepath = 'test/'
+    var base = fs.readFileSync(basepath + 'addr.out', 'utf-8')
     if (!base) base = 'http://localhost:3333'
-      console.log('connecting to: ' + base)
-
+    console.log('connecting to: ' + base)
 
     // Connect to url and setup login cookies
     // By default logs in as admin

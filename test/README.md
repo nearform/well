@@ -1,3 +1,11 @@
+to run automated db-testing go to db-test folder and run
+  sh db-test.sh
+you can run
+  sh clean.sh
+after test to make your life easier
+
+--------------
+
 db testing
 - do not run unit and acceptance tests at the same time
 - make sure options.well.js db field is the name of db
@@ -44,7 +52,7 @@ rebuilds fake db
 
 --------------
 
-docker run --rm --name db-web-inst db-web
+docker run -v /home/deploy/meta:/meta --rm --name db-web-inst db-web
 docker run -v /home/usr/work/workbench/Well/test:/test -v /home/deploy/meta:/meta -p 3333:3333 --link db-web-inst:db-web well-app
 
 --------------
