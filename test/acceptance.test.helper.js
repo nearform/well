@@ -12,7 +12,7 @@ module.exports =
 
     var base = fs.readFileSync('test/addr.out', 'utf-8')
     if (!base) base = 'http://localhost:3333'
-      console.log('!base! ' + base)
+      console.log('connecting to: ' + base)
 
 
     // Connect to url and setup login cookies

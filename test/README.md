@@ -44,6 +44,11 @@ rebuilds fake db
 
 --------------
 
+docker run --rm --name db-web-inst db-web
+docker run -v /home/usr/work/workbench/Well/test:/test -v /home/deploy/meta:/meta -p 3333:3333 --link db-web-inst:db-web well-app
+
+--------------
+
 1) MONGO
 
 *INIT ISSUES

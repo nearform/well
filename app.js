@@ -17,6 +17,8 @@
 /* This file is PUBLIC DOMAIN. You are free to cut-and-paste to start your own projects, of any kind */
 "use strict"
 
+var fs = require('fs')
+
 // always capture, log and exit on uncaught exceptions
 // your production system should auto-restart the app
 // this is the Node.js way
@@ -47,7 +49,7 @@ var seneca  = require('seneca')()
 var optionsfolder = 'production' == env ? '/home/deploy/' : './'
 var options_file = optionsfolder+'options.well.js'
 try {
-  require('fs').statSync( options_file )
+  fs.statSync( options_file )
 }
 catch(e) {
   process.exit( !console.error( "Please copy options.example.js to "+ options_file+': '+e ))
@@ -83,8 +85,15 @@ if (custom_dbs.indexOf(db) === -1) {
 else
 {
   // if custom db, then connect using seneca client
+  var metafile = 'db.meta.json'
+  var metapath = 'meta/' // for docker
+  if (!fs.existsSync(metapath)) metapath = 'node_modules/seneca-db-web/meta/' // for localhost
+
+  var db_info = JSON.parse(fs.readFileSync(metapath + metafile))
+  console.log('\ndb address: ' + db_info.ip + ':' + db_info.port + '\n')
+
   seneca
-  .client({pins:['role:entity, cmd:*',  'cmd:ensure_entity',  'cmd:define_sys_entity']})
+  .client({host:db_info.ip, port:db_info.port, pins:['role:entity, cmd:*',  'cmd:ensure_entity',  'cmd:define_sys_entity']})
   .ready(function(){
 
     seneca = this
@@ -167,8 +176,8 @@ app.use( function(req,res,next){
 // write server address to output file to allow for automated testing
 require('dns').lookup(require('os').hostname(), function (err, add) {
   var full_addr = 'http://' + add + ':' + options.main.port
-  require('fs').writeFile("test/addr.out", full_addr, function(err) {
-    if(err) console.log(err)
+  fs.writeFile("test/addr.out", full_addr, function(err) {
+    if(err) console.error(err)
     console.log('\nserver address: '+ full_addr + '\n')
   })
 })
