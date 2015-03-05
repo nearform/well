@@ -1,10 +1,12 @@
 to run automated db-testing go to db-test folder and run
   sh db-test.sh
 you can run
-  sh clean.sh
+  bash clean.sh
 after test to make your life easier
 
 --------------
+
+MANUAL
 
 db testing
 - do not run unit and acceptance tests at the same time

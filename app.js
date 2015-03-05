@@ -87,7 +87,7 @@ else
   // if custom db, then connect using seneca client
   var metafile = 'db.meta.json'
   var metapath = 'meta/' // for docker
-  if (!fs.existsSync(metapath)) metapath = 'node_modules/seneca-db-web/meta/' // for localhost
+  if (!fs.existsSync(metapath)) metapath = 'node_modules/seneca-db-test-harness/meta/' // for localhost
 
   var db_info = JSON.parse(fs.readFileSync(metapath + metafile))
   console.log('\ndb address: ' + db_info.ip + ':' + db_info.port + '\n')
