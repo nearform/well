@@ -56,14 +56,14 @@ catch(e) {
 }
 seneca.use('options',options_file)
 
-// db is set in options.well.js
+// db is set in run arguments (e.g. node app.js --env=development --db=mongo-store)
 // for more seneca db stores visit
 // https://github.com/search?q=seneca+store
-var db = seneca.export('options').db
-if (db.indexOf('-store') === -1) db += '-store' // add postfix -store if not found
-console.log('using ' + db)
+var db = argv.db ? argv.db : process.env.db
 
-var custom_dbs = ['jsonfile-store']
+var custom_dbs = ['jsonfile-store'] // for dbs using seneca-transport
+if (!db) db = 'mem-store'
+console.log('using ' + db)
 
 // if default db
 if (custom_dbs.indexOf(db) === -1) {
@@ -74,17 +74,18 @@ if (custom_dbs.indexOf(db) === -1) {
   if (db === 'mem-store') db_args = {web:{dump:true}}
 
   // mongo-store is recommended as production db
-  // NOTE: no code changes are required! just set db to 'mongo' in options.well.js
+  // NOTE: no code changes are required! just feed '--db=mongo-store' into the app
   // this is one of the benefits of using the seneca data entity model
   // for more, see http://senecajs.org/data-entities.html
 
-  // init chosen db
+  // init plugin for chosen db
   seneca.use(db, db_args)
   ready()
 }
 else
 {
-  // if custom db, then connect using seneca client
+  // db has been configured so that it saves host information into a file
+  // app reads it and connects to the db through seneca-transport
   var metafile = 'db.meta.json'
   var metapath = 'meta/' // for docker
   if (!fs.existsSync(metapath)) metapath = 'node_modules/seneca-db-test-harness/meta/' // for localhost
@@ -92,6 +93,8 @@ else
   var db_info = JSON.parse(fs.readFileSync(metapath + metafile))
   console.log('\ndb address: ' + db_info.ip + ':' + db_info.port + '\n')
 
+  // NOTE: pins are used to expose actions
+  // in case of db we are interested in entity oriented actions
   seneca
   .client({host:db_info.ip, port:db_info.port, pins:['role:entity, cmd:*',  'cmd:ensure_entity',  'cmd:define_sys_entity']})
   .ready(function(){
@@ -101,7 +104,7 @@ else
   })
 }
 
-// used to clean the db
+// used to clear the db
 function erase(entity, callback){
   seneca.act({role:'entity', cmd:'remove', qent:seneca.make(entity), q:{all$ : true}}, function(err, data){
     if (err) seneca.error(err)
@@ -110,8 +113,8 @@ function erase(entity, callback){
 }
 
 function ready(){
-// allow to erase DB if --env=clean:
-if ('clean' === env)
+// allow to erase DB if --env=clear:
+if ('clear' === env)
 erase('sys/user', function() {
   erase('team', function() {
     erase('event', function() {

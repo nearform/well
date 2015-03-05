@@ -29,7 +29,7 @@ if [ "$FB" = true ]
     cd ../..
     echo REBUILDING THE APP
     docker build --force-rm -t well-app .
-    cd test/db-test
+    cd test/docker-db-test
 fi
 gnome-terminal -x bash -c "sh app.sh; exec $SHELL"
 
