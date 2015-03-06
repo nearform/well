@@ -13,7 +13,7 @@ do
 done
 
 declare -a DBS=("jsonfile-store" "mem-store" "mongo-store")
-DB=${DBS[0]}
+DB=${DBS[1]}
 
 if [ "$1" == "local" ]
     then

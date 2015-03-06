@@ -61,7 +61,7 @@ seneca.use('options',options_file)
 // https://github.com/search?q=seneca+store
 var db = argv.db ? argv.db : process.env.db
 
-var custom_dbs = ['jsonfile-store'] // for dbs using seneca-transport
+var custom_dbs = ['mem-store', 'jsonfile-store'] // for dbs using seneca-transport
 if (!db) db = 'mem-store'
 
 // if default db

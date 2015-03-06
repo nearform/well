@@ -1,7 +1,10 @@
 #!/bin/bash
 
-echo ERASING META
+echo CLEANING AFTER DB TEST
+echo NOTE: SUDO IS REQUIRED TO ERASE TEMP FILES
+sudo echo
 
+echo ERASING META
 if [ "$1" == "local" ]
     then
     sh kill-servers.sh
