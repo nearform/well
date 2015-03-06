@@ -63,7 +63,6 @@ var db = argv.db ? argv.db : process.env.db
 
 var custom_dbs = ['jsonfile-store'] // for dbs using seneca-transport
 if (!db) db = 'mem-store'
-console.log('using ' + db)
 
 // if default db
 if (custom_dbs.indexOf(db) === -1) {
@@ -91,7 +90,8 @@ else
   if (!fs.existsSync(metapath)) metapath = 'node_modules/seneca-db-test-harness/meta/' // for localhost
 
   var db_info = JSON.parse(fs.readFileSync(metapath + metafile))
-  console.log('\ndb address: ' + db_info.ip + ':' + db_info.port + '\n')
+  console.log('\nusing ' + db)
+  console.log('db address: ' + db_info.ip + ':' + db_info.port + '\n')
 
   // NOTE: pins are used to expose actions
   // in case of db we are interested in entity oriented actions

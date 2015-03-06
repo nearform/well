@@ -6,7 +6,7 @@ after test to make your life easier
 
 --------------
 
-MANUAL
+MANUAL MONGO
 
 db testing
 - do not run unit and acceptance tests at the same time
@@ -31,8 +31,8 @@ to run acceptance test using docker:
 - uncomment posttest in package.json
 - comment out test in package.json
 
-- open terminal 1. first one rebuilds fake db
-  node app.js --env=clean
+- open terminal 1. first command rebuilds fake db
+  node app.js --env=clear
   docker run --rm -p 27017:27017 -p 28017:28017 --name mongo-inst mongo --httpinterface
 
 - open terminal 2
