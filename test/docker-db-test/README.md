@@ -1,4 +1,4 @@
-sh db-test.sh
+bash db-test.sh
 flags:
   -fd         force docker pull
   -fb         force app build

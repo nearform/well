@@ -4,7 +4,7 @@ if [ "$CONTAINERS" = "" ]
 then
     echo NOTHING TO KILL
 else
-    docker stop $(docker ps -a -q)
+    docker kill $(docker ps -a -q)
 
     CONTAINERS=$(docker ps -a -q)
     if [ "$CONTAINERS" = "" ]

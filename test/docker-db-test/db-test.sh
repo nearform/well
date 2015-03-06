@@ -22,7 +22,8 @@ if [ "$IMAGES" = "" -o "$FD" = true ]
 else
     echo SENECA-DB-TEST-HARNESS FOUND
 fi
-gnome-terminal -x bash -c "sh db-test-harness.sh; exec $SHELL"
+nohup gnome-terminal --disable-factory -x bash -c "bash db-test-harness.sh" >/dev/null 2>&1 &
+sleep 1
 
 if [ "$FB" = true ]
     then
@@ -31,9 +32,13 @@ if [ "$FB" = true ]
     docker build --force-rm -t well-app .
     cd test/docker-db-test
 fi
-gnome-terminal -x bash -c "sh app.sh; exec $SHELL"
+nohup gnome-terminal --disable-factory -x bash -c "bash app.sh" >/dev/null 2>&1 &
 
 echo STANDBY BEFORE TEST
 sleep 5
 echo TESTING
 npm test
+
+read -p "TAP ANY KEY TO CLEAN UP" -n 1 -s
+echo 
+bash clean.sh

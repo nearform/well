@@ -49,7 +49,7 @@ to run acceptance test using docker:
 --------------
 
 running
-node app.js --env=clean
+node app.js --env=clear
 rebuilds fake db
 
 --------------

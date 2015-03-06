@@ -8,5 +8,6 @@ echo ../../node_modules/seneca-db-test-harness/db
 sudo rm -rf ../../node_modules/seneca-db-test-harness/db
 echo ../addr.out
 sudo rm ../addr.out
+bash kill-other-gnome.sh
 read -p "ALL DONE. HAVE A NICE DAY" -n 1 -s
-killall gnome-terminal
+echo
