@@ -1,5 +1,13 @@
-bash db-test.sh
-  first arg takes 'local' or 'docker'
+bash db-test.sh [TARGET] [DB(optional)] [FLAGS]
+
+targets:
+  local
+  docker
+
+dbs:
+  mem-store
+  jsonfile-store
+* when no db specified, it tests them all
 
 flags:
   -fd         force docker pull

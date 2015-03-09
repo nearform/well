@@ -62,10 +62,10 @@ seneca.use('options',options_file)
 var db = argv.db ? argv.db : process.env.db
 
 var custom_dbs = ['mem-store', 'jsonfile-store'] // for dbs using seneca-transport
-if (!db) db = 'mem-store'
 
-// if default db
+// if db is unspecified or default
 if (custom_dbs.indexOf(db) === -1) {
+  if (!db) db = 'mem-store'
   var db_args
   // mem-store is recommended as development db
   // the built in mem-store plugin provides a throw-away in-process database

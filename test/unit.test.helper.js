@@ -1,13 +1,19 @@
 // ADD COPYRIGHT INFO OR A DISCLAIMER
+
+var db = process.env['npm_config_db']
+
 module.exports =
   function() {
 
-    var _     = require('lodash')
+    var _  = require('lodash')
+    var fs = require('fs')
 
     this.init_empty = function(done) {
       var si = require('seneca')({
         errhandler: done
       })
+
+      var util = require('util')
 
       // get options
       si.use('options', '../options.well.js')
@@ -15,10 +21,19 @@ module.exports =
       options.dev_setup = options.well.dev_setup // <- this is not normal, check if app should really work like this
 
       // init and clean db
-      var db = options.db
+      if (!db){
+        throw new Error('No db specified. try npm test --db=mem-store or any other store')
+        process.exit(0)
+      }
+      var db_path = './unit-db/'
+      // ensure db folder
+      if (!fs.existsSync(db_path)) fs.mkdirSync(db_path)
+      db_path += db
+      if (!fs.existsSync(db_path)) fs.mkdirSync(db_path)
+
+      // setup db-specific args
       var db_args
-      if (db.indexOf('-store') === -1) db += '-store' // add postfix -store if not found
-      if (db === 'jsonfile-store') db_args = {folder:'./data/'}
+      if (db === 'jsonfile-store') db_args = {folder:db_path}
 
       si.use(db, db_args)
       this.clean_db(si, function(err){
@@ -125,6 +140,7 @@ module.exports =
       erase('sys/user', seneca, function() {
         erase('team', seneca, function() {
           erase('event', seneca, function() {
+            if (db === 'jsonfile-store') seneca.make$('-/-/-').save$()
             cb()
           })
         })
