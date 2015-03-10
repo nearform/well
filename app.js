@@ -61,7 +61,8 @@ seneca.use('options',options_file)
 // https://github.com/search?q=seneca+store
 var db = argv.db ? argv.db : process.env.db
 
-var custom_dbs = ['mem-store', 'jsonfile-store'] // for dbs using seneca-transport
+// for dbs using seneca-transport
+var custom_dbs = ['mem-store', 'jsonfile-store']
 
 // if db is unspecified or default
 if (custom_dbs.indexOf(db) === -1) {
@@ -87,16 +88,15 @@ else
   // app reads it and connects to the db through seneca-transport
   var metafile = 'db.meta.json'
   var metapath = 'meta/' // for docker
-  if (!fs.existsSync(metapath)) metapath = 'node_modules/seneca-db-test-harness/meta/' // for localhost
 
   var db_info = JSON.parse(fs.readFileSync(metapath + metafile))
   console.log('\nusing ' + db)
-  console.log('db address: ' + db_info.ip + ':' + db_info.port + '\n')
+  console.log('db address: ' + db_info.host + ':' + db_info.port + '\n')
 
   // NOTE: pins are used to expose actions
   // in case of db we are interested in entity oriented actions
   seneca
-  .client({host:db_info.ip, port:db_info.port, pins:['role:entity, cmd:*',  'cmd:ensure_entity',  'cmd:define_sys_entity']})
+  .client({host:db_info.host, port:db_info.port, pins:['role:entity, cmd:*',  'cmd:ensure_entity',  'cmd:define_sys_entity']})
   .ready(function(){
 
     seneca = this

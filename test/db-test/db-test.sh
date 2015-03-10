@@ -12,54 +12,57 @@ do
     fi
 done
 
-if [ "$2" = "" ]
+if [ "$1" = "" -o "$1" = "all" ]
     then
-    declare -a DBS=("mem-store" "jsonfile-store")
+    declare -a DBS=("mem-store" "mongo-store" "jsonfile-store")
 else
-    declare -a DBS=("$2")
+    declare -a DBS=("$1")
 fi
 
 for DB in ${DBS[@]}
 do
-    if [ "$1" == "local" ]
-        then
-        bash kill-servers.sh
-        nohup gnome-terminal --disable-factory -x bash -c "bash db-test-harness.sh $DB $1" >/dev/null 2>&1 &
-        sleep 1
-        nohup gnome-terminal --disable-factory -x bash -c "bash app.sh $DB $1" >/dev/null 2>&1 &
-    elif [ "$1" == "docker" ]
-        then
-        bash kill-containers.sh
-        echo BUILDALL
-        IMAGES=$(docker images | grep seneca-db-test-harness)
-        if [ "$IMAGES" = "" -o "$FD" = true ]
-            then
-            echo PULLING FROM DOCKER SENECA-DB-TEST-HARNESS
-            docker pull kamilmech/seneca-db-test-harness
-            FD=false
-        else
-            echo SENECA-DB-TEST-HARNESS FOUND
-        fi
-        nohup gnome-terminal --disable-factory -x bash -c "bash db-test-harness.sh $DB $1" >/dev/null 2>&1 &
-        sleep 1
+    bash kill-containers.sh
 
-        if [ "$FB" = true ]
-            then
-            cd ../..
-            echo REBUILDING THE APP
-            docker build --force-rm -t well-app .
-            FB=false
-            cd test/db-test
-        fi
-        nohup gnome-terminal --disable-factory -x bash -c "bash app.sh $DB $1" >/dev/null 2>&1 &
+    echo BUILD DB
+
+    if [ "$DB" = "mongo-store" ]
+        then IMG="mongo"
+    else
+        IMG="kamilmech/seneca-db-test-harness"
     fi
+    bash image-check.sh $IMG $FD
+    FD=false
+
+    echo RUN DB
+    if [ "$DB" = "mongo-store" ]
+        then SC="mongo.sh"
+    else
+        SC="harness.sh"
+    fi
+    nohup gnome-terminal --disable-factory -x bash -c "bash $SC $DB" >/dev/null 2>&1 &
+    sleep 1
+
+    if [ "$FB" = true ]
+        echo REBUILD THE APP
+        then
+        cd ../..
+        echo REBUILD THE APP
+        docker build --force-rm -t well-app .
+        FB=false
+        cd test/db-test
+    else
+        echo NO NEED TO REBUILD THE APP
+    fi
+
+    echo RUN APP
+    nohup gnome-terminal --disable-factory -x bash -c "bash app.sh $DB" >/dev/null 2>&1 &
 
     echo STANDBY BEFORE TEST
     sleep 5
-    echo TESTING
+    echo TEST
     npm test --db=$DB
 
     read -p "TAP ANY KEY TO CLEAN UP" -n 1 -s
     echo 
-    bash clean.sh $1
+    bash clean.sh
 done

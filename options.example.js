@@ -40,10 +40,8 @@ module.exports = {
     // uncomment if using mongo authentication
     //user:'USERMAME',
     //pass:'PASSWORD',
-    host:'localhost',
-    port:27017,
-    // host:process.env.MONGODB_PORT_27017_TCP_ADDR,
-    // port:process.env.MONGODB_PORT_27017_TCP_PORT,
+    host:process.env.MONGODB_PORT_27017_TCP_ADDR || 'localhost',
+    port:process.env.MONGODB_PORT_27017_TCP_PORT || 27017,
     name:'well'
   },
 
