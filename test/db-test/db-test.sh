@@ -18,44 +18,43 @@ if [ "$1" = "" -o "$1" = "all" ]
 else
     declare -a DBS=("$1")
 fi
+PREFIX="./"
+
 
 for DB in ${DBS[@]}
 do
-    bash kill-containers.sh
+    echo TESTING $DB DB
+    bash $PREFIX/kill-containers.sh
 
     echo BUILD DB
 
     if [ "$DB" = "mongo-store" ]
         then IMG="mongo"
-    else
-        IMG="kamilmech/seneca-db-test-harness"
     fi
-    bash image-check.sh $IMG $FD
-    FD=false
+    if [ "$IMG" != "" ]
+        then
+        bash $PREFIX/image-check.sh $IMG $FD
+    fi
 
     echo RUN DB
     if [ "$DB" = "mongo-store" ]
         then SC="mongo.sh"
-    else
-        SC="harness.sh"
     fi
-    nohup gnome-terminal --disable-factory -x bash -c "bash $SC $DB" >/dev/null 2>&1 &
+    nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/$SC $DB" >/dev/null 2>&1 &
+
     sleep 1
 
     if [ "$FB" = true ]
-        echo REBUILD THE APP
         then
-        cd ../..
         echo REBUILD THE APP
         docker build --force-rm -t well-app .
         FB=false
-        cd test/db-test
     else
         echo NO NEED TO REBUILD THE APP
     fi
 
     echo RUN APP
-    nohup gnome-terminal --disable-factory -x bash -c "bash app.sh $DB" >/dev/null 2>&1 &
+    nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/app.sh $DB" >/dev/null 2>&1 &
 
     echo STANDBY BEFORE TEST
     sleep 5
@@ -64,5 +63,8 @@ do
 
     read -p "TAP ANY KEY TO CLEAN UP" -n 1 -s
     echo 
-    bash clean.sh
+    bash $PREFIX/clean.sh
+
+    SC=""
+    IMG=""
 done

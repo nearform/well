@@ -60,6 +60,7 @@ seneca.use('options',options_file)
 // for more seneca db stores visit
 // https://github.com/search?q=seneca+store
 var db = argv.db ? argv.db : process.env.db
+// argv determines locally and process.env determines in docker
 
 // for dbs using seneca-transport
 var custom_dbs = ['mem-store', 'jsonfile-store']
@@ -79,28 +80,27 @@ if (custom_dbs.indexOf(db) === -1) {
   // for more, see http://senecajs.org/data-entities.html
 
   // init plugin for chosen db
+  console.log('using ' + db + ' db')
   seneca.use(db, db_args)
   ready()
 }
 else
 {
-  // db has been configured so that it saves host information into a file
-  // app reads it and connects to the db through seneca-transport
-  var metafile = 'db.meta.json'
-  var metapath = 'meta/' // for docker
+  var Harness = require('seneca-db-test-harness')
+  var harness = new Harness()
 
-  var db_info = JSON.parse(fs.readFileSync(metapath + metafile))
-  console.log('\nusing ' + db)
-  console.log('db address: ' + db_info.host + ':' + db_info.port + '\n')
+  harness.host(db, function(server_config){
+    setTimeout(function(){
+      seneca
+      .client(server_config)
+      .ready(function(){
+        // NOTE: pins are used to expose actions
+        // in case of db we are interested in entity oriented actions
 
-  // NOTE: pins are used to expose actions
-  // in case of db we are interested in entity oriented actions
-  seneca
-  .client({host:db_info.host, port:db_info.port, pins:['role:entity, cmd:*',  'cmd:ensure_entity',  'cmd:define_sys_entity']})
-  .ready(function(){
-
-    seneca = this
-    ready()
+        seneca = this
+        ready()
+      })
+    }, 2000)
   })
 }
 
@@ -114,17 +114,13 @@ function erase(entity, callback){
 
 function ready(){
 // allow to erase DB if --env=clear:
-if ('clear' === env)
+var clear = argv.clear ? argv.clear : process.env.clear
+
+if (clear === true)
 erase('sys/user', function() {
   erase('team', function() {
     erase('event', function() {
-      console.log('db is empty now')
-
-      seneca.use('user')
-      seneca.use('well',{fake:'development'==env})
-
-      console.log('db is rebuilt now')
-      process.exit(0)
+      console.log('db is clean now')
     })
   })
 })
@@ -140,6 +136,7 @@ seneca.use('auth')
 seneca.use('perm',{entity:true})
 
 seneca.use('well',{fake:'development'==env})
+console.log('db is rebuilt now')
 // seneca.make$('sys/user').list$()
 
 // register the seneca-data-editor plugin - this provides a user interface for data admin

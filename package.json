@@ -6,7 +6,7 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha test/unit.test.js",
     "posttest": "./node_modules/.bin/mocha test/acceptance.test.js"
-  },
+    },
   "repository": {
     "type": "git",
     "url": "git://github.com/nearform/well.git"
@@ -44,6 +44,7 @@
     "express-session": "^1.10.2"
   },
     "devDependencies": {
+    "seneca-db-test-harness": "^0.1.9",
     "mocha": "^2.1.0",
     "hippie": "^0.3.0"
   }

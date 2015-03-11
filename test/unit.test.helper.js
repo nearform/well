@@ -140,7 +140,6 @@ module.exports =
       erase('sys/user', seneca, function() {
         erase('team', seneca, function() {
           erase('event', seneca, function() {
-            if (db === 'jsonfile-store') seneca.make$('-/-/-').save$()
             cb()
           })
         })

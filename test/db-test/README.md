@@ -1,8 +1,4 @@
-bash db-test.sh [TARGET] [DB(optional)] [FLAGS]
-
-targets:
-  local
-  docker
+bash db-test.sh [DB(optional)] [FLAGS]
 
 dbs:
   mem-store
