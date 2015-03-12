@@ -25,7 +25,7 @@ module.exports =
         throw new Error('No db specified. try npm test --db=mem-store or any other store')
         process.exit(0)
       }
-      var db_path = './unit-db/'
+      var db_path = __dirname + '/unit-db/'
       // ensure db folder
       if (!fs.existsSync(db_path)) fs.mkdirSync(db_path)
       db_path += db

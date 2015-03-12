@@ -4,8 +4,10 @@
   "description": "well",
   "main": "lib/well.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/unit.test.js",
-    "posttest": "./node_modules/.bin/mocha test/acceptance.test.js"
+    "test": "./node_modules/.bin/mocha test/acceptance.test.js",
+    "posttest": "./node_modules/.bin/mocha test/unit.test.js",
+    "acceptance-test": "./node_modules/.bin/mocha test/acceptance.test.js",
+    "unit-test": "./node_modules/.bin/mocha test/unit.test.js"
     },
   "repository": {
     "type": "git",
@@ -33,6 +35,7 @@
     "seneca-auth": "~0.4.0",
     "seneca-mongo-store": "~0.2.0",
     "seneca-jsonfile-store": "^0.2.2",
+    "seneca-postgresql-store": "^0.6.0",
     "seneca-memcached-cache": "~0.2.0",
     "seneca-vcache": "~0.3.1",
     "seneca-perm": "~0.4.0",

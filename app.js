@@ -79,8 +79,8 @@ if (custom_dbs.indexOf(db) === -1) {
   // this is one of the benefits of using the seneca data entity model
   // for more, see http://senecajs.org/data-entities.html
 
-  // init plugin for chosen db
-  console.log('using ' + db + ' db')
+  // init plugin for chosen dbs
+  console.log('trying to use ' + db + ' db')
   seneca.use(db, db_args)
   ready()
 }
@@ -113,6 +113,7 @@ function erase(entity, callback){
 }
 
 function ready(){
+  
 // allow to erase DB if --env=clear:
 var clear = argv.clear ? argv.clear : process.env.clear
 

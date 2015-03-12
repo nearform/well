@@ -9,8 +9,11 @@ dbs:
 flags:
   -fd         force docker pull
   -fb         force app build
+  -tu         unit test only
+  -ta         acceptance test only
 
   e.g.
 
-  bash db-test.sh local 
-  bash db-test.sh docker -fd -fb
+  bash db-test.sh mongo-store
+  bash db-test.sh jsonfile-store -ta
+  bash db-test.sh all -fd -fb
