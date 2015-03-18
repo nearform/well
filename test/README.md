@@ -3,7 +3,7 @@ to run automated db-testing go to db-test folder
 --------------
 
 running
-node app.js --env=clear
+node app.js --clear=true
 rebuilds fake db
 
 --------------

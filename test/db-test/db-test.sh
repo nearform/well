@@ -24,7 +24,7 @@ done
 
 if [ "$1" = "" -o "$1" = "all" ]
     then
-    declare -a DBS=("mem-store" "mongo-store" "jsonfile-store")
+    declare -a DBS=("mem-store" "mongo-store" "jsonfile-store" "redis-store")
     declare -a IGNORED=("postgresql-store")
 else
     declare -a DBS=("$1")
@@ -44,6 +44,8 @@ do
         then IMG="mongo"
     elif [ "$DB" = "postgresql-store" ]
         then IMG="postgres"
+    elif [ "$DB" = "redis-store" ]
+        then IMG="redis"
     fi
 
     if [ "$IMG" != "" ]
@@ -56,6 +58,8 @@ do
         then SC="mongo.sh"
     elif [ "$DB" = "postgresql-store" ]
         then SC="postgres.sh"
+    elif [ "$DB" = "redis-store" ]
+        then SC="redis.sh"
     fi
 
     nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/dbs/$SC $DB" >/dev/null 2>&1 &
@@ -78,10 +82,31 @@ do
         then nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/app.sh $DB" >/dev/null 2>&1 &
     fi
 
+    if [ "$DB" = "mongo-store" ]
+        then PORT=27017
+    elif [ "$DB" = "postgresql-store" ]
+        then PORT=5432
+    elif [ "$DB" = "redis-store" ]
+        then PORT=6379
+    else
+        PORT=false
+    fi
+
+    if [ "$PORT" != false ]
+        then
+        echo PREPARE TEST FEED
+        HEX=$(echo $(docker ps | grep $PORT) | cut -d" " -f1)
+        echo DB HEX "$HEX"
+        IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $HEX)
+        echo DB ADDR "$IP:$PORT"
+    else
+        PORT=""
+    fi
+
     echo STANDBY BEFORE TEST
     sleep 5
     echo TEST $DB DB
-    nohup gnome-terminal --disable-factory -x bash -c "bash test.sh $DB $TU $TA" >/dev/null 2>&1 &
+    nohup gnome-terminal --disable-factory -x bash -c "bash test.sh $DB $TU $TA $IP $PORT" >/dev/null 2>&1 &
 
     read -p "TAP ANY KEY TO STOP ALL AND CLEAN" -n 1 -s
     echo 

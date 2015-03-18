@@ -54,6 +54,12 @@ module.exports = {
     name:'admin'
   },
 
+  // options for seneca-redis-store
+  'redis-store':{
+    host:process.env.REDIS_LINK_PORT_6379_TCP_ADDR || 'localhost',
+    port:process.env.REDIS_LINK_PORT_6379_TCP_PORT || 6379
+  },
+
   // options for memcached
   memcached:{
     servers:['127.0.0.1:11211']

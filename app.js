@@ -17,7 +17,7 @@
 /* This file is PUBLIC DOMAIN. You are free to cut-and-paste to start your own projects, of any kind */
 "use strict"
 
-
+var _  = require('lodash')
 var fs = require('fs')
 
 // always capture, log and exit on uncaught exceptions
@@ -83,9 +83,19 @@ if (custom_dbs.indexOf(db) === -1) {
   // for more, see http://senecajs.org/data-entities.html
 
   // init plugin for chosen dbs
-  console.log('trying to use ' + db + ' db')
+  console.log('\nusing ' + db + ' db\n')
   seneca.use(db, db_args)
-  ready()
+
+  if (db === 'mem-store') ready()
+  else {
+    seneca.act('role:entity, cmd:native', {ent:'entity'}, function(err, res){
+      if (_.isEmpty(res)){
+        console.error('\nfailed to init ' + db + ' db\n')
+        process.exit(0)
+      }
+      ready()
+    })
+  }
 }
 else
 {
@@ -117,93 +127,97 @@ function erase(entity, callback){
 
 function ready(){
 
-// allow to erase DB if --env=clear:
+// allow to erase DB if --clear=true:
 var clear = argv.clear ? argv.clear : process.env.clear
 
-if (clear === true)
+if (clear === 'true')
 erase('sys/user', function() {
   erase('team', function() {
     erase('event', function() {
       console.log('db is clean now')
+      argv.clear = false
+      process.env.clear = false
+      ready()
     })
   })
 })
+else {
 
-// register the seneca-user plugin - this provides user account business logic
-seneca.use('user')
+  // register the seneca-user plugin - this provides user account business logic
+  seneca.use('user')
 
-// register the seneca-auth plugin - this provides authentication business logic
-seneca.use('auth')
+  // register the seneca-auth plugin - this provides authentication business logic
+  seneca.use('auth')
 
-// register the seneca-perm plugin - this provides permission checking
-// set the entity option to true, which means, "check all entities"
-seneca.use('perm',{entity:true})
+  // register the seneca-perm plugin - this provides permission checking
+  // set the entity option to true, which means, "check all entities"
+  seneca.use('perm',{entity:true})
 
-seneca.use('well',{fake:'development'==env})
-console.log('db is rebuilt now')
-// seneca.make$('sys/user').list$()
+  seneca.use('well',{fake:'development'==env})
+  console.log('db is rebuilt now')
 
-// register the seneca-data-editor plugin - this provides a user interface for data admin
-// Open the /data-editor url path to edit data! (you must be an admin, or on localhost)
-seneca.use('data-editor')
-// register your own plugin - the well app business logic!
-// in the options, indicate if you're in development mode
-// set the fake option, which triggers creation of test users and events if env == 'development'
-seneca.use('well',{fake:'development'==env})
+  // register the seneca-data-editor plugin - this provides a user interface for data admin
+  // Open the /data-editor url path to edit data! (you must be an admin, or on localhost)
+  seneca.use('data-editor')
+  // register your own plugin - the well app business logic!
+  // in the options, indicate if you're in development mode
+  // set the fake option, which triggers creation of test users and events if env == 'development'
+  seneca.use('well',{fake:'development'==env})
 
-// seneca plugins can export objects for external use
-// you can access these using the seneca.export method
+  // seneca plugins can export objects for external use
+  // you can access these using the seneca.export method
 
-// get the configuration options
-var options = seneca.export('options')
+  // get the configuration options
+  var options = seneca.export('options')
 
-// get the middleware function from the builtin web plugin
-var web = seneca.export('web')
+  // get the middleware function from the builtin web plugin
+  var web = seneca.export('web')
 
-// get the simple database-backed session store defined in well.js
-var sessionstore = seneca.export('well/session-store')
+  // get the simple database-backed session store defined in well.js
+  var sessionstore = seneca.export('well/session-store')
 
-// load the express module
-// this provides the basic web server
-var express = require('express')
-var session = require('express-session')
+  // load the express module
+  // this provides the basic web server
+  var express = require('express')
+  var session = require('express-session')
 
-// create an express app
-var app = express()
+  // create an express app
+  var app = express()
 
-// Log requests to console
-app.use( function(req,res,next){
-  console.log('EXPRESS',new Date().toISOString(), req.method, req.url)
-  next()
-})
-
-// write server address to output file to allow for automated testing
-require('dns').lookup(require('os').hostname(), function (err, add) {
-  var full_addr = 'http://' + add + ':' + options.main.port
-  fs.writeFile("test/addr.out", full_addr, function(err) {
-    if(err) console.error(err)
-    console.log('\nserver address: '+ full_addr + '\n')
+  // Log requests to console
+  app.use( function(req,res,next){
+    console.log('EXPRESS',new Date().toISOString(), req.method, req.url)
+    next()
   })
-})
 
-// setup express
-//app.use( require('cookie-parser') )
-app.use( require('body-parser').json() )
+  // write server address to output file to allow for automated testing
+  require('dns').lookup(require('os').hostname(), function (err, add) {
+    var full_addr = 'http://' + add + ':' + options.main.port
+    fs.writeFile("test/addr.out", full_addr, function(err) {
+      if(err) console.error(err)
+      console.log('\nserver address: '+ full_addr + '\n')
+    })
+  })
 
-// you can't use a single node in-memory session store if you want to scale
-// well.js defines a session store that uses seneca entities
-app.use( session({ secret: 'CHANGE-THIS', store: sessionstore(session) }) )
+  // setup express
+  //app.use( require('cookie-parser') )
+  app.use( require('body-parser').json() )
 
-// add in the seneca middleware
-// this is how seneca integrates with express (or any connect-style web server module)
-app.use( web )
+  // you can't use a single node in-memory session store if you want to scale
+  // well.js defines a session store that uses seneca entities
+  app.use( session({ secret: 'CHANGE-THIS', store: sessionstore(session) }) )
 
-// serve static files from a folder defined in your options file
-app.use( express.static(__dirname+options.main.public) )
+  // add in the seneca middleware
+  // this is how seneca integrates with express (or any connect-style web server module)
+  app.use( web )
 
-// start listening for HTTP requests
-app.listen( options.main.port )
+  // serve static files from a folder defined in your options file
+  app.use( express.static(__dirname+options.main.public) )
 
-seneca.log.info('listen',options.main.port)
+  // start listening for HTTP requests
+  app.listen( options.main.port )
 
+  seneca.log.info('listen',options.main.port)
+
+  }
 }

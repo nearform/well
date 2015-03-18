@@ -1,6 +1,8 @@
 // ADD COPYRIGHT INFO OR A DISCLAIMER
 
 var db = process.env['npm_config_db']
+var ip = process.env['npm_config_ip']
+var port = process.env['npm_config_port']
 
 module.exports =
   function() {
@@ -34,17 +36,28 @@ module.exports =
       if (!fs.existsSync(db_path)) fs.mkdirSync(db_path)
 
       // setup db-specific args
-      var db_args
+      var db_args = {}
       if (db === 'jsonfile-store') db_args = {folder:db_path}
 
+      if (ip !== '') db_args.host = ip
+      if (port !== '') db_args.port = port
       si.use(db, db_args)
+
       this.clean_db(si, function(err){
 
-        // init well.js
-        si.use('user')
-        si.use('../well', options)
+        // confirm app has init a store
+        si.act('role:entity, cmd:native', {ent:'entity'}, function(err, res){
+          if (_.isEmpty(res) && db !== 'mem-store'){
+            console.error('\nfailed to init ' + db + ' db\n')
+            process.exit(0)
+          }
 
-        done(si)
+          // init well.js
+          si.use('user')
+          si.use('../well', options)
+
+          done(si)
+        })
       })
     }
 
