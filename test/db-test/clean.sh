@@ -16,11 +16,14 @@ sudo echo
 echo ERASING META
 echo ../unit-db
 sudo rm -rf ../unit-db
+echo ../addr.out
+sudo rm -rf ../addr.out
 echo /home/deploy/test
 sudo rm -rf /home/deploy/test
 
 bash $PREFIX/kill-containers.sh
 bash $PREFIX/kill-other-gnome.sh
+killall mongod
 
 if [ "$PROMPT" = true ]
     then

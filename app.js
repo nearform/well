@@ -17,6 +17,7 @@
 /* This file is PUBLIC DOMAIN. You are free to cut-and-paste to start your own projects, of any kind */
 "use strict"
 
+
 var fs = require('fs')
 
 // always capture, log and exit on uncaught exceptions
@@ -61,6 +62,8 @@ seneca.use('options',options_file)
 // https://github.com/search?q=seneca+store
 var db = argv.db ? argv.db : process.env.db
 // argv determines locally and process.env determines in docker
+// example docker run:
+// docker run -v /home/deploy/test:/test -p 3333:3333 --rm -e db=mem-store well-app
 
 // for dbs using seneca-transport
 var custom_dbs = ['mem-store', 'jsonfile-store']
@@ -113,7 +116,7 @@ function erase(entity, callback){
 }
 
 function ready(){
-  
+
 // allow to erase DB if --env=clear:
 var clear = argv.clear ? argv.clear : process.env.clear
 

@@ -24,7 +24,8 @@ done
 
 if [ "$1" = "" -o "$1" = "all" ]
     then
-    declare -a DBS=("mem-store" "mongo-store" "jsonfile-store" "postgresql-store")
+    declare -a DBS=("mem-store" "mongo-store" "jsonfile-store")
+    declare -a IGNORED=("postgresql-store")
 else
     declare -a DBS=("$1")
 fi
@@ -56,11 +57,11 @@ do
     elif [ "$DB" = "postgresql-store" ]
         then SC="postgres.sh"
     fi
+
     nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/dbs/$SC $DB" >/dev/null 2>&1 &
 
-    sleep 5
-
-    if [ "$FB" = true ]
+    IMAGES=$(docker images | grep well-app)
+    if [ "$FB" = true -o "$IMAGES" = "" ]
         then
         echo REBUILD THE APP
         cd ../..
@@ -69,6 +70,7 @@ do
         FB=false
     else
         echo NO NEED TO REBUILD THE APP
+        sleep 6
     fi
 
     echo RUN APP
@@ -78,16 +80,10 @@ do
 
     echo STANDBY BEFORE TEST
     sleep 5
-    echo TEST
-    if [ "$TU" = true ]
-        then  npm run unit-test --db=$DB
-    elif [ "$TA" = true ]
-        then npm run acceptance-test
-    else
-        npm test --db=$DB
-    fi
+    echo TEST $DB DB
+    nohup gnome-terminal --disable-factory -x bash -c "bash test.sh $DB $TU $TA" >/dev/null 2>&1 &
 
-    read -p "TAP ANY KEY TO CLEAN UP" -n 1 -s
+    read -p "TAP ANY KEY TO STOP ALL AND CLEAN" -n 1 -s
     echo 
     bash $PREFIX/clean.sh -prompt
 

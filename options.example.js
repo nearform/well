@@ -40,11 +40,19 @@ module.exports = {
     // uncomment if using mongo authentication
     //user:'USERMAME',
     //pass:'PASSWORD',
-    host:process.env.MONGODB_PORT_27017_TCP_ADDR || 'localhost',
-    port:process.env.MONGODB_PORT_27017_TCP_PORT || 27017,
+    host:process.env.MONGO_LINK_PORT_27017_TCP_ADDR || 'localhost',
+    port:process.env.MONGO_LINK_PORT_27017_TCP_PORT || 27017,
     name:'well'
   },
 
+  // options for seneca-postgresql-store
+  'postgresql-store':{
+    username:'admin',
+    password:'password',
+    host:process.env.POSTGRESQL_LINK_PORT_5432_TCP_ADDR || 'localhost',
+    port:process.env.POSTGRESQL_LINK_PORT_5432_TCP_PORT || 5432,
+    name:'admin'
+  },
 
   // options for memcached
   memcached:{

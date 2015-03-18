@@ -12,8 +12,12 @@ flags:
   -tu         unit test only
   -ta         acceptance test only
 
-  e.g.
+e.g.
 
-  bash db-test.sh mongo-store
-  bash db-test.sh jsonfile-store -ta
-  bash db-test.sh all -fd -fb
+bash db-test.sh mongo-store
+bash db-test.sh jsonfile-store -ta
+bash db-test.sh all -fd -fb
+
+-------
+
+Note: Unexpected End of Input in jsonfile-store test is a result of internal jsonfile db bug
