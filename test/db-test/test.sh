@@ -1,13 +1,17 @@
+
+PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 DB=$1
 TU=$2
 TA=$3
 IP=$4
 PORT=$5
 
-if [ "$TU" = true ]
-    then npm run unit-test --db=$DB --ip=$IP --port=$PORT
-elif [ "$TA" = true ]
-    then npm run acceptance-test
+cd $PREFIX/../..
+if [ "$TU" = true ]; then
+    npm run unit-test --db=$DB --ip=$IP --port=$PORT
+elif [ "$TA" = true ]; then
+    npm run acceptance-test
 else
     npm test --db=$DB --ip=$IP --port=$PORT
 fi

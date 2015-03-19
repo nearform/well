@@ -1,32 +1,30 @@
 #!/bin/bash
-PREFIX="./"
+PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 PROMPT=false
 for VAR in "$@"
 do
-    if [ "$VAR" = "-prompt" ]
-        then PROMPT=true
+    if [ "$VAR" = "-prompt" ]; then PROMPT=true
     fi
 done
 
 echo CLEANING AFTER DB TEST
-echo NOTE: SUDO IS REQUIRED TO ERASE TEMP FILES
-sudo echo
+echo NEED SUDO TO ERASE ORPHANED DOCKER VOLUMES
+echo THEY TAKE ENORMOUS AMOUNTS OF SPACE
+sudo echo /var/lib/docker/vfs/dir
+sudo rm -rf /var/lib/docker/vfs/dir
 
-echo ERASING META
-echo ../unit-db
-sudo rm -rf ../unit-db
-echo ../addr.out
-sudo rm -rf ../addr.out
-echo /home/deploy/test
-sudo rm -rf /home/deploy/test
+echo ERASING TEMP DB
+echo $PREFIX/../unit-db
+rm -rf $PREFIX/../unit-db
 
 bash $PREFIX/kill-containers.sh
 bash $PREFIX/kill-other-gnome.sh
-killall mongod
 
-if [ "$PROMPT" = true ]
-    then
-    read -p "ALL CLEAR" -n 1 -s
+if [ "$PROMPT" = true ]; then
+    echo
+    echo "NOTE: IT IS SAFE TO [CTRL]+[C] NOW"
+    echo "ALL CLEAR. TAP [ANY] KEY TO CONTINUE"
+    read -p "" -n 1 -s
     echo
 fi

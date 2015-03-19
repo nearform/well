@@ -190,15 +190,6 @@ else {
     next()
   })
 
-  // write server address to output file to allow for automated testing
-  require('dns').lookup(require('os').hostname(), function (err, add) {
-    var full_addr = 'http://' + add + ':' + options.main.port
-    fs.writeFile("test/addr.out", full_addr, function(err) {
-      if(err) console.error(err)
-      console.log('\nserver address: '+ full_addr + '\n')
-    })
-  })
-
   // setup express
   //app.use( require('cookie-parser') )
   app.use( require('body-parser').json() )

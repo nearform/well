@@ -39,8 +39,11 @@ module.exports =
       var db_args = {}
       if (db === 'jsonfile-store') db_args = {folder:db_path}
 
-      if (ip !== '') db_args.host = ip
-      if (port !== '') db_args.port = port
+      if (ip && ip !== '' && port && port !== '') {
+        db_args.host = ip
+        db_args.port = port
+      }
+      console.log('connecting at ' + db_args.host + ':' + db_args.port)
       si.use(db, db_args)
 
       this.clean_db(si, function(err){
@@ -155,6 +158,7 @@ module.exports =
       erase('sys/user', seneca, function() {
         erase('team', seneca, function() {
           erase('event', seneca, function() {
+            if ('db' === 'jsonfile-store') seneca.make$('sys', 'entity').save$()
             cb()
           })
         })

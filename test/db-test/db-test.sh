@@ -1,114 +1,104 @@
 
+PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+echo
+echo WORKDIR $PREFIX
+
 FD=false
 FB=false
 TU=false
 TA=false
 for VAR in "$@"
 do
-    if [ "$VAR" = "-fd" ]
-        then FD=true
-    fi
-
-    if [ "$VAR" = "-fb" ]
-        then FB=true
-    fi
-
-    if [ "$VAR" = "-tu" ]
-        then TU=true
-    fi
-
-    if [ "$VAR" = "-ta" ]
-        then TA=true
+    if [ "$VAR" = "-fd" ]; then FD=true
+    elif [ "$VAR" = "-fb" ]; then FB=true
+    elif [ "$VAR" = "-tu" ]; then TU=true
+    elif [ "$VAR" = "-ta" ]; then TA=true
     fi
 done
 
-if [ "$1" = "" -o "$1" = "all" ]
-    then
+FCHAR="$(echo $1 | head -c 1)"
+
+if [ "$1" = "" -o "$1" = "all" -o "$FCHAR" = "-" ]; then
     declare -a DBS=("mem-store" "mongo-store" "jsonfile-store" "redis-store")
-    declare -a IGNORED=("postgresql-store")
 else
     declare -a DBS=("$1")
 fi
-PREFIX="./"
-
+declare -a LINKLESS=("mem-store" "jsonfile-store")
+declare -a IGNORED=("postgres-store")
 
 for DB in ${DBS[@]}
 do
-    echo 
-    echo TESTING $DB DB
     bash $PREFIX/clean.sh
 
-    echo BUILD DB
+    VALID=true
+    for VAR in ${LINKLESS[@]}
+    do
+        if [ "$VAR" = "$DB" ]; then VALID=false
+        fi
+    done
 
-    if [ "$DB" = "mongo-store" ]
-        then IMG="mongo"
-    elif [ "$DB" = "postgresql-store" ]
-        then IMG="postgres"
-    elif [ "$DB" = "redis-store" ]
-        then IMG="redis"
-    fi
+    echo 
+    echo PREPARING $DB DB FOR TEST
+    if [ "$VALID" = true ]; then 
+        echo USING DOCKER DB IMAGE FOR $DB
+        IFS='-' read -ra IN <<< "$DB"
+        DBTRIM="${IN[0]}"
+        echo DB $DB
+        echo DBTRIM $DBTRIM
+        echo FD $FD
+        bash $PREFIX/image-check.sh $DBTRIM $FD
 
-    if [ "$IMG" != "" ]
-        then
-        bash $PREFIX/image-check.sh $IMG $FD
-    fi
-
-    echo RUN DB
-    if [ "$DB" = "mongo-store" ]
-        then SC="mongo.sh"
-    elif [ "$DB" = "postgresql-store" ]
-        then SC="postgres.sh"
-    elif [ "$DB" = "redis-store" ]
-        then SC="redis.sh"
-    fi
-
-    nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/dbs/$SC $DB" >/dev/null 2>&1 &
-
-    IMAGES=$(docker images | grep well-app)
-    if [ "$FB" = true -o "$IMAGES" = "" ]
-        then
-        echo REBUILD THE APP
-        cd ../..
-        docker build --force-rm -t well-app .
-        cd test/db-test/
-        FB=false
-    else
-        echo NO NEED TO REBUILD THE APP
+        echo RUN DB
+        nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/docker-db.sh $DB" >/dev/null 2>&1 &
         sleep 6
-    fi
-
-    echo RUN APP
-    if [ "$TU" = false ]
-        then nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/app.sh $DB" >/dev/null 2>&1 &
-    fi
-
-    if [ "$DB" = "mongo-store" ]
-        then PORT=27017
-    elif [ "$DB" = "postgresql-store" ]
-        then PORT=5432
-    elif [ "$DB" = "redis-store" ]
-        then PORT=6379
     else
-        PORT=false
+        echo USING SENECA DB TEST HARNESS FOR $DB
     fi
 
-    if [ "$PORT" != false ]
-        then
+    echo
+    if [ "$TU" = false ]; then
+        IMAGES=$(docker images | grep well-app)
+        if [ "$FB" = true -o "$IMAGES" = "" ]; then
+            echo REBUILD THE APP
+            cd $PREFIX/../..
+            docker build --force-rm -t well-app .
+            cd test/db-test/
+            FB=false
+        else
+            echo NO NEED TO REBUILD THE APP
+        fi
+
+        echo RUN APP
+        nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/app.sh $DB" >/dev/null 2>&1 &
+        sleep 3
+    else
+        echo NO NEED TO RUN THE APP FOR UNIT TEST
+    fi
+
+    if [ "$DB" = "mongo-store" ]; then PORT=27017
+    elif [ "$DB" = "postgres-store" ]; then PORT=5432
+    elif [ "$DB" = "redis-store" ]; then PORT=6379
+    else PORT=false
+    fi
+
+    if [ "$PORT" != false ]; then
+        echo
         echo PREPARE TEST FEED
         HEX=$(echo $(docker ps | grep $PORT) | cut -d" " -f1)
-        echo DB HEX "$HEX"
+        echo DB DOCKER HEX "$HEX"
         IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $HEX)
         echo DB ADDR "$IP:$PORT"
     else
         PORT=""
     fi
 
-    echo STANDBY BEFORE TEST
-    sleep 5
+    echo
     echo TEST $DB DB
-    nohup gnome-terminal --disable-factory -x bash -c "bash test.sh $DB $TU $TA $IP $PORT" >/dev/null 2>&1 &
+    nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/test.sh $DB $TU $TA $IP $PORT" >/dev/null 2>&1 &
 
-    read -p "TAP ANY KEY TO STOP ALL AND CLEAN" -n 1 -s
+    echo
+    echo "TAP [ANY] KEY TO"
+    read -p "STOP ALL AND CLEAN BEFORE NEXT" -n 1 -s
     echo 
     bash $PREFIX/clean.sh -prompt
 

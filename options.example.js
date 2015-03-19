@@ -49,8 +49,8 @@ module.exports = {
   'postgresql-store':{
     username:'admin',
     password:'password',
-    host:process.env.POSTGRESQL_LINK_PORT_5432_TCP_ADDR || 'localhost',
-    port:process.env.POSTGRESQL_LINK_PORT_5432_TCP_PORT || 5432,
+    host:process.env.POSTGRES_LINK_PORT_5432_TCP_ADDR || 'localhost',
+    port:process.env.POSTGRES_LINK_PORT_5432_TCP_PORT || 5432,
     name:'admin'
   },
 

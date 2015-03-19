@@ -30,3 +30,9 @@ app.js code fragments to be examined
   // register the seneca-vcache plugin - this provides version-based caching for 
   // data entities over multiple memcached servers, and caches by query in addition to id
   // seneca.use('vcache')
+
+2) JSONFILE
+
+* UNIT TEST FAILURE
+
+Unexpected end of input, seems to be internal db problem

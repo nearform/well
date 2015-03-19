@@ -1,9 +1,11 @@
 echo IMAGE CHECK
-IMAGES=$(docker images | grep $1)
-if [ "$IMAGES" = "" -o "$2" = true ]
-    then
-    echo PULLING FROM DOCKER $1
-    docker pull $1
+IMG=$1
+FD=$2
+
+IMAGES=$(docker images | grep $IMG)
+if [ "$IMAGES" = "" -o "$FD" = true ]; then
+    echo PULLING FROM DOCKER $IMG
+    docker pull $IMG
 else
-    echo $1 FOUND
+    echo $IMG FOUND
 fi

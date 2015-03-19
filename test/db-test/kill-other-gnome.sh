@@ -7,8 +7,7 @@ TOPINDEX=$( echo "$PIDS" | wc -w )
 I=0
 for VAR in $PIDS
 do
-  if [ $TOPINDEX != $I ]
-    then
+  if [ $TOPINDEX != $I ]; then
     echo $VAR
     kill $VAR
   fi

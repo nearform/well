@@ -1,20 +1,31 @@
 module.exports =
-  function() {
+  function(callback) {
 
     var Hippie = require('hippie')
     var _      = require('lodash')
     var fs     = require('fs')
+    var exec   = require('child_process').exec
 
     // Storing login credentials for optimization
     var creds = {}
     // Storing event-user relationships for optimization
     var joined = {}
 
-    var basepath = '/home/deploy/test/'
-    if (!fs.existsSync(basepath)) basepath = 'test/'
-    var base = fs.readFileSync(basepath + 'addr.out', 'utf-8')
-    if (!base) base = 'http://localhost:3333'
-    console.log('connecting to: ' + base)
+    // Determine server ip based on port
+    // Check docker first, then try localhost
+    var base
+    exec('echo $(docker ps | grep 3333) | cut -d" " -f1',
+    function (error, stdout, stderr) {
+      var docker_hex = stdout.toString().trim()
+
+      exec("docker inspect --format '{{ .NetworkSettings.IPAddress }}' " + docker_hex,
+      function (error, stdout, stderr) {
+        base = 'http://' + stdout.toString('utf-8').trim() + ':3333'
+        if (!base) base = 'http://localhost:3333'
+        console.log('connecting to: ' + base)
+        callback()
+      })
+    })
 
     // Connect to url and setup login cookies
     // By default logs in as admin

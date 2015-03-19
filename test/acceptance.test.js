@@ -7,7 +7,7 @@ var util   = require('util')
 var Hippie = require('hippie')
 var _      = require('lodash')
 var Helper = require('./acceptance.test.helper.js')
-var helper = new Helper()
+var helper
 
 // Links covered:
 
@@ -20,6 +20,10 @@ var helper = new Helper()
 // '/data-editor/rest/:kind/:id'            GET
 
 describe('acceptance testing', function(){
+
+  before(function(done){
+    helper = new Helper(done)
+  })
 
   it('auth', function(done) {
     helper.auth_get({url:'/auth/instance', status:200, type:'json'}, function(err, res) {
