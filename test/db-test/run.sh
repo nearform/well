@@ -7,24 +7,26 @@ FD=false
 FB=false
 TU=false
 TA=false
+NT=false
 for VAR in "$@"
 do
     if [ "$VAR" = "-fd" ]; then FD=true
     elif [ "$VAR" = "-fb" ]; then FB=true
     elif [ "$VAR" = "-tu" ]; then TU=true
     elif [ "$VAR" = "-ta" ]; then TA=true
+    elif [ "$VAR" = "-nt" ]; then NT=true
     fi
 done
 
 FCHAR="$(echo $1 | head -c 1)"
 
 if [ "$1" = "" -o "$1" = "all" -o "$FCHAR" = "-" ]; then
-    declare -a DBS=("mem-store" "mongo-store" "jsonfile-store" "redis-store")
+    declare -a DBS=("mem-store" "mongo-store" "jsonfile-store" "redis-store" "postgres-store")
 else
     declare -a DBS=("$1")
 fi
 declare -a LINKLESS=("mem-store" "jsonfile-store")
-declare -a IGNORED=("postgres-store")
+declare -a IGNORED=()
 
 for DB in ${DBS[@]}
 do
@@ -43,14 +45,11 @@ do
         echo USING DOCKER DB IMAGE FOR $DB
         IFS='-' read -ra IN <<< "$DB"
         DBTRIM="${IN[0]}"
-        echo DB $DB
-        echo DBTRIM $DBTRIM
-        echo FD $FD
         bash $PREFIX/image-check.sh $DBTRIM $FD
 
         echo RUN DB
         nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/docker-db.sh $DB" >/dev/null 2>&1 &
-        sleep 6
+        sleep 8
     else
         echo USING SENECA DB TEST HARNESS FOR $DB
     fi
@@ -71,6 +70,13 @@ do
         echo RUN APP
         nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/app.sh $DB" >/dev/null 2>&1 &
         sleep 3
+
+        echo
+        echo APP DETAILS:
+        HEX=$(echo $(docker ps | grep 3333) | cut -d" " -f1)
+        echo APP DOCKER HEX "$HEX"
+        IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $HEX)
+        echo APP ADDR "$IP:3333"
     else
         echo NO NEED TO RUN THE APP FOR UNIT TEST
     fi
@@ -83,7 +89,7 @@ do
 
     if [ "$PORT" != false ]; then
         echo
-        echo PREPARE TEST FEED
+        echo DB DETAILS:
         HEX=$(echo $(docker ps | grep $PORT) | cut -d" " -f1)
         echo DB DOCKER HEX "$HEX"
         IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $HEX)
@@ -92,9 +98,11 @@ do
         PORT=""
     fi
 
-    echo
-    echo TEST $DB DB
-    nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/test.sh $DB $TU $TA $IP $PORT" >/dev/null 2>&1 &
+    if [ "$NT" = false ]; then
+        echo
+        echo TEST $DB DB
+        nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/test.sh $DB $TU $TA $IP $PORT" >/dev/null 2>&1 &
+    fi
 
     echo
     echo "TAP [ANY] KEY TO"

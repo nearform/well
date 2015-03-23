@@ -1,3 +1,4 @@
+PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DB=$1
 
 echo RUN $DB
@@ -10,7 +11,7 @@ if [ "$DB" = "mongo-store" ]; then
     BASE="$BASE -p 27017:27017 -p 28017:28017"
     ARGS="--httpinterface"
 elif  [ "$DB" = "postgres-store" ]; then
-    BASE="$BASE -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=password"
+    BASE="bash $PREFIX/dbs/postgres-init.sh"
 fi
 
 BASE="$BASE --name $DBTRIM-inst $DBTRIM $ARGS"

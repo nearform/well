@@ -61,6 +61,7 @@ seneca.use('options',options_file)
 // for more seneca db stores visit
 // https://github.com/search?q=seneca+store
 var db = argv.db ? argv.db : process.env.db
+if (db === 'postgres-store') db = 'postgresql-store'
 // argv determines locally and process.env determines in docker
 // example docker run:
 // docker run -v /home/deploy/test:/test -p 3333:3333 --rm -e db=mem-store well-app
@@ -83,19 +84,20 @@ if (custom_dbs.indexOf(db) === -1) {
   // for more, see http://senecajs.org/data-entities.html
 
   // init plugin for chosen dbs
-  console.log('\nusing ' + db + ' db\n')
+  console.log('\nusing ' + db + ' db')
   seneca.use(db, db_args)
 
-  if (db === 'mem-store') ready()
-  else {
-    seneca.act('role:entity, cmd:native', {ent:'entity'}, function(err, res){
-      if (_.isEmpty(res)){
-        console.error('\nfailed to init ' + db + ' db\n')
-        process.exit(0)
-      }
-      ready()
-    })
-  }
+  ready()
+  // if (db === 'mem-store') ready()
+  // else {
+  //   seneca.act('role:entity, cmd:native', {ent:'entity'}, function(err, res){
+  //     if (_.isEmpty(res)){
+  //       console.error('\nfailed to init ' + db + ' db\n')
+  //       process.exit(0)
+  //     }
+  //     ready()
+  //   })
+  // }
 }
 else
 {
@@ -155,6 +157,10 @@ else {
 
   seneca.use('well',{fake:'development'==env})
   console.log('db is rebuilt now')
+
+  require('dns').lookup(require('os').hostname(), function (err, addr, fam) {
+    console.log('server address: ' + addr + ':' + (process.env['PORT'] || 3333) + '\n');
+  })
 
   // register the seneca-data-editor plugin - this provides a user interface for data admin
   // Open the /data-editor url path to edit data! (you must be an admin, or on localhost)

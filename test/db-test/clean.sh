@@ -8,10 +8,13 @@ do
     fi
 done
 
+echo
 echo CLEANING AFTER DB TEST
 echo NEED SUDO TO ERASE ORPHANED DOCKER VOLUMES
 echo THEY TAKE ENORMOUS AMOUNTS OF SPACE
-sudo echo /var/lib/docker/vfs/dir
+sudo echo
+echo ERASING DOCKER BLOAT
+echo /var/lib/docker/vfs/dir
 sudo rm -rf /var/lib/docker/vfs/dir
 
 echo ERASING TEMP DB
@@ -26,5 +29,5 @@ if [ "$PROMPT" = true ]; then
     echo "NOTE: IT IS SAFE TO [CTRL]+[C] NOW"
     echo "ALL CLEAR. TAP [ANY] KEY TO CONTINUE"
     read -p "" -n 1 -s
-    echo
 fi
+echo

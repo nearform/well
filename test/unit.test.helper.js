@@ -27,7 +27,8 @@ module.exports =
         throw new Error('No db specified. try npm test --db=mem-store or any other store')
         process.exit(0)
       }
-      console.log('using db ' + db)
+      if (db === 'postgres-store') db = 'postgresql-store'
+      console.log('using ' + db + ' db')
 
       var db_path = __dirname + '/unit-db/'
       // ensure db folder
@@ -43,24 +44,25 @@ module.exports =
         db_args.host = ip
         db_args.port = port
       }
-      console.log('connecting at ' + db_args.host + ':' + db_args.port)
+      if (db_args.host && db_args.port) console.log('connecting at ' + db_args.host + ':' + db_args.port)
+        else console.log('db connection is internal')
       si.use(db, db_args)
 
       this.clean_db(si, function(err){
 
         // confirm app has init a store
-        si.act('role:entity, cmd:native', {ent:'entity'}, function(err, res){
-          if (_.isEmpty(res) && db !== 'mem-store'){
-            console.error('\nfailed to init ' + db + ' db\n')
-            process.exit(0)
-          }
+        // si.act('role:entity, cmd:native', {ent:'entity'}, function(err, res){
+        //   if (_.isEmpty(res) && db !== 'mem-store'){
+        //     console.error('\nfailed to init ' + db + ' db\n')
+        //     process.exit(0)
+        //   }
 
           // init well.js
           si.use('user')
           si.use('../well', options)
 
           done(si)
-        })
+        // })
       })
     }
 

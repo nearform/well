@@ -1,4 +1,4 @@
-bash db-test.sh [DB(optional)] [FLAGS]
+bash run.sh [DB(optional)] [FLAGS]
 
 dbs:
   mem-store
@@ -10,6 +10,7 @@ flags:
   -fb         force app build
   -tu         unit test only
   -ta         acceptance test only
+  -nt         no test, just run everything
 
 e.g.
 
