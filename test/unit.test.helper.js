@@ -12,7 +12,8 @@ module.exports =
 
     this.init_empty = function(done) {
       var si = require('seneca')({
-        errhandler: done
+        errhandler: done,
+        default_plugins:{'mem-store':false}
       })
 
       var util = require('util')

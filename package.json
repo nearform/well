@@ -48,7 +48,7 @@
     "express-session": "^1.10.2"
   },
     "devDependencies": {
-    "seneca-db-test-harness": "^0.1.11",
+    "seneca-db-test-harness": "^0.1.12",
     "mocha": "^2.1.0",
     "hippie": "^0.3.0"
   }

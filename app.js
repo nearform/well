@@ -40,22 +40,14 @@ var env = argv.env || process.env['NODE_ENV']
 // load the seneca module and create a new instance
 // note that module returns a function that constructs seneca instances (just like express)
 // so you if you call it right away (as here, with the final () ), you get a default instance
-var seneca  = require('seneca')()
+var seneca  = require('seneca')({default_plugins:{'mem-store':false}})
 
 // register the seneca builtin options plugin, and load the options from a local file
 // you'll normally do this first -
 // each seneca plugin can be given options when you register it ("seneca.use"),
 // so you don't have to do this, but it does make life easier
 // see the options.well.js file for more
-var optionsfolder = 'production' == env ? '/home/deploy/' : './'
-var options_file = optionsfolder+'options.well.js'
-try {
-  fs.statSync( options_file )
-}
-catch(e) {
-  process.exit( !console.error( "Please copy options.example.js to "+ options_file+': '+e ))
-}
-seneca.use('options',options_file)
+load_options(seneca)
 
 // db is set in run arguments (e.g. node app.js --env=development --db=mongo-store)
 // for more seneca db stores visit
@@ -88,16 +80,6 @@ if (custom_dbs.indexOf(db) === -1) {
   seneca.use(db, db_args)
 
   ready()
-  // if (db === 'mem-store') ready()
-  // else {
-  //   seneca.act('role:entity, cmd:native', {ent:'entity'}, function(err, res){
-  //     if (_.isEmpty(res)){
-  //       console.error('\nfailed to init ' + db + ' db\n')
-  //       process.exit(0)
-  //     }
-  //     ready()
-  //   })
-  // }
 }
 else
 {
@@ -113,10 +95,25 @@ else
         // in case of db we are interested in entity oriented actions
 
         seneca = this
+        // apply options
+        load_options(seneca)
         ready()
       })
     }, 2000)
   })
+}
+
+// loads options as explained above
+function load_options(seneca){
+  var optionsfolder = 'production' == env ? '/home/deploy/' : './'
+  var options_file = optionsfolder+'options.well.js'
+  try {
+    fs.statSync( options_file )
+  }
+  catch(e) {
+    process.exit( !console.error( "Please copy options.example.js to "+ options_file+': '+e ))
+  }
+  seneca.use('options',options_file)
 }
 
 // used to clear the db
