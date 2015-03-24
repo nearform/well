@@ -12,6 +12,8 @@ if [ "$DB" = "mongo-store" ]; then
     ARGS="--httpinterface"
 elif  [ "$DB" = "postgres-store" ]; then
     BASE="bash $PREFIX/dbs/postgres-init.sh"
+elif  [ "$DB" = "mysql-store" ]; then
+    BASE="bash $PREFIX/dbs/mysql-init.sh"
 fi
 
 BASE="$BASE --name $DBTRIM-inst $DBTRIM $ARGS"

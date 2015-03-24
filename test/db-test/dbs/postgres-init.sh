@@ -2,7 +2,7 @@
 PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 docker run --rm --name postgres-inst -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=password postgres &
-sleep 6
+sleep 1
 
 echo
 PORT=5432
@@ -10,6 +10,9 @@ HEX=$(echo $(docker ps | grep $PORT) | cut -d" " -f1)
 echo DB DOCKER HEX "$HEX"
 IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $HEX)
 echo DB ADDR "$IP:$PORT"
+
+bash $PREFIX/../wait-connect.sh $IP $PORT
+
 
 export PGHOST=$IP
 export PGUSER=admin

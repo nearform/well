@@ -21,3 +21,17 @@ bash db-test.sh -fd -fb
 -------
 
 Note: Unexpected End of Input in jsonfile-store test is a result of internal jsonfile db bug
+
+-------
+
+Adding new DBs:
+
+* run.sh
+1) Add entry to DBS array
+2) Check docker image name
+3) Set port
+* docker-db.sh
+4) Set base(optional)
+-> For SQL-based DBs you want to make init script that loads schema file
+* app
+5) Go to your app and config it to connect to the DB
