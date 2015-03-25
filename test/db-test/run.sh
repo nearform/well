@@ -89,7 +89,7 @@ do
             echo NO NEED TO REBUILD THE APP
         fi
 
-        if [ "$LINKED" = true ]; then bash wait-connect.sh $DB_IP $DB_PORT; fi
+        if [ "$LINKED" = true ]; then bash $PREFIX/wait-connect.sh $DB_IP $DB_PORT; fi
 
         echo RUN APP
         nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/app.sh $DB" >/dev/null 2>&1 &
@@ -108,8 +108,8 @@ do
 
     #  run test
     if [ "$NT" = false ]; then
-        if [ "$TU" = false ]; then bash wait-connect.sh $APP_IP $APP_PORT; fi
-        if [ "$TU" = true ]; then bash wait-connect.sh $DB_IP $DB_PORT; fi
+        if [ "$TU" = false ]; then bash $PREFIX/wait-connect.sh $APP_IP $APP_PORT; fi
+        if [ "$TU" = true ]; then bash $PREFIX/wait-connect.sh $DB_IP $DB_PORT; fi
 
         echo
         echo TEST $DB DB
