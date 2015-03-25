@@ -1,3 +1,4 @@
+
 CREATE TABLE `sys_entity` (
   `base` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
@@ -7,61 +8,60 @@ CREATE TABLE `sys_entity` (
   `seneca` blob
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- CREATE TABLE sys_user (
---   "id" VARCHAR (255) NOT NULL,
---   "nick" VARCHAR (255) NOT NULL,
---   "email" VARCHAR (255) DEFAULT NULL,
---   "name" VARCHAR (255) DEFAULT NULL,
---   "active" BOOLEAN DEFAULT NULL,
---   "when" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   "confirmed" BOOLEAN DEFAULT NULL,
---   "confirmcode" VARCHAR (255) DEFAULT NULL,
---   "salt" VARCHAR (255) DEFAULT NULL,
---   "pass" VARCHAR (255) DEFAULT NULL,
---   "admin" BOOLEAN,
---   "seneca" VARCHAR (255) DEFAULT NULL,
---   "events" JSON DEFAULT NULL,
---   "perm" JSON DEFAULT NULL,
---   PRIMARY KEY ("id")
--- );
+CREATE TABLE sys_user (
+  `id` varchar (255) NOT NULL,
+  `nick` varchar (255) NOT NULL,
+  `email` varchar (255) DEFAULT NULL,
+  `name` varchar (255) DEFAULT NULL,
+  `active` tinyint (1) DEFAULT NULL,
+  `when` varchar (255) NOT NULL,
+  `confirmed` tinyint (1) DEFAULT NULL,
+  `confirmcode` varchar (255) DEFAULT NULL,
+  `salt` varchar (255) DEFAULT NULL,
+  `pass` varchar (255) DEFAULT NULL,
+  `admin` tinyint (1),
+  `seneca` blob,
+  `events` blob DEFAULT NULL,
+  `perm` blob DEFAULT NULL
+);
 
--- create table event(
---   "id" VARCHAR (255) NOT NULL,
---   "code" VARCHAR (255) NOT NULL,
---   "name" VARCHAR (255) NOT NULL,
---   "numcards" SMALLINT NOT NULL,
---   "numteams" SMALLINT NOT NULL,
---   "users" JSON,
---   PRIMARY KEY ("id")
--- );
+CREATE TABLE event(
+  `id` varchar (255) NOT NULL,
+  `code` varchar (255) NOT NULL,
+  `name` varchar (255) NOT NULL,
+  `numcards` smallint NOT NULL,
+  `numteams` smallint NOT NULL,
+  `seneca` blob,
+  `users` blob
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- create table team(
---   "id" VARCHAR (255) NOT NULL,
---   "num" SMALLINT NOT NULL,
---   "event" VARCHAR (255) NOT NULL,
---   "eventcode" VARCHAR (255) NOT NULL,
---   "name" VARCHAR (255) NOT NULL,
---   "wells" JSON,
---   "numwells" SMALLINT DEFAULT 0,
---   "users" JSON,
---   PRIMARY KEY ("id")
--- );
+create table team(
+  `id` varchar (255) NOT NULL,
+  `num` smallint NOT NULL,
+  `event` varchar (255) NOT NULL,
+  `eventcode` varchar (255) NOT NULL,
+  `name` varchar (255) NOT NULL,
+  `wells` blob,
+  `numwells` smallint DEFAULT 0,
+  `seneca` blob,
+  `users` blob
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- CREATE TABLE sys_login (
---   "id" VARCHAR (255) NOT NULL,
---   "nick" VARCHAR (255) NOT NULL,
---   "email" VARCHAR (255) NOT NULL,
---   "user" VARCHAR (255) NOT NULL,
---   "when" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   "why" VARCHAR (255) NOT NULL,
---   "token" VARCHAR (255) NOT NULL,
---   "active" BOOLEAN NOT NULL,
---   PRIMARY KEY ("id")
--- );
+CREATE TABLE sys_login (
+  `id` varchar (255) NOT NULL,
+  `nick` varchar (255) NOT NULL,
+  `email` varchar (255) NOT NULL,
+  `user` varchar (255) NOT NULL,
+  `when` varchar (255) NOT NULL,
+  `why` varchar (255) NOT NULL,
+  `token` varchar (255) NOT NULL,
+  `active` tinyint (1) NOT NULL,
+  `context` varchar (255)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- CREATE TABLE session (
---   "id" VARCHAR (255) NOT NULL,
---   "last" BIGINT NOT NULL,
---   "data" JSON NOT NULL,
---   PRIMARY KEY ("id")
--- );
+CREATE TABLE session (
+  `id` varchar (255) NOT NULL,
+  `last` bigint NOT NULL,
+  `data` blob NOT NULL,
+  `seneca` blob
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

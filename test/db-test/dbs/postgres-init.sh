@@ -13,7 +13,6 @@ echo DB ADDR "$IP:$PORT"
 
 bash $PREFIX/../wait-connect.sh $IP $PORT
 
-
 export PGHOST=$IP
 export PGUSER=admin
 export PGPASSWORD=password
@@ -22,6 +21,8 @@ export PGDATABASE=admin
 echo ---
 echo INIT db: admin, user: admin, password: password
 psql -U admin -d admin -f $PREFIX/postgres.sql
+echo USE [CTRL]+[D] to leave
+psql -U admin -d admin
 echo ---
 
 echo

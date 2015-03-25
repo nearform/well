@@ -151,6 +151,8 @@ describe('data structure integrity', function() {
   })
 
   it ('cmd:members', function(done){
+    this.timeout(3000)
+    
     helper.init(function(si){
 
       // Load event A from db
