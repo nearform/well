@@ -15,7 +15,7 @@ export MYSQL_HOST=$IP
 export MYSQL_TCP_PORT=$PORT
 export MYSQL_PWD=password
 
-bash $PREFIX/../wait-connect.sh $IP $PORT
+bash $PREFIX/../utils/wait-connect.sh $IP $PORT
 
 echo ---
 echo INIT START

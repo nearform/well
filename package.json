@@ -4,11 +4,11 @@
   "description": "well",
   "main": "lib/well.js",
   "scripts": {
+    "start":"node app.js",
     "test": "./node_modules/.bin/mocha test/acceptance.test.js",
     "posttest": "./node_modules/.bin/mocha test/unit.test.js",
-    "acceptance-test": "./node_modules/.bin/mocha test/acceptance.test.js",
-    "unit-test": "./node_modules/.bin/mocha test/unit.test.js",
-    "db-test":"bash test/db-test/run.sh"
+    "atest": "./node_modules/.bin/mocha test/acceptance.test.js",
+    "utest": "./node_modules/.bin/mocha test/unit.test.js"
     },
   "repository": {
     "type": "git",

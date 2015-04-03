@@ -49,7 +49,7 @@ do
         echo USING DOCKER DB IMAGE FOR $DB
         IFS='-' read -ra IN <<< "$DB"
         DBTRIM="${IN[0]}"
-        bash $PREFIX/image-check.sh $DBTRIM $FD
+        bash $PREFIX/utils/image-check.sh $DBTRIM $FD
 
         echo RUN DB
         nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/docker-db.sh $DB" >/dev/null 2>&1 &
@@ -66,17 +66,12 @@ do
     fi
 
     if [ "$DB_PORT" != "" ]; then
-        sleep 1
-        echo
-        echo DB DETAILS:
-        DB_HEX=$(echo $(docker ps | grep $DB_PORT) | cut -d" " -f1)
-        echo DB DOCKER HEX "$DB_HEX"
-        DB_IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $DB_HEX)
-        echo DB ADDR "$DB_IP:$DB_PORT"
+        bash $PREFIX/utils/docker-inspect.sh DB $DB_PORT
+        DB_HEX=$(bash $PREFIX/utils/read-inspect.sh hex)
+        DB_IP=$(bash $PREFIX/utils/read-inspect.sh ip)
     fi
 
     # running app, rebuild is optional
-    echo
     if [ "$TU" = false ]; then
         IMAGES=$(docker images | grep well-app)
         if [ "$FB" = true -o "$IMAGES" = "" ]; then
@@ -89,27 +84,23 @@ do
             echo NO NEED TO REBUILD THE APP
         fi
 
-        if [ "$LINKED" = true ]; then bash $PREFIX/wait-connect.sh $DB_IP $DB_PORT; fi
+        if [ "$LINKED" = true ]; then bash $PREFIX/utils/wait-connect.sh $DB_IP $DB_PORT; fi
 
         echo RUN APP
         nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/app.sh $DB" >/dev/null 2>&1 &
         APP_PORT="3333"
 
-        sleep 1
-        echo
-        echo APP DETAILS:
-        APP_HEX=$(echo $(docker ps | grep $APP_PORT) | cut -d" " -f1)
-        echo APP DOCKER HEX "$APP_HEX"
-        APP_IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $APP_HEX)
-        echo APP ADDR "$APP_IP:$APP_PORT"
+        bash $PREFIX/utils/docker-inspect.sh APP $APP_PORT
+        APP_HEX=$(bash $PREFIX/utils/read-inspect.sh hex)
+        APP_IP=$(bash $PREFIX/utils/read-inspect.sh ip)
     else
         echo NO NEED TO RUN THE APP FOR UNIT TEST
     fi
 
     #  run test
     if [ "$NT" = false ]; then
-        if [ "$TU" = false ]; then bash $PREFIX/wait-connect.sh $APP_IP $APP_PORT; fi
-        if [ "$TU" = true ]; then bash $PREFIX/wait-connect.sh $DB_IP $DB_PORT; fi
+        if [ "$TU" = false ]; then bash $PREFIX/utils/wait-connect.sh $APP_IP $APP_PORT; fi
+        if [ "$TU" = true ]; then bash $PREFIX/utils/wait-connect.sh $DB_IP $DB_PORT; fi
 
         echo
         echo TEST $DB DB

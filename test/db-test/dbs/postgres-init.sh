@@ -11,7 +11,7 @@ echo DB DOCKER HEX "$HEX"
 IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $HEX)
 echo DB ADDR "$IP:$PORT"
 
-bash $PREFIX/../wait-connect.sh $IP $PORT
+bash $PREFIX/../utils/wait-connect.sh $IP $PORT
 
 export PGHOST=$IP
 export PGUSER=admin

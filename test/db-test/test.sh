@@ -9,9 +9,9 @@ PORT=$5
 
 cd $PREFIX/../..
 if [ "$TU" = true ]; then
-    npm run unit-test --db=$DB --ip=$IP --port=$PORT
+    npm run utest --db=$DB --ip=$IP --port=$PORT
 elif [ "$TA" = true ]; then
-    npm run acceptance-test
+    npm run atest
 else
     npm test --db=$DB --ip=$IP --port=$PORT
 fi
