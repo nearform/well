@@ -7,7 +7,7 @@ TA=$3
 IP=$4
 PORT=$5
 
-cd $PREFIX/../..
+cd $PREFIX/../../..
 if [ "$TU" = true ]; then
     npm run utest --db=$DB --ip=$IP --port=$PORT
 elif [ "$TA" = true ]; then

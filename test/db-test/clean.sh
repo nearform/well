@@ -28,6 +28,6 @@ if [ "$PROMPT" = true ]; then
     echo
     echo "NOTE: IT IS SAFE TO [CTRL]+[C] NOW"
     echo "ALL CLEAR. TAP [ANY] KEY TO CONTINUE"
-    read -p "" -n 1 -s
+    read
 fi
 echo

@@ -1,11 +1,20 @@
-bash run.sh [DB(optional)] [FLAGS]
+bash run.sh [FLAGS]
+it is completely safe to run while other run is in operation as it will clean the old one first
+you can also run it manually:
+bash clean.sh
+
+-------
 
 dbs:
-  mem-store
-  jsonfile-store
-* when no db specified, it tests them all
+  mem
+  jsonfile
+  redis
+  postgres
+  mysql
+* when no dbs specified, it tests them all
 
 flags:
+  -dbs        specify dbs
   -fd         force docker pull
   -fb         force app build
   -tu         unit test only
@@ -14,17 +23,34 @@ flags:
 
 e.g.
 
-bash db-test.sh mongo-store
-bash db-test.sh jsonfile-store -ta
+bash db-test.sh -dbs mongo
+bash db-test.sh -dbs jsonfile -ta
 bash db-test.sh -fd -fb
 
+Can be used to test same db several times!
+bash db-test.sh -dbs mongo mongo mongo
+
+works with npm!
+lets say you add entry in package.json scripts:
+"dtest":"bash test/db-test/run.sh"
+then this works:
+
+npm run dtest
+npm run dtest --args="-dbs redis mongo -fb -tu" 
+npm run dtest --args="-dbs mongo mongo mongo -fb -tu" 
+
+you can add clean command as well to make your life easier:
+"dtest":"bash test/db-test/clean.sh"
+
+npm run clean
+
 -------
 
-Note: Unexpected End of Input in jsonfile-store test is a result of internal jsonfile db bug
+note: Unexpected End of Input in jsonfile-store test is a result of internal jsonfile db bug
 
 -------
 
-Adding new DBs:
+adding new DBs:
 
 * run.sh
 1) Add entry to DBS array

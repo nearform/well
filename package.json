@@ -8,7 +8,9 @@
     "test": "./node_modules/.bin/mocha test/acceptance.test.js",
     "posttest": "./node_modules/.bin/mocha test/unit.test.js",
     "atest": "./node_modules/.bin/mocha test/acceptance.test.js",
-    "utest": "./node_modules/.bin/mocha test/unit.test.js"
+    "utest": "./node_modules/.bin/mocha test/unit.test.js",
+    "dtest":"bash test/db-test/run.sh",
+    "clean":"bash test/db-test/clean.sh"
     },
   "repository": {
     "type": "git",
