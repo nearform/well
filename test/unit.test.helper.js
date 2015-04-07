@@ -28,7 +28,6 @@ module.exports =
         throw new Error('No db specified. try npm test --db=mem-store or any other store')
         process.exit(0)
       }
-      if (db === 'postgres-store') db = 'postgresql-store'
       console.log('using ' + db + ' db')
 
       var db_path = __dirname + '/unit-db/'

@@ -21,8 +21,8 @@ echo ERASING TEMP DB
 echo $PREFIX/../unit-db
 rm -rf $PREFIX/../unit-db
 
-bash $PREFIX/utils/kill-containers.sh
-bash $PREFIX/utils/kill-other-gnome.sh
+bash $PREFIX/util/kill-containers.sh
+bash $PREFIX/util/kill-other-gnome.sh
 
 if [ "$PROMPT" = true ]; then
     echo

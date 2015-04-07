@@ -6,6 +6,8 @@ TU=$2
 TA=$3
 IP=$4
 PORT=$5
+if [ "$DB" = "postgres" ]; then DB="postgresql"; fi
+DB="$DB-store"
 
 cd $PREFIX/../../..
 if [ "$TU" = true ]; then
@@ -16,5 +18,6 @@ else
     npm test --db=$DB --ip=$IP --port=$PORT
 fi
 
-read -p "TEST IS DONE" -n 1 -s
+echo "TEST IS DONE"
+read
 echo 
