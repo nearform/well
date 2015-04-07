@@ -27,7 +27,17 @@ do
     # dbs can be directly specified, no constraints
     # it is safe to not make any validations thanks to elif
     elif [ "$VAR" = "-dbs" ]; then POPULATING=true
-    elif [ "$POPULATING" = true ]; then DBS+=($VAR"-store")
+    elif [ "$POPULATING" = true ]; then
+      IFS='-' read -ra IN <<< "$VAR"
+      DBTRIM="${IN[0]}"
+      IFS='x' read -ra IN <<< "${IN[1]}"
+      TIMES=${IN[0]}
+      if [ "$TIMES" = "" ]; then TIMES=1; fi
+      while [ $TIMES != 0 ]
+      do
+        ((TIMES--))
+        DBS+=($DBTRIM"-store")
+      done
     fi
 done
 
@@ -47,9 +57,7 @@ do
     LINKED=true
     for VAR in ${LINKLESS[@]}
     do
-        echo $VAR vs $DB
         if [ "$VAR" = "$DB" ]; then LINKED=false; fi
-        echo gives $LINKED
     done
 
     # ensuring docker image and running it
@@ -119,7 +127,7 @@ do
 
     # prepare for next
     echo
-    echo "TAP [ANY] KEY TO"
+    echo "TAP [ENTER] KEY TO"
     echo "STOP ALL AND CLEAN BEFORE NEXT"
     read
     echo 

@@ -27,7 +27,7 @@ bash $PREFIX/utils/kill-other-gnome.sh
 if [ "$PROMPT" = true ]; then
     echo
     echo "NOTE: IT IS SAFE TO [CTRL]+[C] NOW"
-    echo "ALL CLEAR. TAP [ANY] KEY TO CONTINUE"
+    echo "ALL CLEAR. TAP [ENTER] KEY TO CONTINUE"
     read
 fi
 echo

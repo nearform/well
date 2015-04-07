@@ -30,6 +30,9 @@ bash db-test.sh -fd -fb
 Can be used to test same db several times!
 bash db-test.sh -dbs mongo mongo mongo
 
+Or use multiplicity in any of formats below!
+bash db-test.sh -dbs mongo-3x redis-7 mem mem
+
 works with npm!
 lets say you add entry in package.json scripts:
 "dtest":"bash test/db-test/run.sh"
@@ -38,6 +41,7 @@ then this works:
 npm run dtest
 npm run dtest --args="-dbs redis mongo -fb -tu" 
 npm run dtest --args="-dbs mongo mongo mongo -fb -tu" 
+npm run dtest --args="bash db-test.sh -dbs mongo-3x redis-7 mem"
 
 you can add clean command as well to make your life easier:
 "dtest":"bash test/db-test/clean.sh"
