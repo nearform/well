@@ -51,7 +51,8 @@ module.exports = {
     password:'password',
     host:process.env.POSTGRES_LINK_PORT_5432_TCP_ADDR || 'localhost',
     port:process.env.POSTGRES_LINK_PORT_5432_TCP_PORT || 5432,
-    name:'admin'
+    name:'admin', // Because of the way docker image works it has to be same as username
+    schema:'/test/dbs/postgres.sql'
   },
 
   // options for seneca-redis-store
@@ -59,6 +60,22 @@ module.exports = {
     host:process.env.REDIS_LINK_PORT_6379_TCP_ADDR || 'localhost',
     port:process.env.REDIS_LINK_PORT_6379_TCP_PORT || 6379
   },
+
+  // options for seneca-mysql-store
+  'mysql-store':{
+    host:process.env.MYSQL_LINK_PORT_3306_TCP_ADDR || 'localhost',
+    port:process.env.MYSQL_LINK_PORT_3306_TCP_PORT || 3306,
+    user:'root', // to make things simple this has to be root
+    password:'password',
+    name:'admin',
+    schema:'/test/dbs/mysql.sql'
+  },
+
+  // options for db-test
+  'db-test':{
+      workdir:__dirname
+  },
+
 
   // options for memcached
   memcached:{

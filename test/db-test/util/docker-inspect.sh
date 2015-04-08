@@ -1,3 +1,5 @@
+#!/bin/bash
+trap 'kill $$' SIGINT
 PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 DESC=$1
@@ -5,13 +7,13 @@ PORT=$2
 
 echo
 echo INSPECTING $DESC AT PORT $PORT
-while [ "$IP" = "" ]; do
+while [[ "$IP" = "" ]]; do
     HEX=$(echo $(docker ps | grep $PORT) | cut -d" " -f1)
-    if [ "$HEX" != "" ]; then
+    if [[ "$HEX" != "" ]]; then
       IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $HEX)
     fi
 
-    if [ "$IP" = "" ]; then
+    if [[ "$IP" = "" ]]; then
       printf '.'
       sleep 0.4
     fi

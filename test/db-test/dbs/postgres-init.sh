@@ -1,28 +1,34 @@
-
+#!/bin/bash
 PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-docker run --rm --name postgres-inst -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=password postgres &
+WORKDIR=$(bash $PREFIX/../util/conf-obtain.sh app workdir)
+USER=$(bash $PREFIX/../util/conf-obtain.sh postgres username)
+PASSWORD=$(bash $PREFIX/../util/conf-obtain.sh postgres password)
+SCHEMA=$(bash $PREFIX/../util/conf-obtain.sh postgres schema)
+echo WORKDIR:$WORKDIR
+echo USER:$USER
+echo PASSWORD:$PASSWORD
+echo SCHEMA:$SCHEMA
+
+docker run --rm --name postgres-inst -e POSTGRES_USER=$USER -e POSTGRES_USER=$USER -e POSTGRES_PASSWORD=$PASSWORD postgres &
 sleep 1
 
-echo
 PORT=5432
-HEX=$(echo $(docker ps | grep $PORT) | cut -d" " -f1)
-echo DB DOCKER HEX "$HEX"
-IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $HEX)
-echo DB ADDR "$IP:$PORT"
+bash $PREFIX/../util/docker-inspect.sh "postgres DB" $PORT
+HEX=$(bash $PREFIX/../util/read-inspect.sh hex)
+IP=$(bash $PREFIX/../util/read-inspect.sh ip)
 
 bash $PREFIX/../util/wait-connect.sh $IP $PORT
 
 export PGHOST=$IP
-export PGUSER=admin
-export PGPASSWORD=password
-export PGDATABASE=admin
+export PGUSER=$USER
+export PGPASSWORD=$PASSWORD
 
 echo ---
-echo INIT db: admin, user: admin, password: password
-psql -U admin -d admin -f $PREFIX/postgres.sql
+echo INIT db: $USER, user: $USER, password: $PASSWORD
+psql -U $USER -d $USER -f $WORKDIR$SCHEMA
 echo USE [CTRL]+[D] to leave
-psql -U admin -d admin
+psql -U $USER -d $USER
 echo ---
 
 echo

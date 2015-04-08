@@ -65,3 +65,5 @@ adding new DBs:
 -> For SQL-based DBs you want to make init script that loads schema file
 * app
 5) Go to your app and config it to connect to the DB
+* conf.js && docker-db.sh
+6) Make sure they use relevant options entries

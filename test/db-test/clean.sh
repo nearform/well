@@ -1,10 +1,11 @@
 #!/bin/bash
+trap 'kill $$' SIGINT
 PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 PROMPT=false
 for VAR in "$@"
 do
-    if [ "$VAR" = "-prompt" ]; then PROMPT=true
+    if [[ "$VAR" = "-prompt" ]]; then PROMPT=true
     fi
 done
 
@@ -24,7 +25,7 @@ rm -rf $PREFIX/../unit-db
 bash $PREFIX/util/kill-containers.sh
 bash $PREFIX/util/kill-other-gnome.sh
 
-if [ "$PROMPT" = true ]; then
+if [[ "$PROMPT" = true ]]; then
     echo
     echo "NOTE: IT IS SAFE TO [CTRL]+[C] NOW"
     echo "ALL CLEAR. TAP [ENTER] KEY TO CONTINUE"

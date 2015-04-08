@@ -1,28 +1,37 @@
-
+#!/bin/bash
 PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-docker run --rm --name mysql-inst -e MYSQL_DATABASE=admin -e MYSQL_ROOT_PASSWORD=password mysql --skip-name-resolve  &
+WORKDIR=$(bash $PREFIX/../util/conf-obtain.sh app workdir)
+USER=$(bash $PREFIX/../util/conf-obtain.sh mysql user)
+PASSWORD=$(bash $PREFIX/../util/conf-obtain.sh mysql password)
+NAME=$(bash $PREFIX/../util/conf-obtain.sh mysql name)
+SCHEMA=$(bash $PREFIX/../util/conf-obtain.sh mysql schema)
+echo WORKDIR:$WORKDIR
+echo USER:$USER
+echo PASSWORD:$PASSWORD
+echo NAME:$NAME
+echo SCHEMA:$SCHEMA
+
+docker run --rm --name mysql-inst -e MYSQL_DATABASE=$NAME -e MYSQL_ROOT_PASSWORD=$PASSWORD mysql --skip-name-resolve  &
 sleep 1
 
-echo
 PORT=3306
-HEX=$(echo $(docker ps | grep $PORT) | cut -d" " -f1)
-echo DB DOCKER HEX "$HEX"
-IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $HEX)
-echo DB ADDR "$IP:$PORT"
+bash $PREFIX/../util/docker-inspect.sh "mysql DB" $PORT
+HEX=$(bash $PREFIX/../util/read-inspect.sh hex)
+IP=$(bash $PREFIX/../util/read-inspect.sh ip)
 
 export MYSQL_HOST=$IP
 export MYSQL_TCP_PORT=$PORT
-export MYSQL_PWD=password
+export MYSQL_PWD=$PASSWORD
 
 bash $PREFIX/../util/wait-connect.sh $IP $PORT
 
 echo ---
 echo INIT START
-mysql -u root -ppassword admin < $PREFIX/mysql.sql
+mysql -u $USER -p$PASSWORD $NAME < $WORKDIR$SCHEMA
 echo INIT COMPLETE
 echo ---
-mysql -u root -ppassword admin
+mysql -u $USER -p$PASSWORD $NAME
 
 echo
 read
