@@ -78,12 +78,12 @@ module.exports = {
       // --link and -e db= will be added automatically.
       // if it exposes a port with -p, tester will automatically
       // wait for it to start listening before booting next.
-      // use ; to add bash commands to be ran after img stops operating
+      // use ; to add bash commands to be ran after image stops operating
       // e.g. '-p 3333:3333 well-app ; echo Oh no!; read'
       dockimages:['-p 3333:3333 --rm well-app'],
       // dockerfiles to be rebuilt when -fb is used
-      dockrebuilds:['./',
-                    '/some/other/path'], // TODO
+      // syntax: [image-tag] [path_to_dockerfile]
+      dockbuilds:['well-app .'],
       // extra files to be erased on cleanup
       cleanups:['this/location/this.file.out',
                 'temp/not.needed.log',

@@ -2,7 +2,7 @@
 trap 'kill $$' SIGINT
 echo -ne "\033]0;DBT Manager\007" # sets title
 
-# get workdir path
+# get dbt workdir path
 PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo
 echo WORKDIR $PREFIX
@@ -100,9 +100,7 @@ do
         IMAGES=$(docker images | grep well-app)
         if [[ "$FB" = true || "$IMAGES" = "" ]]; then
             echo REBUILD THE APP
-            cd $PREFIX/../..
-            docker build --force-rm -t well-app .
-            cd test/db-test/
+            bash $PREFIX/util/docker-build.sh
             FB=false
         else
             echo NO NEED TO REBUILD THE APP

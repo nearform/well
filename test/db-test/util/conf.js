@@ -30,7 +30,7 @@ if (options.dbt) {
   out('!')
 
   outlist('dockimages')
-  outlist('dockrebuilds')
+  outlist('dockbuilds')
   outlist('cleanups')
 }
 if (options['mysql-store']){
