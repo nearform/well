@@ -1,5 +1,6 @@
 #!/bin/bash
 trap 'kill $$' SIGINT
+echo -ne "\033]0;DBT Manager\007" # sets title
 
 # get workdir path
 PREFIX="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -75,7 +76,7 @@ do
         bash $PREFIX/util/image-check.sh $DB $FD
 
         echo RUN DB
-        nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/util/docker-db.sh $DB" >/dev/null 2>&1 &
+        nohup gnome-terminal --title="Database - $DB" --disable-factory -x bash -c "bash $PREFIX/util/docker-db.sh $DB" >/dev/null 2>&1 &
     else
         echo USING SENECA DB TEST HARNESS FOR $DB
     fi
@@ -110,24 +111,18 @@ do
         if [[ "$LINKED" = true ]]; then bash $PREFIX/util/wait-connect.sh $DB_IP $DB_PORT; fi
 
         echo RUN APP
-        nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/util/app.sh $DB" >/dev/null 2>&1 &
-        APP_PORT="3333"
-
-        bash $PREFIX/util/docker-inspect.sh APP $APP_PORT
-        APP_HEX=$(bash $PREFIX/util/read-inspect.sh hex)
-        APP_IP=$(bash $PREFIX/util/read-inspect.sh ip)
+        bash $PREFIX/util/app.sh $DB
     else
         echo NO NEED TO RUN THE APP FOR UNIT TEST
     fi
 
     #  run test
     if [[ "$NT" = false ]]; then
-        if [[ "$TU" = false ]]; then bash $PREFIX/util/wait-connect.sh $APP_IP $APP_PORT
-        elif [[ "$TU" = true && "$LINKED" = true ]]; then bash $PREFIX/util/wait-connect.sh $DB_IP $DB_PORT; fi
+        if [[ "$TU" = true && "$LINKED" = true ]]; then bash $PREFIX/util/wait-connect.sh $DB_IP $DB_PORT; fi
 
         echo
         echo TEST $DB DB
-        nohup gnome-terminal --disable-factory -x bash -c "bash $PREFIX/util/test.sh $DB $TU $TA $DB_IP $DB_PORT" >/dev/null 2>&1 &
+        nohup gnome-terminal --title="Test" --disable-factory -x bash -c "bash $PREFIX/util/test.sh $DB $TU $TA $DB_IP $DB_PORT" >/dev/null 2>&1 &
     fi
 
     # prepare for next

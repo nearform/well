@@ -1,5 +1,6 @@
-var fs = require('fs')
+var fs   = require('fs')
 var util = require('util')
+var _    = require('lodash')
 
 var options_path = '../../../options.well.js'
 var options      = require(options_path)
@@ -13,10 +14,24 @@ function outf(key, value){
   output += key + '\n' + value + '\n'
 }
 
-if (options['db-test']) {
+function outlist(name){
+  if (options.dbt[name]){
+    out(name)
+    _.each(options.dbt[name], function(field){
+      out('@' + field)
+    })
+    out('!')
+  }
+}
+
+if (options.dbt) {
   out('app')
-  outf('workdir', options['db-test'].workdir)
+  outf('workdir', options.dbt.workdir)
   out('!')
+
+  outlist('dockimages')
+  outlist('dockrebuilds')
+  outlist('cleanups')
 }
 if (options['mysql-store']){
   out('mysql')
@@ -35,5 +50,3 @@ if (options['postgresql-store']){
 }
 
 fs.writeFileSync(__dirname + "/temp.conf.out", output)
-
-// TODO put this in readme for adding new dbs

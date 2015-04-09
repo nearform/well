@@ -34,7 +34,6 @@ module.exports = {
     public:'/front/build/well/production'
   },
 
-
   // options for seneca-mongo-store
   'mongo-store':{
     // uncomment if using mongo authentication
@@ -65,17 +64,31 @@ module.exports = {
   'mysql-store':{
     host:process.env.MYSQL_LINK_PORT_3306_TCP_ADDR || 'localhost',
     port:process.env.MYSQL_LINK_PORT_3306_TCP_PORT || 3306,
-    user:'root', // to make things simple this has to be root
+    user:'root', // to keep things simple this has to be root
     password:'password',
     name:'admin',
     schema:'/test/dbs/mysql.sql'
   },
 
-  // options for db-test
-  'db-test':{
-      workdir:__dirname
+  // options for db test
+  'dbt':{
+      workdir:__dirname,
+      // docker images to run.
+      // use -d to run without additional terminal.
+      // --link and -e db= will be added automatically.
+      // if it exposes a port with -p, tester will automatically
+      // wait for it to start listening before booting next.
+      // use ; to add bash commands to be ran after img stops operating
+      // e.g. '-p 3333:3333 well-app ; echo Oh no!; read'
+      dockimages:['-p 3333:3333 --rm well-app'],
+      // dockerfiles to be rebuilt when -fb is used
+      dockrebuilds:['./',
+                    '/some/other/path'], // TODO
+      // extra files to be erased on cleanup
+      cleanups:['this/location/this.file.out',
+                'temp/not.needed.log',
+                'that/dump/folder'] // TODO
   },
-
 
   // options for memcached
   memcached:{
@@ -83,7 +96,6 @@ module.exports = {
     // uncomment for two servers in production
     // servers:['10.11.12.13:11211','10.11.12.13:11211']
   },
-
 
   // options for seneca-auth
   auth: {
