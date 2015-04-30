@@ -34,17 +34,61 @@ module.exports = {
     public:'/front/build/well/production'
   },
 
-
   // options for seneca-mongo-store
   'mongo-store':{
     // uncomment if using mongo authentication
     //user:'USERMAME',
     //pass:'PASSWORD',
-    host:'localhost',
-    port:27017,
+    host:process.env.MONGO_LINK_PORT_27017_TCP_ADDR || 'localhost',
+    port:process.env.MONGO_LINK_PORT_27017_TCP_PORT || 27017,
     name:'well'
   },
 
+  // options for seneca-postgresql-store
+  'postgresql-store':{
+    username:'admin',
+    password:'password',
+    host:process.env.POSTGRES_LINK_PORT_5432_TCP_ADDR || 'localhost',
+    port:process.env.POSTGRES_LINK_PORT_5432_TCP_PORT || 5432,
+    name:'admin', // Because of the way docker image works it has to be same as username
+    schema:'/test/dbs/postgres.sql'
+  },
+
+  // options for seneca-redis-store
+  'redis-store':{
+    host:process.env.REDIS_LINK_PORT_6379_TCP_ADDR || 'localhost',
+    port:process.env.REDIS_LINK_PORT_6379_TCP_PORT || 6379
+  },
+
+  // options for seneca-mysql-store
+  'mysql-store':{
+    host:process.env.MYSQL_LINK_PORT_3306_TCP_ADDR || 'localhost',
+    port:process.env.MYSQL_LINK_PORT_3306_TCP_PORT || 3306,
+    user:'root', // to keep things simple this has to be root
+    password:'password',
+    name:'admin',
+    schema:'/test/dbs/mysql.sql'
+  },
+
+  // options for db test
+  'dbt':{
+      workdir:__dirname,
+      // docker images to run.
+      // use -d to run without additional terminal.
+      // --link and -e db= will be added automatically.
+      // if it exposes a port with -p, tester will automatically
+      // wait for it to start listening before booting next.
+      // use ; to add bash commands to be ran after image stops operating
+      // e.g. '-p 3333:3333 well-app ; echo Oh no!; read'
+      dockimages:['-p 3333:3333 --rm well-app'],
+      // dockerfiles to be rebuilt when -fb is used
+      // syntax: [image-tag] [path_to_dockerfile]
+      dockbuilds:['well-app .'],
+      // extra files to be erased on cleanup
+      cleanups:['this/location/this.file.out',
+                'temp/not.needed.log',
+                'that/dump/folder'] // TODO
+  },
 
   // options for memcached
   memcached:{
@@ -52,7 +96,6 @@ module.exports = {
     // uncomment for two servers in production
     // servers:['10.11.12.13:11211','10.11.12.13:11211']
   },
-
 
   // options for seneca-auth
   auth: {
